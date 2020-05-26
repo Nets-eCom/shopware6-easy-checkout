@@ -1,5 +1,5 @@
 {
-    "name": "nets/checkout",
+    "name": "netseu/checkout",
     "description": "Payment plugin for Nets",
     "type": "shopware-platform-plugin",
     "version": "1.0.0",
