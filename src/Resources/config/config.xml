@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
+    <card>
+        <title>Minimal configuration</title>
+        <input-field>
+            <name>liveSecretKey</name>
+            <label>Live secret key</label>
+        </input-field>
+        <input-field>
+            <name>liveCheckoutKey</name>
+            <label>Live checkout key</label>
+        </input-field>
+        <input-field>
+            <name>testSecretKey</name>
+            <label>Test secret key</label>
+        </input-field>
+        <input-field>
+            <name>testCheckoutKey</name>
+            <label>Test checkout key</label>
+        </input-field>
+       <input-field type="single-select">
+            <name>enviromnent</name>
+            <label>Environment</label>
+            <options>
+                <option>
+                    <id>test</id>
+                    <name>Test</name>
+                </option>
+                <option>
+                    <id>live</id>
+                    <name>Live</name>
+                </option>
+            </options>
+        </input-field>
+        <input-field>
+            <name>termsUrl</name>
+            <label>Terms Url</label>
+        </input-field>
+        <input-field type="single-select">
+        <name>language</name>
+        <label>Checkout language</label>
+        <options>
+            <option>
+                <id>en-US</id>
+                <name>English</name>
+             </option>
+            <option>
+                <id>da-DK</id>
+                <name>Danish</name>
+            </option>
+            <option>
+                <id>sv-SE</id>
+                <name>Swedish</name>
+            </option>
+            <option>
+                <id>nb-NO</id>
+                <name>Norwegian</name>
+            </option>
+            <option>
+                <id>de-DE</id>
+                <name>German</name>
+            </option>
+        </options>
+       </input-field>
+    </card>
+</config>

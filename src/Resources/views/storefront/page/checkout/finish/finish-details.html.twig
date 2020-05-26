@@ -1,0 +1,8 @@
+{% sw_extends '@Storefront/storefront/page/checkout/finish/finish-details.html.twig' %}
+{% block page_checkout_finish_ordernumber %}
+    {% set netsTransactionId = page.extensions.nets_transaction_id.transaction_id %}
+    {{ parent() }}
+    {% if netsTransactionId %}
+        <p class = "finish-ordernumber"> Nets reference Id: {{ netsTransactionId }} </p>
+    {% endif %}
+{% endblock %}

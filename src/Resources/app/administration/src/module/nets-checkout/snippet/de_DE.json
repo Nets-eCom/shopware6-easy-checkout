@@ -1,0 +1,21 @@
+{
+    "nets-checkout": {
+        "title": "Nets",
+        "general": {
+            "mainMenuItemGeneral": "Nets",
+            "descriptionTextModule": "Einstellungen für Nets"
+        },
+        "capture": {
+            "buttonTitle": "Capture",
+            "successTitle": "Nets",
+            "successMessage": "Capture erfolgreich durchgeführt.",
+            "errorTitle": "Nets"
+        },
+        "refund": {
+            "buttonTitle": "Refund",
+            "successTitle": "Nets",
+            "successMessage": "Refund erfolgreich durchgeführt.",
+            "errorTitle": "Nets"
+        }
+    }
+}

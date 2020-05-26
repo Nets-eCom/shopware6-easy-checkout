@@ -1,0 +1,23 @@
+{% block sw_order_detail_base_secondary_info_payment %}
+    {% parent %}
+    {% block sw_order_detail_base_secondary_info_transaction_id %}
+        <div v-if="getTransactionId(currentOrder) != false">
+            <dt>{{ 'Nets Transaction id:' }}</dt>
+            <dd>{{ getTransactionId(currentOrder) }}</dd>
+            <dt>{{ 'Transaction Actions:' }}</dt>
+        </div>
+    {% endblock %}
+
+
+    <template v-if="getTransactionId(currentOrder) != false">
+        <sw-button-process
+            @click="captureOrder(currentOrder)" :disabled="!canCapture(currentOrder)">
+            Capture Order
+        </sw-button-process>
+        <sw-button-process
+            @click="refundOrder(currentOrder)" :disabled="!canRefund(currentOrder)">
+            Refund Order
+        </sw-button-process>
+        <sw-loader v-if="isLoading"></sw-loader>
+    </template>
+{% endblock %}

@@ -1,0 +1,17 @@
+{
+    "nets-checkout": {
+        "title": "Nets",
+        "capture": {
+            "buttonTitle": "Capture",
+            "successTitle": "Nets",
+            "successMessage": "Capture processed successfully.",
+            "errorTitle": "Nets"
+        },
+        "refund": {
+            "buttonTitle": "Refund",
+            "successTitle": "Nets",
+            "successMessage": "Refund processed successfully.",
+            "errorTitle": "Nets"
+        }
+    }
+}

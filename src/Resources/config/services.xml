@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="Nets\Checkout\Service\Checkout">
+            <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
+            <tag name="shopware.payment.method.async" />
+        </service>
+        <service id="Nets\Checkout\Service\Test">
+        </service>
+
+        <service id="Nets\Checkout\Storefront\Controller\PaymentController" public="true">
+            <argument type="service" id="order.repository"/>
+            <argument type="service" id="monolog.logger"/>
+            <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
+            <argument type="service" id="kernel"/>
+            <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="Nets\Checkout\Service\Easy\CheckoutService">
+            <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
+            <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
+            <argument type="service" id="order_transaction.repository" />
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+        </service>
+
+        <service id="Nets\Checkout\Service\Easy\Api\Client">
+        </service>
+
+        <service id="Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler">
+            <argument type="service" id="monolog.logger"/>
+            <argument type="service" id="kernel"/>
+        </service>
+
+        <service id="Nets\Checkout\Service\Easy\Api\EasyApiService">
+            <argument type="service" id="Nets\Checkout\Service\Easy\Api\Client"/>
+        </service>
+
+        <service id="Nets\Checkout\Service\ConfigService">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+        </service>
+
+        <service id="Nets\Checkout\Subscriber\CheckioutFinishPageSubscriber">
+           <argument type="service" id="order.repository"/>
+           <tag name="kernel.event_subscriber" />
+        </service>
+
+  </services>
+</container>
