@@ -1,6 +1,6 @@
 {
     "name": "netseu/checkout",
-    "description": "Payment plugin for Nets",
+    "description": "Nets Payment Plugin",
     "type": "shopware-platform-plugin",
     "version": "1.0.0",
     "license": "MIT",
@@ -15,12 +15,12 @@
     "extra": {
         "shopware-plugin-class": "Nets\\Checkout\\NetsCheckout",
         "label": {
-            "de-DE": "Payment plugin for Nets",
-            "en-GB": "Payment plugin for Nets"
+            "de-DE": "Nets Payment Plugin",
+            "en-GB": "Nets Payment Plugin"
         },
         "description": {
-            "de-DE": "Payment plugin for Nets",
-            "en-GB": "Payment plugin for Nets"
+            "de-DE": "Nets Payment Plugin",
+            "en-GB": "Nets Payment Plugin"
         }
     },
     "autoload": {

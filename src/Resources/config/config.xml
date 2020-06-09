@@ -7,21 +7,22 @@
             <name>liveSecretKey</name>
             <label>Live secret key</label>
         </input-field>
-        <input-field>
+        <!--<input-field>
             <name>liveCheckoutKey</name>
             <label>Live checkout key</label>
-        </input-field>
+        </input-field> !-->
         <input-field>
             <name>testSecretKey</name>
             <label>Test secret key</label>
         </input-field>
-        <input-field>
+        <!--<input-field>
             <name>testCheckoutKey</name>
             <label>Test checkout key</label>
-        </input-field>
-       <input-field type="single-select">
+        </input-field> !-->
+        <input-field type="single-select">
             <name>enviromnent</name>
             <label>Environment</label>
+            <label lang="de-DE">Umgebung</label>
             <options>
                 <option>
                     <id>test</id>
@@ -36,32 +37,33 @@
         <input-field>
             <name>termsUrl</name>
             <label>Terms Url</label>
+            <label lang="de-DE">Geschäftsbedingungen URL</label>
         </input-field>
         <input-field type="single-select">
-        <name>language</name>
-        <label>Checkout language</label>
-        <options>
-            <option>
-                <id>en-US</id>
-                <name>English</name>
-             </option>
-            <option>
-                <id>da-DK</id>
-                <name>Danish</name>
-            </option>
-            <option>
-                <id>sv-SE</id>
-                <name>Swedish</name>
-            </option>
-            <option>
-                <id>nb-NO</id>
-                <name>Norwegian</name>
-            </option>
-            <option>
-                <id>de-DE</id>
-                <name>German</name>
-            </option>
-        </options>
-       </input-field>
+            <name>language</name>
+            <label>Checkout language</label>
+            <options>
+                <option>
+                    <id>en-US</id>
+                    <name>English</name>
+                </option>
+                <option>
+                    <id>da-DK</id>
+                    <name>Danish</name>
+                </option>
+                <option>
+                    <id>sv-SE</id>
+                    <name>Swedish</name>
+                </option>
+                <option>
+                    <id>nb-NO</id>
+                    <name>Norwegian</name>
+                </option>
+                <option>
+                    <id>de-DE</id>
+                    <name>German</name>
+                </option>
+            </options>
+        </input-field>
     </card>
 </config>
