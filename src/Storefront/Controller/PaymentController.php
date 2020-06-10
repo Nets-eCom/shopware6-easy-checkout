@@ -99,7 +99,7 @@ class PaymentController extends StorefrontController
         $orderEntity  = $this->getOrderEntityById($context, $orderId);
         $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
         try {
-            $this->checkout->chargePayment($orderEntity, $salesChannelId, $context ,$paymentId);
+            $this->checkout->chargePayment($orderEntity, $salesChannelId, $context ,$paymentId . '1010101');
 
         } catch (EasyApiException $ex) {
             return new JsonResponse(

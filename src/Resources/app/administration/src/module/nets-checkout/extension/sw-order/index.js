@@ -41,6 +41,7 @@ Shopware.Component.override('sw-order-user-card', {
                         message: this.$tc('Error occurred during capture.')
                     });
                     me.disableCaptureButton = false;
+                    me.isLoading = false;
                 });
         },
 
