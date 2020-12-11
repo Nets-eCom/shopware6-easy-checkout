@@ -97,11 +97,8 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      */
     public function finalize(AsyncPaymentTransactionStruct $transaction, Request $request, SalesChannelContext $salesChannelContext): void {
         $transactionId = $transaction->getOrderTransaction()->getId();
-
         $environment = $this->configService->getEnvironment($salesChannelContext->getSalesChannel()->getId());
         $secretKey = $this->configService->getSecretKey($salesChannelContext->getSalesChannel()->getId());
-
-
         try {
             $this->easyApiService->setEnv($environment);
             $this->easyApiService->setAuthorizationKey($secretKey);

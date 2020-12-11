@@ -34,6 +34,8 @@
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="order_transaction.repository" />
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
+            <argument type="service" id="request_stack" />
         </service>
 
         <service id="Nets\Checkout\Service\Easy\Api\Client">
@@ -52,10 +54,17 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
         </service>
 
-        <service id="Nets\Checkout\Subscriber\CheckioutFinishPageSubscriber">
+        <service id="Nets\Checkout\Subscriber\CheckoutFinishPageSubscriber">
            <argument type="service" id="order.repository"/>
+           <argument type="service" id="request_stack" />
            <tag name="kernel.event_subscriber" />
         </service>
 
-  </services>
+        <service id="Nets\Checkout\Subscriber\CheckoutConfirmPageSubscriber">
+            <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
+            <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
+            <tag name="kernel.event_subscriber" />
+        </service>
+
+    </services>
 </container>

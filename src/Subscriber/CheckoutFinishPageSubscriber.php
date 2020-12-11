@@ -7,16 +7,34 @@ use Shopware\Storefront\Page\Checkout\Finish\CheckoutFinishPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Nets\Checkout\Service\Easy\Api\TransactionDetailsStruct;
 use Shopware\Core\Framework\Context;
+use Symfony\Component\HttpFoundation\RequestStack;
 
-class CheckioutFinishPageSubscriber implements EventSubscriberInterface
+class CheckoutFinishPageSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @var EntityRepositoryInterface
+     */
     private $orderRepository;
 
-    public function __construct(EntityRepositoryInterface $orderRepository)
+    /**
+     * @var RequestStack
+     */
+    private $requestStack;
+
+    /**
+     * CheckoutFinishPageSubscriber constructor.
+     * @param EntityRepositoryInterface $orderRepository
+     * @param RequestStack $requestStack
+     */
+    public function __construct(EntityRepositoryInterface $orderRepository, RequestStack $requestStack)
     {
         $this->orderRepository = $orderRepository;
+        $this->requestStack = $requestStack;
     }
 
+    /**
+     * @return string[]
+     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -24,13 +42,15 @@ class CheckioutFinishPageSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param CheckoutFinishPageLoadedEvent $event
+     */
     public function onCheckoutFinishLoaded(CheckoutFinishPageLoadedEvent $event)
     {
         $paymentStruct = new TransactionDetailsStruct();
         $page = $event->getPage();
-        $paymentStruct->assign(['test' => $page->getOrder()->getId()]);
         $context = Context::createDefaultContext();
-        $criteria = new Criteria([$_GET['orderId']]);
+        $criteria = new Criteria([$this->requestStack->getCurrentRequest()->get('orderId')]);
         $criteria->addAssociation('transactions');
         $order = $this->orderRepository->search($criteria, $context)->first();
         $transactionCollection = $order->getTransactions();

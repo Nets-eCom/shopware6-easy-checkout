@@ -1,0 +1,43 @@
+{% sw_extends '@Storefront/storefront/page/checkout/confirm/index.html.twig' %}
+
+{% block page_checkout_aside_container %}
+
+
+    {% set easyCheckoutType = page.extensions.easy_checkout_variables.checkoutType %}
+
+    {% set easy_checkout_is_active = page.extensions.easy_checkout_variables.easy_checkout_is_active %}
+
+    {% if easyCheckoutType == 'embedded' and easy_checkout_is_active == 1 %}
+
+        <div id="dibs-checkout-embedded">
+            <div id="dibs-complete-checkout"></div>
+        </div>
+
+        {% set easyCheckoutKey = page.extensions.easy_checkout_variables.checkoutKey %}
+        {% set easyPaymentId = page.extensions.easy_checkout_variables.paymentId %}
+        {% set easyEnvironment = page.extensions.easy_checkout_variables.environment %}
+        {% if easyEnvironment == 'test' %}
+            <script type="text/javascript" src="https://test.checkout.dibspayment.eu/v1/checkout.js?v=1"></script>
+        {% endif %}
+
+        {% if easyEnvironment == 'live' %}
+            <script type="text/javascript" src="https://checkout.dibspayment.eu/v1/checkout.js?v=1"></script>
+        {% endif %}
+       <script>
+            //<![CDATA[
+                const checkoutOptions = {
+                    checkoutKey: '{{ easyCheckoutKey }}',
+                    paymentId: '{{ easyPaymentId }}',
+                    containerId: 'dibs-complete-checkout',
+                    language: 'en-GB',
+                };
+                const checkout = new Dibs.Checkout(checkoutOptions);
+                checkout.on('payment-completed', function(response) {
+                });
+            //]]>
+        </script>
+
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

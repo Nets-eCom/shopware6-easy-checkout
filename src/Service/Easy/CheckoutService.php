@@ -13,6 +13,8 @@ use Nets\Checkout\Service\ConfigService;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
+use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class CheckoutService
 {
@@ -26,14 +28,25 @@ class CheckoutService
      */
     private $configService;
 
-    /** @var EntityRepositoryInterface */
+    /**
+     * @var EntityRepositoryInterface
+     */
     private $transactionRepository;
-
 
     /**
      * @var OrderTransactionStateHandler
      */
     private $transactionStateHandler;
+
+    /**
+     * @var CartService
+     */
+    private $cartService;
+
+    /**
+     * @var RequestStack
+     */
+    private $requestStack;
 
 
     /**
@@ -48,16 +61,24 @@ class CheckoutService
      * @param EasyApiService $easyApiService
      * @param ConfigService $configService
      * @param EntityRepositoryInterface $transactionRepository
+     * @param OrderTransactionStateHandler $orderTransactionStateHandler
+     * @param CartService $cartService
+     * @param RequestStack $requestStack
      */
     public function __construct(EasyApiService $easyApiService,
                                 ConfigService $configService,
                                 EntityRepositoryInterface $transactionRepository,
-                                OrderTransactionStateHandler $orderTransactionStateHandler)
+                                OrderTransactionStateHandler $orderTransactionStateHandler,
+                                CartService $cartService,
+                                RequestStack $requestStack
+)
     {
         $this->easyApiService = $easyApiService;
         $this->configService = $configService;
         $this->transactionRepository = $transactionRepository;
         $this->transactionStateHandler = $orderTransactionStateHandler;
+        $this->cartService = $cartService;
+        $this->requestStack = $requestStack;
     }
 
     /**
@@ -74,6 +95,83 @@ class CheckoutService
         $this->easyApiService->setAuthorizationKey($secretKey);
         $payload = json_encode($this->collectRequestParams($transaction,  $systemConfigService, $salesChannelContext));
         return $this->easyApiService->createPayment($payload);
+    }
+
+    /**
+     * @param $salesChannelContext
+     * @return string
+     * @throws EasyApiException
+     */
+    public function getPaymentId(SalesChannelContext $salesChannelContext) {
+        $environment = $this->configService->getEnvironment($salesChannelContext->getSalesChannel()->getId());
+        $secretKey = $this->configService->getSecretKey($salesChannelContext->getSalesChannel()->getId());
+        $this->easyApiService->setEnv($environment);
+        $this->easyApiService->setAuthorizationKey($secretKey);
+        $payload = json_encode($this->collectRequestParamsForEmbedded($salesChannelContext));
+        return $this->easyApiService->createPayment($payload);
+    }
+
+    /**
+     * @param $salesChannelContext
+     * @return array[]
+     */
+    private function collectRequestParamsForEmbedded(SalesChannelContext $salesChannelContext) {
+
+        $cart = $this->cartService->getCart($salesChannelContext->getToken(),$salesChannelContext);
+
+        $lineItemsCollection = $cart->getLineItems();
+
+        $data =  [
+            'order' => [
+                'items' => $this->getOrderItemsForEmbedded($lineItemsCollection),
+                'amount' => $this->prepareAmount($cart->getPrice()->getTotalPrice()),
+                'currency' => $salesChannelContext->getCurrency()->getIsoCode(),
+                'reference' => $salesChannelContext->getToken(),
+            ]];
+
+        //$data['checkout']['returnUrl'] = $transaction->getReturnUrl();
+        //$data['checkout']['integrationType'] = 'HostedPaymentPage';
+
+        $data['checkout']['termsUrl'] = $this->configService->getTermsAndConditionsUrl($salesChannelContext->getSalesChannel()->getId());
+
+        $data['checkout']['merchantHandlesConsumerData'] = true;
+
+        $data['checkout']['url'] = $this->requestStack->getCurrentRequest()->getUriForPath('/checkout/confirm');
+
+        $data['checkout']['consumer'] =
+            ['email' =>  $salesChannelContext->getCustomer()->getEmail(),
+                'privatePerson' => [
+                    'firstName' => $this->stringFilter($salesChannelContext->getCustomer()->getFirstname()),
+                    'lastName' => $this->stringFilter($salesChannelContext->getCustomer()->getLastname())]
+            ];
+
+        return $data;
+    }
+
+    /**
+     * @param $lineItemsCollection
+     * @return mixed
+     */
+    private function getOrderItemsForEmbedded($lineItemsCollection) {
+
+        $items = [];
+
+        foreach ($lineItemsCollection as $item) {
+            $taxes = $this->getRowTaxes($item->getPrice()->getCalculatedTaxes());
+
+            $items[] = [
+                'reference' => $item->getId(),
+                'name' => $this->stringFilter($item->getLabel()),
+                'quantity' => $item->getQuantity(),
+                'unit' => 'pcs',
+                'unitPrice' => $this->prepareAmount($item->getPrice()->getUnitPrice()),
+                'taxRate' => $this->prepareAmount($taxes['taxRate']),
+                'taxAmount' => $this->prepareAmount($taxes['taxAmount']),
+                'grossTotalAmount' => $this->prepareAmount($item->getPrice()->getTotalPrice()),
+                'netTotalAmount' => $this->prepareAmount($item->getPrice()->getTotalPrice() - $taxes['taxAmount'])];
+          }
+
+          return $items;
     }
 
     /**
@@ -100,22 +198,6 @@ class CheckoutService
 
         $data['checkout']['consumer'] =
             ['email' =>  $salesChannelContext->getCustomer()->getEmail(),
-                //'shippingAddress' =>  $salesChannelContext->getCustomer()->getActiveShippingAddress()->getAdditionalAddressLine1(),
-
-                /*
-                'shippingAddress' => [
-                    "addressLine1" => "string 211",
-                    "addressLine2" => "string 211",
-                    "postalCode" => 83162,
-                    "city" => "string",
-                    "country" => "SWE"
-                ],
-                */
-
-                /*'phoneNumber' => [
-                    'prefix' => $phoneNumber['prefix'],
-                    'number' => $phoneNumber['phone']],
-                */
                 'privatePerson' => [
                     'firstName' => $this->stringFilter($salesChannelContext->getCustomer()->getFirstname()),
                     'lastName' => $this->stringFilter($salesChannelContext->getCustomer()->getLastname())]
@@ -131,7 +213,6 @@ class CheckoutService
                   ]];
         return $data;
     }
-
 
     /**
      * @param OrderEntity $orderEntity
@@ -268,13 +349,9 @@ class CheckoutService
      */
     private function updateTransactionCustomFields(OrderTransactionEntity $transaction, $context ,$fields = []) {
         $customFields = $transaction->getCustomFields();
-
         $fields_arr = $customFields['nets_easy_payment_details'];
-
         $merged = array_merge($fields_arr, $fields);
-
         $customFields['nets_easy_payment_details'] = $merged;
-
         $update = [
             'id'           => $transaction->getId(),
             'customFields' => $customFields,
@@ -282,5 +359,4 @@ class CheckoutService
         $transaction->setCustomFields($customFields);
         $this->transactionRepository->update([$update], $context);
     }
-
 }
