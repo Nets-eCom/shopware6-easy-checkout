@@ -11,7 +11,6 @@ use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentProcessException;
 use Shopware\Core\Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Nets\Checkout\Service\ConfigService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use \Nets\Checkout\Service\Easy\CheckoutService;
@@ -20,8 +19,6 @@ use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler;
 use \Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
-use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
-use Shopware\Core\Checkout\Cart\CartPersisterInterface;
 use Shopware\Core\Checkout\Cart\CartPersister;
 
 

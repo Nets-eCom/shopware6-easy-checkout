@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Nets\Checkout\Service\Easy\Api;
-
 
 class Payment
 {

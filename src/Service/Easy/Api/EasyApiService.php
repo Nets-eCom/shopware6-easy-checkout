@@ -2,7 +2,6 @@
 
 namespace Nets\Checkout\Service\Easy\Api;
 
-use GuzzleHttp\Exception\RequestException;
 use Nets\Checkout\Service\Easy\Api\Client;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\Payment;

@@ -103,67 +103,6 @@ class CheckoutService
     }
 
     /**
-     * @param $salesChannelContext
-     * @return array[]
-     */
-    private function collectRequestParamsForEmbedded(SalesChannelContext $salesChannelContext) {
-        $cart = $this->cartService->getCart($salesChannelContext->getToken(),$salesChannelContext);
-
-        $data =  [
-            'order' => [
-                //'items' => $this->getOrderItemsForEmbedded($lineItemsCollection),
-                'items' => $this->getOrderItemsTest( $cart),
-                'amount' => $this->prepareAmount($cart->getPrice()->getTotalPrice()),
-                'currency' => $salesChannelContext->getCurrency()->getIsoCode(),
-                'reference' => $salesChannelContext->getToken(),
-            ]];
-
-        //$data['checkout']['returnUrl'] = $transaction->getReturnUrl();
-        //$data['checkout']['integrationType'] = 'HostedPaymentPage';
-
-        $data['checkout']['termsUrl'] = $this->configService->getTermsAndConditionsUrl($salesChannelContext->getSalesChannel()->getId());
-
-        $data['checkout']['merchantHandlesConsumerData'] = true;
-
-        $data['checkout']['url'] = $this->requestStack->getCurrentRequest()->getUriForPath('/checkout/confirm');
-
-        $data['checkout']['consumer'] =
-            ['email' =>  $salesChannelContext->getCustomer()->getEmail(),
-                'privatePerson' => [
-                    'firstName' => $this->stringFilter($salesChannelContext->getCustomer()->getFirstname()),
-                    'lastName' => $this->stringFilter($salesChannelContext->getCustomer()->getLastname())]
-            ];
-
-        return $data;
-    }
-
-    /**
-     * @param $lineItemsCollection
-     * @return mixed
-     */
-    private function getOrderItemsForEmbedded($lineItemsCollection) {
-
-        $items = [];
-
-        foreach ($lineItemsCollection as $item) {
-            $taxes = $this->getRowTaxes($item->getPrice()->getCalculatedTaxes());
-
-            $items[] = [
-                'reference' => $item->getId(),
-                'name' => $this->stringFilter($item->getLabel()),
-                'quantity' => $item->getQuantity(),
-                'unit' => 'pcs',
-                'unitPrice' => $this->prepareAmount($item->getPrice()->getUnitPrice()),
-                'taxRate' => $this->prepareAmount($taxes['taxRate']),
-                'taxAmount' => $this->prepareAmount($taxes['taxAmount']),
-                'grossTotalAmount' => $this->prepareAmount($item->getPrice()->getTotalPrice()),
-                'netTotalAmount' => $this->prepareAmount($item->getPrice()->getTotalPrice() - $taxes['taxAmount'])];
-          }
-
-          return $items;
-    }
-
-    /**
      * @param SalesChannelContext $salesChannelContext
      * @param AsyncPaymentTransactionStruct|null $transaction
      * @param string $checkoutType
@@ -181,7 +120,7 @@ class CheckoutService
         }
         $data = [
             'order' => [
-                'items' => $this->getOrderItemsTest($cart),
+                'items' => $this->getOrderItemsFromCart($cart),
                 'amount' => $this->prepareAmount($cart->getPrice()->getTotalPrice()),
                 'currency' => $salesChannelContext->getCurrency()->getIsoCode(),
                 'reference' => $reference,
@@ -226,7 +165,7 @@ class CheckoutService
      * @param OrderEntity $orderEntity
      * @return array
      */
-    private function getOrderItems(OrderEntity $orderEntity) {
+    private function getOrderItemsFromOrder(OrderEntity $orderEntity) {
         $items = [];
         // Products
         foreach ($orderEntity->getLineItems() as $item) {
@@ -244,16 +183,14 @@ class CheckoutService
                 'netTotalAmount' => $this->prepareAmount($item->getTotalPrice() - $taxes['taxAmount'])];
        }
 
-
         if($orderEntity->getShippingTotal()) {
             $items[] = $this->shippingCostLine();
         }
 
-
         return $items;
     }
 
-    private function getOrderItemsTest(Cart $cart) {
+    private function getOrderItemsFromCart(Cart $cart) {
 
         $collection = $cart->getLineItems();
 
@@ -289,7 +226,7 @@ class CheckoutService
     public function getTransactionOrderItems(OrderEntity $orderEntity) {
 
         return ['amount' => $this->prepareAmount($orderEntity->getAmountTotal()),
-         'orderItems' => $this->getOrderItems($orderEntity)];
+         'orderItems' => $this->getOrderItemsFromOrder($orderEntity)];
     }
 
     /**
