@@ -5,7 +5,6 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ConfigService
 {
-
     const CONFIG_PREFIX = 'NetsCheckout.config.';
 
     const ENVIRONMENT = 'enviromnent';

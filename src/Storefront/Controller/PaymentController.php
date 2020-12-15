@@ -15,6 +15,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 
+use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
+
 use Symfony\Component\HttpFoundation\Request;
 
 class PaymentController extends StorefrontController
@@ -39,14 +41,16 @@ class PaymentController extends StorefrontController
 
     private $kernel;
 
+    private $cartService;
+
     public function __construct(EntityRepositoryInterface $orderRepository,
                                 \Psr\Log\LoggerInterface $logger,
                                 \Nets\Checkout\Service\Easy\CheckoutService $checkout,
                                 SystemConfigService $systemConfigService,
                                 EasyApiService $easyApiService,
                                 \Symfony\Component\HttpKernel\KernelInterface $kernel,
-                                ConfigService $configService
-
+                                ConfigService $configService,
+                                CartService $cartService
 
     ) {
         $this->orderRepository = $orderRepository;
@@ -57,17 +61,36 @@ class PaymentController extends StorefrontController
         $this->easyApiService = $easyApiService;
         $this->kernel = $kernel;
         $this->configService = $configService;
+        $this->cartService = $cartService;
     }
 
     /**
      * @RouteScope(scopes={"storefront"})
-     * @Route("/nets/test", name="nets.test.controller", options={"seo"="false"}, methods={"GET"})
+     * @Route("/nets/order/finish", name="nets.test.controller", options={"seo"="false"}, methods={"GET"})
      */
-    public function test( \Shopware\Core\Framework\Context $context,
-                               \Shopware\Core\System\SalesChannel\SalesChannelContext $ctx,
-                                Request $request)
+    public function placeOrder( \Shopware\Core\Framework\Context $context,
+                          \Shopware\Core\System\SalesChannel\SalesChannelContext $ctx,
+                          Request $request)
     {
 
+        $cart = $this->cartService->getCart($ctx->getToken(), $ctx);
+
+        if(is_object($cart) && $cart->getLineItems()->count() <= 0) {
+            die('false');
+        }
+
+        //$request->set
+
+
+
+        return $this->redirectToRoute('frontend.checkout.finish.page');
+
+        echo 12343;
+
+        exit;
+        echo $this->cartService->order($cart, $ctx);
+
+        exit;
     }
 
     /**

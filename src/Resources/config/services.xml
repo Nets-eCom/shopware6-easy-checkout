@@ -11,6 +11,8 @@
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
             <argument type="service" id="order_transaction.repository"/>
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\CartPersister" />
+
             <tag name="shopware.payment.method.async" />
         </service>
         <service id="Nets\Checkout\Service\Test">
@@ -24,6 +26,7 @@
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
             <argument type="service" id="kernel"/>
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
@@ -64,6 +67,16 @@
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
             <tag name="kernel.event_subscriber" />
+        </service>
+
+        <service id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" class="Nets\Checkout\Service\Checkout\Cart\SalesChannel\CartService">
+            <argument type="service" id="Shopware\Core\Checkout\Cart\CartPersister"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\Order\OrderPersister"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\CartRuleLoader"/>
+            <argument type="service" id="order.repository"/>
+            <argument type="service" id="order_customer.repository"/>
+            <argument type="service" id="Shopware\Core\Framework\Event\BusinessEventDispatcher"/>
+            <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
         </service>
 
     </services>

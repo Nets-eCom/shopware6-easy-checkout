@@ -20,6 +20,9 @@ use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler;
 use \Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
+use Shopware\Core\Checkout\Cart\CartPersisterInterface;
+use Shopware\Core\Checkout\Cart\CartPersister;
 
 
 /**
@@ -64,6 +67,8 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      */
     public $configService;
 
+    private $cartPersister;
+
     /**
      * Checkout constructor.
      * @param CheckoutService $checkout
@@ -73,6 +78,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      * @param EasyApiService $easyApiService
      * @param EntityRepositoryInterface $orderTransactionRepo
      * @param \Nets\Checkout\Service\ConfigService $configService
+     * @param CartPersister $cartPersister
      */
     public function __construct(CheckoutService $checkout,
                                 SystemConfigService $systemConfigService,
@@ -80,7 +86,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
                                 OrderTransactionStateHandler $transactionStateHandler,
                                 EasyApiService $easyApiService,
                                 EntityRepositoryInterface $orderTransactionRepo,
-                                ConfigService $configService)     {
+                                ConfigService $configService, CartPersister $cartPersister)     {
         $this->systemConfigService = $systemConfigService;
         $this->checkout = $checkout;
         $this->easyApiExceptionHandler = $easyApiExceptionHandler;
@@ -88,6 +94,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
         $this->easyApiService = $easyApiService;
         $this->orderTransactionRepo = $orderTransactionRepo;
         $this->configService = $configService;
+        $this->cartPersister = $cartPersister;
     }
 
     /**
@@ -109,8 +116,6 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
             $transactionId = $transaction->getOrderTransaction()->getId();
             $context = $salesChannelContext->getContext();
 
-
-
             $this->orderTransactionRepo->update([[
                 'id' => $transactionId,
                 'customFields' => [
@@ -125,6 +130,9 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
                     'Customer canceled the payment on the Easy payment page'
                 );
             }
+
+           $this->cartPersister->delete($salesChannelContext->getToken(), $salesChannelContext);
+
         }catch (EasyApiException $ex) {
             throw new CustomerCanceledAsyncPaymentException(
                 $transactionId,
@@ -142,7 +150,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      */
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): RedirectResponse {
         try {
-            $result = $this->checkout->createPayment($transaction, $this->systemConfigService, $salesChannelContext);
+            $result = $this->checkout->createPayment($salesChannelContext, $this->checkout::CHECKOUT_TYPE_HOSTED, $transaction);
             $PaymentCreateResult = json_decode($result, true);
         } catch(EasyApiException $e) {
             $this->easyApiExceptionHandler->handle($e);

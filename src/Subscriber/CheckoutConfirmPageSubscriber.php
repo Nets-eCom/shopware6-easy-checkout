@@ -48,38 +48,36 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
      */
     public function onCheckoutConfirmLoaded(CheckoutConfirmPageLoadedEvent $event): void
     {
-        $salesChannelContext = $event->getSalesChannelContext();
+            try {
+                $salesChannelContext = $event->getSalesChannelContext();
+                $paymentMethod = $salesChannelContext->getPaymentMethod();
+                $salesChannelContextId = $salesChannelContext->getSalesChannel()->getId();
+                $checkoutType = $this->configService->getCheckoutType($salesChannelContextId);
 
-        // temporary without try catch but we must add it !!
-       // try {
-            $paymentId = json_decode($this->checkoutService->getPaymentId($salesChannelContext), true);
+                if ($paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout' &&
+                    $checkoutType == $this->checkoutService::CHECKOUT_TYPE_EMBEDDED) {
+                    //exit;
 
-            $paymentId = $paymentId['paymentId'];
+                    $paymentId = json_decode($this->checkoutService->createPayment($salesChannelContext, $this->checkoutService::CHECKOUT_TYPE_EMBEDDED, null), true);
+                    $paymentId = $paymentId['paymentId'];
+                    $page = $event->getPage();
+                    $variablesStruct = new TransactionDetailsStruct();
 
-            $salesChannelContextId = $salesChannelContext->getSalesChannel()->getId();
+                    $easyCheckoutIsActive = $paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout' ? 1 : 0;
 
-            $page = $event->getPage();
+                    $templateVars = ['checkoutKey' => $this->configService->getCheckoutKey($salesChannelContextId),
+                        'environment' => $this->configService->getEnvironment($salesChannelContextId),
+                        'paymentId' => $paymentId,
+                        'checkoutType' => $this->configService->getCheckoutType($salesChannelContextId),
+                        'easy_checkout_is_active' => $easyCheckoutIsActive];
 
-            $variablesStruct = new TransactionDetailsStruct();
+                    $variablesStruct->assign($templateVars);
 
-            $paymentMethod = $salesChannelContext->getPaymentMethod();
+                    $page->addExtension('easy_checkout_variables', $variablesStruct);
 
-            $easyCheckoutIsActive = $paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout' ? 1 : 0;
-
-            $templateVars = ['checkoutKey' => $this->configService->getCheckoutKey($salesChannelContextId),
-                'environment' => $this->configService->getEnvironment($salesChannelContextId),
-                'paymentId' => $paymentId,
-                'checkoutType' => $this->configService->getCheckoutType($salesChannelContextId),
-                'easy_checkout_is_active' => $easyCheckoutIsActive];
-
-            $variablesStruct->assign($templateVars);
-
-            $page->addExtension('easy_checkout_variables', $variablesStruct);
-
-            //  } catch (\Exception $exception) {
-            // continue
-            //  }
-
-            error_log($paymentId);
+                }
+            } catch (\Exception $ex) {
+                // handle exception ....
+            }
     }
 }

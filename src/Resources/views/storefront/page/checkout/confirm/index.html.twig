@@ -16,14 +16,20 @@
         {% set easyCheckoutKey = page.extensions.easy_checkout_variables.checkoutKey %}
         {% set easyPaymentId = page.extensions.easy_checkout_variables.paymentId %}
         {% set easyEnvironment = page.extensions.easy_checkout_variables.environment %}
+
         {% if easyEnvironment == 'test' %}
+
             <script type="text/javascript" src="https://test.checkout.dibspayment.eu/v1/checkout.js?v=1"></script>
+
         {% endif %}
 
         {% if easyEnvironment == 'live' %}
+
             <script type="text/javascript" src="https://checkout.dibspayment.eu/v1/checkout.js?v=1"></script>
+
         {% endif %}
-       <script>
+
+        <script>
             //<![CDATA[
                 const checkoutOptions = {
                     checkoutKey: '{{ easyCheckoutKey }}',
