@@ -58,7 +58,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                     $checkoutType == $this->checkoutService::CHECKOUT_TYPE_EMBEDDED) {
                     //exit;
 
-                    $paymentId = json_decode($this->checkoutService->createPayment($salesChannelContext, $this->checkoutService::CHECKOUT_TYPE_EMBEDDED, null), true);
+                    $paymentId = json_decode($this->checkoutService->createPayment($salesChannelContext), true);
                     $paymentId = $paymentId['paymentId'];
                     $page = $event->getPage();
                     $variablesStruct = new TransactionDetailsStruct();
