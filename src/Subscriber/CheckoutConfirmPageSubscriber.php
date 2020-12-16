@@ -48,7 +48,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
      */
     public function onCheckoutConfirmLoaded(CheckoutConfirmPageLoadedEvent $event): void
     {
-            try {
+            //try {
                 $salesChannelContext = $event->getSalesChannelContext();
                 $paymentMethod = $salesChannelContext->getPaymentMethod();
                 $salesChannelContextId = $salesChannelContext->getSalesChannel()->getId();
@@ -76,8 +76,8 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                     $page->addExtension('easy_checkout_variables', $variablesStruct);
 
                 }
-            } catch (\Exception $ex) {
+            //} catch (\Exception $ex) {
                 // handle exception ....
-            }
+           // }
     }
 }

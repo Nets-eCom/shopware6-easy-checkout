@@ -79,10 +79,7 @@ class PaymentController extends StorefrontController
             die('false');
         }
 
-        //$request->set
-
-
-
+        exit;
         return $this->redirectToRoute('frontend.checkout.finish.page');
 
         echo 12343;

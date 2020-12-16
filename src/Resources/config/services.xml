@@ -69,15 +69,5 @@
             <tag name="kernel.event_subscriber" />
         </service>
 
-        <service id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" class="Nets\Checkout\Service\Checkout\Cart\SalesChannel\CartService">
-            <argument type="service" id="Shopware\Core\Checkout\Cart\CartPersister"/>
-            <argument type="service" id="Shopware\Core\Checkout\Cart\Order\OrderPersister"/>
-            <argument type="service" id="Shopware\Core\Checkout\Cart\CartRuleLoader"/>
-            <argument type="service" id="order.repository"/>
-            <argument type="service" id="order_customer.repository"/>
-            <argument type="service" id="Shopware\Core\Framework\Event\BusinessEventDispatcher"/>
-            <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
-        </service>
-
     </services>
 </container>

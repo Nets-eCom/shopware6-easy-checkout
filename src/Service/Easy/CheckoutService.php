@@ -3,11 +3,13 @@
 namespace Nets\Checkout\Service\Easy;
 
 use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Cart\LineItem\LineItemCollection;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\ConfigService;
@@ -99,6 +101,7 @@ class CheckoutService
         $this->easyApiService->setEnv($environment);
         $this->easyApiService->setAuthorizationKey($secretKey);
         $payload = json_encode($this->collectRequestParams($salesChannelContext, $checkoutType, $transaction));
+
         return $this->easyApiService->createPayment($payload);
     }
 
@@ -110,54 +113,51 @@ class CheckoutService
      */
     private function collectRequestParams(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null)
     {
+
         $cart = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);
 
-        $reference = $salesChannelContext->getToken();
-
         if(is_object( $transaction )) {
-            $orderEntity = $transaction->getOrder();
-            $reference = $orderEntity->getOrderNumber();
+            $cartOrderEntityObject = $transaction->getOrder();
+            $reference = $cartOrderEntityObject->getOrderNumber();
+            $amount = $cartOrderEntityObject->getAmountTotal();
+        } else {
+            $cartOrderEntityObject = $cart;
+            $amount = $cart->getPrice()->getTotalPrice();
+            $reference = $salesChannelContext->getToken();
         }
-        $data = [
+
+        $data =  [
             'order' => [
-                'items' => $this->getOrderItemsFromCart($cart),
-                'amount' => $this->prepareAmount($cart->getPrice()->getTotalPrice()),
+                'items' => $this->getOrderItems($cartOrderEntityObject),
+                'amount' => $this->prepareAmount($amount),
                 'currency' => $salesChannelContext->getCurrency()->getIsoCode(),
                 'reference' => $reference,
             ]];
 
-        if(is_object($transaction)) {
+        if( is_object($transaction) ) {
             $data['checkout']['returnUrl'] = $transaction->getReturnUrl();
         }
-
+        $data['checkout']['termsUrl'] = $this->configService->getTermsAndConditionsUrl($salesChannelContext->getSalesChannel()->getId());
+        $data['checkout']['merchantHandlesConsumerData'] = true;
         if (self::CHECKOUT_TYPE_HOSTED == $checkoutType) {
             $data['checkout']['integrationType'] = 'HostedPaymentPage';
         }
-
         if(self::CHECKOUT_TYPE_EMBEDDED == $checkoutType) {
-            $data['checkout']['url'] = $this->requestStack->getCurrentRequest()->getUriForPath('/checkout/confirm');
+            $data['checkout']['url'] = $this->requestStack->getCurrentRequest()->getUriForPath('/nets/order/finish');
         }
-
-        $data['checkout']['termsUrl'] = $this->configService->getTermsAndConditionsUrl($salesChannelContext->getSalesChannel()->getId());
-
-        $data['checkout']['merchantHandlesConsumerData'] = true;
-
         $data['checkout']['consumer'] =
             ['email' =>  $salesChannelContext->getCustomer()->getEmail(),
                 'privatePerson' => [
                     'firstName' => $this->stringFilter($salesChannelContext->getCustomer()->getFirstname()),
                     'lastName' => $this->stringFilter($salesChannelContext->getCustomer()->getLastname())]
             ];
-
-
         $data['notifications'] =
             ['webhooks' =>
                 [
                     ['eventName' => 'payment.checkout.completed',
                         'url' => 'https://some-url.com',
                         'authorization' => substr(str_shuffle(MD5(microtime())), 0, 10)]
-                  ]];
-
+                ]];
         return $data;
     }
 
@@ -165,53 +165,47 @@ class CheckoutService
      * @param OrderEntity $orderEntity
      * @return array
      */
-    private function getOrderItemsFromOrder(OrderEntity $orderEntity) {
-        $items = [];
-        // Products
-        foreach ($orderEntity->getLineItems() as $item) {
-            $taxes = $this->getRowTaxes($item->getPrice()->getCalculatedTaxes());
-
-        $items[] = [
-                'reference' => $item->getProductId(),
-                'name' => $this->stringFilter($item->getLabel()),
-                'quantity' => $item->getQuantity(),
-                'unit' => 'pcs',
-                'unitPrice' => $this->prepareAmount($item->getUnitPrice() - $taxes['taxAmount']),
-                'taxRate' => $this->prepareAmount($taxes['taxRate']),
-                'taxAmount' => $this->prepareAmount($taxes['taxAmount']),
-                'grossTotalAmount' => $this->prepareAmount($item->getTotalPrice()),
-                'netTotalAmount' => $this->prepareAmount($item->getTotalPrice() - $taxes['taxAmount'])];
-       }
-
-        if($orderEntity->getShippingTotal()) {
-            $items[] = $this->shippingCostLine();
-        }
-
-        return $items;
-    }
-
-    private function getOrderItemsFromCart(Cart $cart) {
-
-        $collection = $cart->getLineItems();
+    private function getOrderItems(Struct $cartOrderEntityObject) {
 
         $items = [];
 
-        foreach ($collection as $item) {
-            $taxes = $this->getRowTaxes($item->getPrice()->getCalculatedTaxes());
-            $items[] = [
-                'reference' => $item->getId(),
-                'name' => $this->stringFilter($item->getLabel()),
-                'quantity' => $item->getQuantity(),
-                'unit' => 'pcs',
-                'unitPrice' => $this->prepareAmount($item->getPrice()->getUnitPrice() - $taxes['taxAmount']),
-                'taxRate' => $this->prepareAmount($taxes['taxRate']),
-                'taxAmount' => $this->prepareAmount($taxes['taxAmount']),
-                'grossTotalAmount' => $this->prepareAmount($item->getPrice()->getTotalPrice()),
-                'netTotalAmount' => $this->prepareAmount($item->getPrice()->getTotalPrice() - $taxes['taxAmount'])];
+          foreach ($cartOrderEntityObject->getLineItems() as $item) {
+
+                $taxes = $this->getRowTaxes($item->getPrice()->getCalculatedTaxes());
+
+                if($cartOrderEntityObject instanceof Cart) {
+
+                        $items[] = [
+                            'reference' => $item->getId(),
+                            'name' => $this->stringFilter($item->getLabel()),
+                            'quantity' => $item->getQuantity(),
+                            'unit' => 'pcs',
+                            'unitPrice' => $this->prepareAmount($item->getPrice()->getUnitPrice() - $taxes['taxAmount']),
+                            'taxRate' => $this->prepareAmount($taxes['taxRate']),
+                            'taxAmount' => $this->prepareAmount($taxes['taxAmount']),
+                            'grossTotalAmount' => $this->prepareAmount($item->getPrice()->getTotalPrice()),
+                            'netTotalAmount' => $this->prepareAmount($item->getPrice()->getTotalPrice() - $taxes['taxAmount'])];
+
+               }
+
+
+                 if($cartOrderEntityObject instanceof OrderEntity) {
+
+                      $items[] = [
+                          'reference' => $item->getProductId(),
+                          'name' => $this->stringFilter($item->getLabel()),
+                          'quantity' => $item->getQuantity(),
+                          'unit' => 'pcs',
+                          'unitPrice' => $this->prepareAmount($item->getUnitPrice() - $taxes['taxAmount']),
+                          'taxRate' => $this->prepareAmount($taxes['taxRate']),
+                          'taxAmount' => $this->prepareAmount($taxes['taxAmount']),
+                          'grossTotalAmount' => $this->prepareAmount($item->getTotalPrice()),
+                          'netTotalAmount' => $this->prepareAmount($item->getTotalPrice() - $taxes['taxAmount'])];
+                  }
+
         }
 
-
-        $shippingCost =  $cart->getShippingCosts();
+        $shippingCost =  $cartOrderEntityObject->getShippingCosts();
 
         if($shippingCost->getTotalPrice() > 0) {
             $items[] = $this->shippingCostLine($shippingCost);
