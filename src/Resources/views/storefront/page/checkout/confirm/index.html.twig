@@ -1,12 +1,12 @@
 {% sw_extends '@Storefront/storefront/page/checkout/confirm/index.html.twig' %}
 
-{% block page_checkout_aside_container %}
 
+
+{% block page_checkout_aside_container %}
 
     {% set easyCheckoutType = page.extensions.easy_checkout_variables.checkoutType %}
 
     {% set easy_checkout_is_active = page.extensions.easy_checkout_variables.easy_checkout_is_active %}
-
     {% if easyCheckoutType == 'embedded' and easy_checkout_is_active == 1 %}
 
         <div id="dibs-checkout-embedded">
@@ -46,4 +46,11 @@
     {% endif %}
 
     {{ parent() }}
+{% endblock %}
+
+{% block page_checkout_confirm_form_submit %}
+    {% if easyCheckoutType == 'embedded' and easy_checkout_is_active == 1 %}
+        {% else %}
+            {{ parent() }}
+    {% endif %}
 {% endblock %}
