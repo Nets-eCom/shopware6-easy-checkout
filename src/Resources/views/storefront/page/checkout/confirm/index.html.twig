@@ -2,7 +2,7 @@
 
 
 
-{% block page_checkout_aside_container %}
+{% block page_checkout_aside %}
 
     {% set easyCheckoutType = page.extensions.easy_checkout_variables.checkoutType %}
 
@@ -45,6 +45,9 @@
 
     {% endif %}
 
+{% endblock %}
+
+{% block page_checkout_aside_container %}
     {{ parent() }}
 {% endblock %}
 
