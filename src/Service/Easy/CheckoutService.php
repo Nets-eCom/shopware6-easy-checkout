@@ -113,7 +113,6 @@ class CheckoutService
      */
     private function collectRequestParams(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null)
     {
-
         $cart = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);
 
         if(is_object( $transaction )) {
@@ -145,12 +144,19 @@ class CheckoutService
         if(self::CHECKOUT_TYPE_EMBEDDED == $checkoutType) {
             $data['checkout']['url'] = $this->requestStack->getCurrentRequest()->getUriForPath('/nets/order/finish');
         }
+
         $data['checkout']['consumer'] =
             ['email' =>  $salesChannelContext->getCustomer()->getEmail(),
-                'privatePerson' => [
-                    'firstName' => $this->stringFilter($salesChannelContext->getCustomer()->getFirstname()),
-                    'lastName' => $this->stringFilter($salesChannelContext->getCustomer()->getLastname())]
-            ];
+             'shippingAddress' => [
+                'addressLine1' => $salesChannelContext->getCustomer()->getActiveShippingAddress()->getStreet(),
+                'addressLine2' => $salesChannelContext->getCustomer()->getActiveShippingAddress()->getStreet(),
+                'postalCode' => $salesChannelContext->getCustomer()->getActiveShippingAddress()->getZipcode(),
+                'city' => $salesChannelContext->getCustomer()->getActiveShippingAddress()->getCity(),
+                'country' => $salesChannelContext->getCustomer()->getActiveShippingAddress()->getCountry()->getIso3()],
+             'privatePerson' => [
+                'firstName' => $this->stringFilter($salesChannelContext->getCustomer()->getFirstname()),
+                'lastName' => $this->stringFilter($salesChannelContext->getCustomer()->getLastname())]];
+
         $data['notifications'] =
             ['webhooks' =>
                 [

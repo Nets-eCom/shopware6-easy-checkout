@@ -42,6 +42,8 @@ class Client {
             $params = ['headers' => $this->headers,
                        'body' => $data];
             return $this->client->request('POST', $url, $params);
+        }catch (\GuzzleHttp\Exception\ClientException $ex) {
+            throw new EasyApiException($ex->getResponse()->getBody(), $ex->getCode());
         }catch(\GuzzleHttp\Exception\GuzzleException $ex) {
             throw new EasyApiException($ex->getMessage(), $ex->getCode());
         }

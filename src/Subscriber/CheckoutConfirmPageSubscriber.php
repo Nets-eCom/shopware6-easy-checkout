@@ -8,6 +8,8 @@ use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\CheckoutService;
+use Symfony\Component\HttpFoundation\Session\Session;
+
 class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 {
 
@@ -21,15 +23,22 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
      */
     private $checkoutService;
 
+    private $session;
+
+
     /**
      * CheckoutConfirmPageSubscriber constructor.
      * @param ConfigService $configService
      * @param CheckoutService $checkoutService
+     * @param Session $session
      */
-    public function __construct(ConfigService $configService, CheckoutService $checkoutService)
+    public function __construct(ConfigService $configService,
+                                CheckoutService $checkoutService,
+                                Session $session)
     {
         $this->configService = $configService;
         $this->checkoutService = $checkoutService;
+        $this->session = $session;
     }
 
     /**
@@ -48,7 +57,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
      */
     public function onCheckoutConfirmLoaded(CheckoutConfirmPageLoadedEvent $event): void
     {
-            //try {
+            try {
                 $salesChannelContext = $event->getSalesChannelContext();
                 $paymentMethod = $salesChannelContext->getPaymentMethod();
                 $salesChannelContextId = $salesChannelContext->getSalesChannel()->getId();
@@ -76,8 +85,13 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                     $page->addExtension('easy_checkout_variables', $variablesStruct);
 
                 }
-            //} catch (\Exception $ex) {
-                // handle exception ....
-           // }
+            } catch (EasyApiException $ex) {
+                if($ex->getResponseErrors()) {
+                    $this->session->getFlashBag()->add('danger', 'Error during Easy checkout initializatin :');
+                    foreach ($ex->getResponseErrors() as $error ) {
+                        $this->session->getFlashBag()->add('danger', $error);
+                    }
+                }
+           }
     }
 }

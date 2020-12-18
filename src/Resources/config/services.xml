@@ -12,7 +12,8 @@
             <argument type="service" id="order_transaction.repository"/>
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\CartPersister" />
-
+            <argument type="service" id="session"/>
+            <argument type="service" id="Shopware\Storefront\Framework\Routing\Router"/>
             <tag name="shopware.payment.method.async" />
         </service>
         <service id="Nets\Checkout\Service\Test">
@@ -66,6 +67,7 @@
         <service id="Nets\Checkout\Subscriber\CheckoutConfirmPageSubscriber">
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
+            <argument type="service" id="session"/>
             <tag name="kernel.event_subscriber" />
         </service>
 

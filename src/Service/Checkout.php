@@ -20,7 +20,8 @@ use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler;
 use \Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Checkout\Cart\CartPersister;
-
+use Symfony\Component\HttpFoundation\Session\Session;
+use Shopware\Storefront\Framework\Routing\Router;
 
 /**
  * Description of NetsCheckout
@@ -66,6 +67,10 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
 
     private $cartPersister;
 
+    private $session;
+
+    private $router;
+
     /**
      * Checkout constructor.
      * @param CheckoutService $checkout
@@ -83,7 +88,8 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
                                 OrderTransactionStateHandler $transactionStateHandler,
                                 EasyApiService $easyApiService,
                                 EntityRepositoryInterface $orderTransactionRepo,
-                                ConfigService $configService, CartPersister $cartPersister)     {
+                                ConfigService $configService, CartPersister $cartPersister,
+                                Session $session, Router $router)     {
         $this->systemConfigService = $systemConfigService;
         $this->checkout = $checkout;
         $this->easyApiExceptionHandler = $easyApiExceptionHandler;
@@ -92,6 +98,9 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
         $this->orderTransactionRepo = $orderTransactionRepo;
         $this->configService = $configService;
         $this->cartPersister = $cartPersister;
+        $this->session = $session;
+        $this->router = $router;
+
     }
 
     /**
@@ -149,9 +158,19 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
         try {
             $result = $this->checkout->createPayment($salesChannelContext, $this->checkout::CHECKOUT_TYPE_HOSTED, $transaction);
             $PaymentCreateResult = json_decode($result, true);
-        } catch(EasyApiException $e) {
-            $this->easyApiExceptionHandler->handle($e);
-            throw new AsyncPaymentProcessException($transaction->getOrderTransaction()->getId() , $e->getMessage());
+        } catch(EasyApiException $ex) {
+            $this->easyApiExceptionHandler->handle($ex);
+
+//            if($ex->getResponseErrors()) {
+//                $this->session->getFlashBag()->add('danger', 'Error during Easy checkout initializatin :');
+//                foreach ($ex->getResponseErrors() as $error ) {
+//                    $this->session->getFlashBag()->add('danger', $error);
+//                    echo $error;
+//                }
+//            }
+
+            return new RedirectResponse($this->router->generate('frontend.checkout.cart.page'));
+
         }
         $language = $this->configService->getLanguage($salesChannelContext->getSalesChannel()->getId());
         return new RedirectResponse($PaymentCreateResult['hostedPaymentPageUrl']  . '&language='  .  $language );
