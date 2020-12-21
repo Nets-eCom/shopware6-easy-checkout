@@ -4,8 +4,8 @@
 
 {% block page_checkout_aside %}
 
-    {% set easyCheckoutType = page.extensions.easy_checkout_variables.checkoutType %}
 
+    {% set easyCheckoutType = page.extensions.easy_checkout_variables.checkoutType %}
     {% set easy_checkout_is_active = page.extensions.easy_checkout_variables.easy_checkout_is_active %}
     {% if easyCheckoutType == 'embedded' and easy_checkout_is_active == 1 %}
 
@@ -44,16 +44,16 @@
         </script>
 
     {% endif %}
-	
-	
-	{% block page_checkout_aside_container %}
-		{{ parent() }}
-	{% endblock %}
-
+{{ parent() }}
 
 {% endblock %}
 
-
+ 
+{% block page_checkout_aside_container %}
+	<div class="checkout-summary">
+		{{ parent() }}
+	</div>
+{% endblock %}
 
 
 {% block page_checkout_confirm_form_submit %}

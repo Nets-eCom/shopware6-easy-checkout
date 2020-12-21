@@ -1,13 +1,13 @@
-@media (min-width: 768px) {
-.offset-md-6, .is-act-confirmpage .checkout .checkout-aside {
+.checkout .checkout-container .checkout-aside .checkout-summary {
     margin-left: 15%;
 }
+ 
+#dibs-checkout-embedded {
+    margin-left: 18%;
 }
 
-.checkout .checkout-container .checkout-aside-container {
-margin-left: 50%;
+@media (min-width: 768px) {
+.is-act-confirmpage .checkout .checkout-aside {
+    margin-left: 12% !important;
 }
-
-.checkout .checkout-container > div:first-child {
-padding-bottom: 0px !important;
 }
