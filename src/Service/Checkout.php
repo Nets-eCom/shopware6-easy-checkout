@@ -113,21 +113,21 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
 
             $context = $salesChannelContext->getContext();
 
-            $this->orderTransactionRepo->update([[
-                'id' => $transactionId,
-                'customFields' => [
-                    'nets_easy_payment_details' =>
-                        ['transaction_id' => $paymentId,
-                          'can_capture' => true],
-                ],
-            ]], $context);
-
             if (empty($payment->getReservedAmount())) {
                 throw new CustomerCanceledAsyncPaymentException(
                     $transactionId,
                     'Customer canceled the payment on the Easy payment page'
                 );
             }
+
+            $this->orderTransactionRepo->update([[
+                'id' => $transactionId,
+                'customFields' => [
+                    'nets_easy_payment_details' =>
+                        ['transaction_id' => $paymentId,
+                            'can_capture' => true],
+                ],
+            ]], $context);
 
         }catch (EasyApiException $ex) {
             throw new CustomerCanceledAsyncPaymentException(
