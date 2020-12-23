@@ -18,9 +18,7 @@ use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler;
 use \Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
-use Shopware\Core\Checkout\Cart\CartPersister;
-use Symfony\Component\HttpFoundation\Session\Session;
-use Shopware\Storefront\Framework\Routing\Router;
+
 
 /**
  * Description of NetsCheckout
@@ -64,12 +62,6 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      */
     public $configService;
 
-    private $cartPersister;
-
-    private $session;
-
-    private $router;
-
     /**
      * Checkout constructor.
      * @param CheckoutService $checkout
@@ -79,7 +71,6 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      * @param EasyApiService $easyApiService
      * @param EntityRepositoryInterface $orderTransactionRepo
      * @param \Nets\Checkout\Service\ConfigService $configService
-     * @param CartPersister $cartPersister
      */
     public function __construct(CheckoutService $checkout,
                                 SystemConfigService $systemConfigService,
@@ -87,8 +78,8 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
                                 OrderTransactionStateHandler $transactionStateHandler,
                                 EasyApiService $easyApiService,
                                 EntityRepositoryInterface $orderTransactionRepo,
-                                ConfigService $configService, CartPersister $cartPersister,
-                                Session $session, Router $router)     {
+                                ConfigService $configService
+                                )     {
         $this->systemConfigService = $systemConfigService;
         $this->checkout = $checkout;
         $this->easyApiExceptionHandler = $easyApiExceptionHandler;
@@ -96,10 +87,6 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
         $this->easyApiService = $easyApiService;
         $this->orderTransactionRepo = $orderTransactionRepo;
         $this->configService = $configService;
-        $this->cartPersister = $cartPersister;
-        $this->session = $session;
-        $this->router = $router;
-
     }
 
     /**
