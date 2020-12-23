@@ -63,31 +63,29 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                 $salesChannelContextId = $salesChannelContext->getSalesChannel()->getId();
                 $checkoutType = $this->configService->getCheckoutType($salesChannelContextId);
 
+                $page = $event->getPage();
                 if ($paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout' &&
                     $checkoutType == $this->checkoutService::CHECKOUT_TYPE_EMBEDDED) {
-                    //exit;
-
                     $paymentId = json_decode($this->checkoutService->createPayment($salesChannelContext), true);
                     $paymentId = $paymentId['paymentId'];
-                    $page = $event->getPage();
+
                     $variablesStruct = new TransactionDetailsStruct();
-
                     $easyCheckoutIsActive = $paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout' ? 1 : 0;
-
+                    $errors = $page->getCart()->getErrors();
                     $templateVars = ['checkoutKey' => $this->configService->getCheckoutKey($salesChannelContextId),
                         'environment' => $this->configService->getEnvironment($salesChannelContextId),
                         'paymentId' => $paymentId,
                         'checkoutType' => $this->configService->getCheckoutType($salesChannelContextId),
-                        'easy_checkout_is_active' => $easyCheckoutIsActive];
+                        'easy_checkout_is_active' => $easyCheckoutIsActive,
+                        'cart_errors' => $errors->count()];
 
                     $variablesStruct->assign($templateVars);
-
                     $page->addExtension('easy_checkout_variables', $variablesStruct);
-
                 }
+
             } catch (EasyApiException $ex) {
                 if($ex->getResponseErrors()) {
-                    $this->session->getFlashBag()->add('danger', 'Error during Easy checkout initializatin :');
+                    $this->session->getFlashBag()->add('danger', 'Error during Easy checkout initialization :');
                     foreach ($ex->getResponseErrors() as $error ) {
                         $this->session->getFlashBag()->add('danger', $error);
                     }

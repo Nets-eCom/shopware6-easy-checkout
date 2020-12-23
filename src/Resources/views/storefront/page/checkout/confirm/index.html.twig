@@ -1,7 +1,5 @@
 {% sw_extends '@Storefront/storefront/page/checkout/confirm/index.html.twig' %}
 
-
-
 {% block page_checkout_aside %}
 
 
@@ -16,6 +14,7 @@
         {% set easyCheckoutKey = page.extensions.easy_checkout_variables.checkoutKey %}
         {% set easyPaymentId = page.extensions.easy_checkout_variables.paymentId %}
         {% set easyEnvironment = page.extensions.easy_checkout_variables.environment %}
+        {% set easyCartErrors  = page.extensions.easy_checkout_variables.cart_errors %}
 
         {% if easyEnvironment == 'test' %}
 
@@ -40,6 +39,11 @@
             const checkout = new Dibs.Checkout(checkoutOptions);
             checkout.on('payment-completed', function(response) {
             });
+
+            {% if easyCartErrors > 0 %}
+                checkout.freezeCheckout();
+            {% endif %}
+
             //]]>
         </script>
 
