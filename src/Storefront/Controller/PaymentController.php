@@ -93,9 +93,9 @@ class PaymentController extends StorefrontController
 		$payment = $this->easyApiService->getPayment($_REQUEST['paymentId']);
 	
 		$checkoutUrl = $payment->getCheckoutUrl();
-		$data = ['reference' => $orderEntity->getOrderNumber(),
+		$refUpdate = ['reference' => $orderEntity->getOrderNumber(),
                        'checkoutUrl' => $checkoutUrl];
-		$this->easyApiService->updateReference($_REQUEST['paymentId'],json_encode($data));
+		$this->easyApiService->updateReference($_REQUEST['paymentId'],json_encode($refUpdate));
 		
         $finishUrl = $this->generateUrl('frontend.checkout.finish.page', ['orderId' => $orderId]);
 
