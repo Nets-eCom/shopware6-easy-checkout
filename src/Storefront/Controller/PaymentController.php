@@ -2,6 +2,7 @@
 
 namespace Nets\Checkout\Storefront\Controller;
 
+use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -14,6 +15,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
+
+use Shopware\Core\Checkout\Payment\PaymentService;
+
 
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 
@@ -43,6 +47,8 @@ class PaymentController extends StorefrontController
 
     private $cartService;
 
+    private $paymentService;
+
     public function __construct(EntityRepositoryInterface $orderRepository,
                                 \Psr\Log\LoggerInterface $logger,
                                 \Nets\Checkout\Service\Easy\CheckoutService $checkout,
@@ -50,7 +56,8 @@ class PaymentController extends StorefrontController
                                 EasyApiService $easyApiService,
                                 \Symfony\Component\HttpKernel\KernelInterface $kernel,
                                 ConfigService $configService,
-                                CartService $cartService
+                                CartService $cartService,
+                                PaymentService $paymentService
 
     ) {
         $this->orderRepository = $orderRepository;
@@ -62,6 +69,7 @@ class PaymentController extends StorefrontController
         $this->kernel = $kernel;
         $this->configService = $configService;
         $this->cartService = $cartService;
+        $this->paymentService = $paymentService;
     }
 
     /**
@@ -70,24 +78,17 @@ class PaymentController extends StorefrontController
      */
     public function placeOrder( \Shopware\Core\Framework\Context $context,
                           \Shopware\Core\System\SalesChannel\SalesChannelContext $ctx,
-                          Request $request)
+                          Request $request, RequestDataBag $data)
     {
 
         $cart = $this->cartService->getCart($ctx->getToken(), $ctx);
 
-        if(is_object($cart) && $cart->getLineItems()->count() <= 0) {
-            die('false');
-        }
+        $orderId = $this->cartService->order($cart, $ctx);
 
-        exit;
-        return $this->redirectToRoute('frontend.checkout.finish.page');
+        $finishUrl = $this->generateUrl('frontend.checkout.finish.page', ['orderId' => $orderId]);
 
-        echo 12343;
-
-        exit;
-        echo $this->cartService->order($cart, $ctx);
-
-        exit;
+        // TODO: add Exceptions
+        return $this->paymentService->handlePaymentByOrder($orderId, $data, $ctx, $finishUrl);
     }
 
     /**
@@ -192,10 +193,40 @@ class PaymentController extends StorefrontController
             ->addAssociation('cartPrice.calculatedTaxes')
             ->addAssociation('transactions.paymentMethod')
             ->addAssociation('currency')
-            ->addAssociation('addresses.country');
+            ->addAssociation('addresses.country')
+            ->addAssociation('transactions.stateMachineState');
          return $this->orderRepository->search($criteria, $context)->first();
     }
 
+    /**
+     * @RouteScope(scopes={"api"})
+     * @Route("/api/v{version}/nets/transaction/summary", name="nets.summary.payment.action", options={"seo"="false"}, methods={"POST"})
+     * @param Context $context
+     * @param Request $request
+     * @return JsonResponse
+     * @throws EasyApiException
+     */
+    public function getSummaryAmounts(Context $context, Request $request ) {
+        $orderId = $request->get('params')['transaction']['orderId'];
+        $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
+        $environment = $this->configService->getEnvironment($salesChannelId);
+        $secretKey = $this->configService->getSecretKey($salesChannelId);
+        $this->easyApiService->setEnv($environment);
+        $this->easyApiService->setAuthorizationKey($secretKey);
+        $paymentId =  $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
+        $payment = $this->easyApiService->getPayment($paymentId);
+
+        /*
+        return new JsonResponse(['reservedAmount' => ($payment->getReservedAmount() - $payment->getChargedAmount()) / 100,
+                                 'chargedAmount' => ($payment->getChargedAmount() - $payment->getRefundedAmount())  / 100]);
+        */
+
+        $amountToCapture = $payment->getReservedAmount() - $payment->getChargedAmount();
+        if ($amountToCapture < 0) $amountToCapture = 0;
+
+        return new JsonResponse(['amountToCapture' => $amountToCapture / 100,
+            'amountToRefund' =>  $payment->getChargedAmount()  / 100]);
+    }
 
     /**
      * @throws OrderNotFoundException

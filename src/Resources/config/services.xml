@@ -28,6 +28,9 @@
             <argument type="service" id="kernel"/>
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
+
+            <argument type="service" id="Shopware\Core\Checkout\Payment\PaymentService" />
+
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>

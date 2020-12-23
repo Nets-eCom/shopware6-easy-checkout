@@ -7,7 +7,6 @@ namespace Nets\Checkout\Service;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AsynchronousPaymentHandlerInterface;
-use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentProcessException;
 use Shopware\Core\Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -113,20 +112,26 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
         $environment = $this->configService->getEnvironment($salesChannelContext->getSalesChannel()->getId());
         $secretKey = $this->configService->getSecretKey($salesChannelContext->getSalesChannel()->getId());
         try {
+
             $this->easyApiService->setEnv($environment);
+
             $this->easyApiService->setAuthorizationKey($secretKey);
 
+            $paymentId = $this->extractPaymentId();
+
             // it is incorrect check for captured amount
-            $payment = $this->easyApiService->getPayment($_REQUEST['paymentid']);
+            $payment = $this->easyApiService->getPayment($paymentId);
 
             $transactionId = $transaction->getOrderTransaction()->getId();
+
             $context = $salesChannelContext->getContext();
 
             $this->orderTransactionRepo->update([[
                 'id' => $transactionId,
                 'customFields' => [
                     'nets_easy_payment_details' =>
-                        ['transaction_id' => $_REQUEST['paymentid'], 'can_capture' => true],
+                        ['transaction_id' => $paymentId,
+                          'can_capture' => true],
                 ],
             ]], $context);
 
@@ -136,8 +141,6 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
                     'Customer canceled the payment on the Easy payment page'
                 );
             }
-
-           $this->cartPersister->delete($salesChannelContext->getToken(), $salesChannelContext);
 
         }catch (EasyApiException $ex) {
             throw new CustomerCanceledAsyncPaymentException(
@@ -155,24 +158,42 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      * @throws \Exception
      */
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): RedirectResponse {
+
+        $checkoutType = $this->configService->getCheckoutType($salesChannelContext->getSalesChannel()->getId());
+
+        if($this->checkout::CHECKOUT_TYPE_EMBEDDED == $checkoutType) {
+
+            $paymentId = $this->extractPaymentId();
+            $redirectUrl = $transaction->getReturnUrl() . '&paymentId=' . $paymentId;
+            return new RedirectResponse($redirectUrl);
+        }
+
         try {
+
             $result = $this->checkout->createPayment($salesChannelContext, $this->checkout::CHECKOUT_TYPE_HOSTED, $transaction);
             $PaymentCreateResult = json_decode($result, true);
+
         } catch(EasyApiException $ex) {
+
             $this->easyApiExceptionHandler->handle($ex);
 
-//            if($ex->getResponseErrors()) {
-//                $this->session->getFlashBag()->add('danger', 'Error during Easy checkout initializatin :');
-//                foreach ($ex->getResponseErrors() as $error ) {
-//                    $this->session->getFlashBag()->add('danger', $error);
-//                    echo $error;
-//                }
-//            }
-
             return new RedirectResponse($this->router->generate('frontend.checkout.cart.page'));
-
         }
+
         $language = $this->configService->getLanguage($salesChannelContext->getSalesChannel()->getId());
         return new RedirectResponse($PaymentCreateResult['hostedPaymentPageUrl']  . '&language='  .  $language );
+    }
+
+    // TODO change $_REQUEST[] to request_stack service
+    private function extractPaymentId() {
+
+        if(isset($_REQUEST['paymentId']) ) {
+           return $_REQUEST['paymentId'];
+        }
+
+        if(isset($_REQUEST['paymentid']) ) {
+            return $_REQUEST['paymentid'];
+        }
+
     }
 }

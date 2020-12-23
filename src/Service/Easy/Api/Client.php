@@ -81,7 +81,15 @@ class Client {
     }
 
     public function put($url, $data = array(), $payload = false) {
-        return $this->client->put($url, $data, $payload);
+        try {
+            $params = ['headers' => $this->headers,
+                'body' => $data];
+            return $this->client->request('PUT', $url, $params);
+        }catch (\GuzzleHttp\Exception\ClientException $ex) {
+            throw new EasyApiException($ex->getResponse()->getBody(), $ex->getCode());
+        }catch(\GuzzleHttp\Exception\GuzzleException $ex) {
+            throw new EasyApiException($ex->getMessage(), $ex->getCode());
+        }
     }
 
     public function getHttpStatus() {

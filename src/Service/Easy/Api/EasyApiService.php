@@ -71,8 +71,7 @@ class EasyApiService {
 
    public function updateReference(string $paymentId, string $data) {
       $url = $this->getUpdateReferenceUrl($paymentId);
-      $this->client->put($url, $data, true);
-      $this->handleResponse($this->client);
+      return $this->handleResponse($this->client->put($url, $data, true));
     }
 
     public function chargePayment(string $paymentId, string $data) {
