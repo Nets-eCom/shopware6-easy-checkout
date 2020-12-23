@@ -17,15 +17,11 @@
         {% set easyCartErrors  = page.extensions.easy_checkout_variables.cart_errors %}
 
         {% if easyEnvironment == 'test' %}
-
             <script type="text/javascript" src="https://test.checkout.dibspayment.eu/v1/checkout.js?v=1"></script>
-
         {% endif %}
 
         {% if easyEnvironment == 'live' %}
-
             <script type="text/javascript" src="https://checkout.dibspayment.eu/v1/checkout.js?v=1"></script>
-
         {% endif %}
 
         <script>
@@ -43,10 +39,12 @@
             {% if easyCartErrors > 0 %}
                 checkout.freezeCheckout();
             {% endif %}
-
             //]]>
         </script>
 
+    {% else %}
+       <div id="dibs-checkout-embedded">
+       </div>
     {% endif %}
     {{ parent() }}
 
