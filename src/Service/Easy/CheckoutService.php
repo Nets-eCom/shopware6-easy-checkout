@@ -24,6 +24,8 @@ class CheckoutService
 
     const CHECKOUT_TYPE_EMBEDDED = 'embedded';
     const CHECKOUT_TYPE_HOSTED = 'hosted';
+    const EASY_CHECKOUT_JS_ASSET_TEST = 'https://test.checkout.dibspayment.eu/v1/checkout.js?v=1';
+    const EASY_CHECKOUT_JS_ASSET_LIVE = 'https://checkout.dibspayment.eu/v1/checkout.js?v=1';
 
     /**
      * @var EasyApiService

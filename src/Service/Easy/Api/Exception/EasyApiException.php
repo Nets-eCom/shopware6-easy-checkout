@@ -16,28 +16,28 @@ class EasyApiException extends \Exception {
         parent::__construct($message, $code, $previous);
     }
 
-    public function getResponseBoby()
-    {
-        $str =  $this->getMessage();
-        $p = 'response:';
-        $pos =  strpos($str, $p) + strlen($p);
-        return substr($str, $pos);
-    }
-
+    /**
+     * @return array
+     */
     public function getResponseErrors()
     {
-        $str =  $this->getMessage();
-
-        $jsonArr = json_decode( $str, true );
-
         $errors = [];
 
-        foreach($jsonArr['errors'] as $id => $description) {
-            foreach ($description as $desc) {
-                $errors[] = $desc;
+        $jsonArr = json_decode($this->getMessage(), true);
+
+        if(empty($jsonArr) ) {
+            $jsonArr['errors'] = ['unauthorized.access.error' => ['key' => 'Unauthorized access. Please check test/live secret keys']];
+        }
+
+        if($jsonArr) {
+            foreach ($jsonArr['errors'] as $id => $description) {
+                foreach ($description as $desc) {
+                    $errors[] = $desc;
+                }
             }
         }
 
         return $errors;
+
     }
 }

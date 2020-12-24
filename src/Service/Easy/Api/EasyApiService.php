@@ -43,7 +43,7 @@ class EasyApiService {
         return $this->env;
     }
 
-    public function setAuthorizationKey(string $key) {
+    public function setAuthorizationKey($key) {
       $this->client->setHeader('Authorization', str_replace('-', '', trim($key)));
     }
 

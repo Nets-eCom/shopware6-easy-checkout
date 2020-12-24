@@ -2,27 +2,24 @@
 
 {% block page_checkout_aside %}
 
-
-    {% set easyCheckoutType = page.extensions.easy_checkout_variables.checkoutType %}
-    {% set easy_checkout_is_active = page.extensions.easy_checkout_variables.easy_checkout_is_active %}
+    {% set easyCheckoutVariables = page.extensions.easy_checkout_variables %}
+    {% set easyCheckoutType = easyCheckoutVariables.checkoutType %}
+    {% set easy_checkout_is_active = easyCheckoutVariables.easy_checkout_is_active %}
     {% if easyCheckoutType == 'embedded' and easy_checkout_is_active == 1 %}
 
         <div id="dibs-checkout-embedded">
             <div id="dibs-complete-checkout"></div>
         </div>
 
-        {% set easyCheckoutKey = page.extensions.easy_checkout_variables.checkoutKey %}
-        {% set easyPaymentId = page.extensions.easy_checkout_variables.paymentId %}
-        {% set easyEnvironment = page.extensions.easy_checkout_variables.environment %}
-        {% set easyCartErrors  = page.extensions.easy_checkout_variables.cart_errors %}
 
-        {% if easyEnvironment == 'test' %}
-            <script type="text/javascript" src="https://test.checkout.dibspayment.eu/v1/checkout.js?v=1"></script>
-        {% endif %}
+        {% set easyCheckoutKey = easyCheckoutVariables.checkoutKey %}
+        {% set easyPaymentId = easyCheckoutVariables.paymentId %}
+        {% set easyEnvironment = easyCheckoutVariables.environment %}
+        {% set easyCartErrors  = easyCheckoutVariables.cart_errors %}
+        {% set easyPlaceOrderUrl = easyCheckoutVariables.place_order_url %}
+        {% set easyCheckoutJsAsset = easyCheckoutVariables.easy_checkout_ja_asset %}
 
-        {% if easyEnvironment == 'live' %}
-            <script type="text/javascript" src="https://checkout.dibspayment.eu/v1/checkout.js?v=1"></script>
-        {% endif %}
+        <script type="text/javascript" src="{{ easyCheckoutJsAsset }}"></script>
 
         <script>
             //<![CDATA[
@@ -32,8 +29,12 @@
                 containerId: 'dibs-complete-checkout',
                 language: 'en-GB',
             };
+
             const checkout = new Dibs.Checkout(checkoutOptions);
+
             checkout.on('payment-completed', function(response) {
+                console.log(response);
+                window.location.href = '{{ easyPlaceOrderUrl }}' + '?paymentId=' + response.paymentId;
             });
 
             {% if easyCartErrors > 0 %}

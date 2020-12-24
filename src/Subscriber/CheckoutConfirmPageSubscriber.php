@@ -81,7 +81,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                         $this->session->getFlashBag()->add('danger', $error);
                     }
                 }
-                // we still want paymennt window to be showed
+                // we still want payment window to be showed
                 $paymentId = null;
             }
 
@@ -91,12 +91,19 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 
             $errors = $page->getCart()->getErrors();
 
+            $environment = $this->configService->getEnvironment($salesChannelContextId);
+
+            $easyCheckoutJsAsset = 'test' == $environment ? $this->checkoutService::EASY_CHECKOUT_JS_ASSET_TEST :
+                                             $this->checkoutService::EASY_CHECKOUT_JS_ASSET_LIVE;
+
             $templateVars = ['checkoutKey' => $this->configService->getCheckoutKey($salesChannelContextId),
-                'environment' => $this->configService->getEnvironment($salesChannelContextId),
+                'environment' => $environment,
                 'paymentId' => $paymentId,
                 'checkoutType' => $this->configService->getCheckoutType($salesChannelContextId),
                 'easy_checkout_is_active' => $easyCheckoutIsActive,
-                'cart_errors' => $errors->count()];
+                'cart_errors' => $errors->count(),
+                'place_order_url' => $event->getRequest()->getUriForPath('/nets/order/finish'),
+                'easy_checkout_ja_asset' => $easyCheckoutJsAsset];
 
             $variablesStruct->assign($templateVars);
 
