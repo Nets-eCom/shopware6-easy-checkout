@@ -84,19 +84,28 @@ class PaymentController extends StorefrontController
         $cart = $this->cartService->getCart($ctx->getToken(), $ctx);
 
         $orderId = $this->cartService->order($cart, $ctx);
-		$orderEntity  = $this->getOrderEntityById($context, $orderId);
-		
-		$secretKey = $this->configService->getSecretKey($ctx->getSalesChannel()->getId());
-		$environment = $this->configService->getSecretKey($ctx->getSalesChannel()->getId());
+
+        $orderEntity  = $this->getOrderEntityById($context, $orderId);
+
+		$salesChannelId = $ctx->getSalesChannel()->getId();
+
+		$secretKey = $this->configService->getSecretKey($salesChannelId);
+
+		$environment = $this->configService->getEnvironment($salesChannelId);
+
 		$this->easyApiService->setEnv($environment);
+
 		$this->easyApiService->setAuthorizationKey($secretKey);
+
 		$payment = $this->easyApiService->getPayment($_REQUEST['paymentId']);
-	
+
 		$checkoutUrl = $payment->getCheckoutUrl();
+
 		$refUpdate = ['reference' => $orderEntity->getOrderNumber(),
                        'checkoutUrl' => $checkoutUrl];
+
 		$this->easyApiService->updateReference($_REQUEST['paymentId'],json_encode($refUpdate));
-		
+
         $finishUrl = $this->generateUrl('frontend.checkout.finish.page', ['orderId' => $orderId]);
 
         // TODO: add Exceptions

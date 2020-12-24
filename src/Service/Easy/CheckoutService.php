@@ -103,7 +103,6 @@ class CheckoutService
         $this->easyApiService->setEnv($environment);
         $this->easyApiService->setAuthorizationKey($secretKey);
         $payload = json_encode($this->collectRequestParams($salesChannelContext, $checkoutType, $transaction));
-
         return $this->easyApiService->createPayment($payload);
     }
 
