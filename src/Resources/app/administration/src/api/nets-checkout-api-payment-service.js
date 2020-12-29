@@ -42,5 +42,27 @@ class NetsCheckoutApiPaymentService extends ApiService {
                 return ApiService.handleResponse(response);
             });
     }
+
+    getSummaryAmounts(currentOrder) {
+        const transaction = currentOrder.transactions.first();
+
+        const route = '/nets/transaction/summary';
+
+        return this.httpClient
+            .post(
+                route,
+                {
+                    params: {transaction}
+                },
+
+                {
+                    headers: this.getBasicHeaders()
+                }
+            )
+            .then((response) => {
+                return ApiService.handleResponse(response);
+            });
+    }
+
 }
 export default NetsCheckoutApiPaymentService;

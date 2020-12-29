@@ -15,9 +15,17 @@ Shopware.Component.override('sw-order-user-card', {
         return {
             disableCaptureButton: false,
             disableRefundButton: true,
-            isLoading: true
+            isLoading: true,
+            amountToBeCaptured: -1,
+            amountToBeRefunded: 0
         };
     },
+
+    beforeMount(){
+        this.getSummaryAmounts();
+    },
+
+    props: ['currentOrder'],
 
     methods: {
         captureOrder(currentOrder) {
@@ -93,6 +101,20 @@ Shopware.Component.override('sw-order-user-card', {
            return transaction.customFields.nets_easy_payment_details.can_capture;
         },
 
+        getSummaryAmounts() {
+            if(this.getTransactionId(this.currentOrder)) {
+                this.NetsCheckoutApiPaymentService.getSummaryAmounts(this.currentOrder)
+                    .then((response) => {
+                        //
+                        this.amountToBeCaptured = response.amountToBeCaptured;
+                        this.amountToBeRefunded = response.amountToBeRefunded;
+                    })
+                    .catch((errorResponse) => {
+                        //
+                    });
+            }
+        },
+
         canRefund(currentOrder) {
             let me = this;
             if(me.disableRefundButton == false) {
@@ -104,6 +126,36 @@ Shopware.Component.override('sw-order-user-card', {
             var transaction = currentOrder.transactions.first();
             return transaction.customFields.nets_easy_payment_details.can_refund;
         }
-    }
+    },
+
+    capture() {
+        let me = this;
+        me.disableCaptureButton = true;
+        me.isLoading = true;
+        var currentOrder = this.currentOrder;
+        currentOrder.amountToCapture = this.amountToCapture;
+        currentOrder.itemsToCapture = this.authorizedItems;
+        this.NetsCheckoutApiPaymentService.captureTransaction(currentOrder)
+            .then(() => {
+                this.createNotificationSuccess({
+                    title: this.$tc('Nets'),
+                    message: this.$tc('Capture processed successfully.')
+                });
+                me.disableCaptureButton = true;
+                me.disableRefundButton = false;
+                me.isLoading = false;
+                this.getSummaryAmount();
+            })
+            .catch((errorResponse) => {
+                this.createNotificationError({
+                    title: this.$tc('Nets'),
+                    message: this.$tc('Error occurred during capture.')
+                });
+                me.disableCaptureButton = false;
+                me.isLoading = false;
+                this.getSummaryAmount();
+            });
+
+    },
 
 });

@@ -167,6 +167,37 @@ class PaymentController extends StorefrontController
 
     /**
      * @RouteScope(scopes={"api"})
+     * @Route("/api/v{version}/nets/transaction/summary", name="nets.summary.payment.action", options={"seo"="false"}, methods={"POST"})
+     * @param Context $context
+     * @param Request $request
+     * @return JsonResponse
+     * @throws EasyApiException
+     */
+    public function getSummaryAmounts(Context $context, Request $request ) {
+        $orderId = $request->get('params')['transaction']['orderId'];
+        $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
+        $environment = $this->configService->getEnvironment($salesChannelId);
+        $secretKey = $this->configService->getSecretKey($salesChannelId);
+        $this->easyApiService->setEnv($environment);
+        $this->easyApiService->setAuthorizationKey($secretKey);
+        $paymentId =  $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
+        $payment = $this->easyApiService->getPayment($paymentId);
+
+        $amountToBeCaptured = -1;
+
+        if ($payment->getChargedAmount() == 0) {
+            $amountToBeCaptured = $payment->getOrderAmount() / 100;
+        }
+
+        $amountToBeRefunded = $payment->getChargedAmount() / 100;
+
+        return new JsonResponse(['amountToBeCaptured' => $amountToBeCaptured,
+            'amountToBeRefunded' => $amountToBeRefunded]);
+
+    }
+
+    /**
+     * @RouteScope(scopes={"api"})
      * @Route("/api/v1/nets/transaction/refund", name="nets.refund.payment.action", options={"seo"="false"}, methods={"POST"})
      */
     public function refundPayment(\Shopware\Core\Framework\Context $context, Request $request): JsonResponse {
@@ -219,35 +250,7 @@ class PaymentController extends StorefrontController
          return $this->orderRepository->search($criteria, $context)->first();
     }
 
-    /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/v{version}/nets/transaction/summary", name="nets.summary.payment.action", options={"seo"="false"}, methods={"POST"})
-     * @param Context $context
-     * @param Request $request
-     * @return JsonResponse
-     * @throws EasyApiException
-     */
-    public function getSummaryAmounts(Context $context, Request $request ) {
-        $orderId = $request->get('params')['transaction']['orderId'];
-        $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
-        $environment = $this->configService->getEnvironment($salesChannelId);
-        $secretKey = $this->configService->getSecretKey($salesChannelId);
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
-        $paymentId =  $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
-        $payment = $this->easyApiService->getPayment($paymentId);
 
-        /*
-        return new JsonResponse(['reservedAmount' => ($payment->getReservedAmount() - $payment->getChargedAmount()) / 100,
-                                 'chargedAmount' => ($payment->getChargedAmount() - $payment->getRefundedAmount())  / 100]);
-        */
-
-        $amountToCapture = $payment->getReservedAmount() - $payment->getChargedAmount();
-        if ($amountToCapture < 0) $amountToCapture = 0;
-
-        return new JsonResponse(['amountToCapture' => $amountToCapture / 100,
-            'amountToRefund' =>  $payment->getChargedAmount()  / 100]);
-    }
 
     /**
      * @throws OrderNotFoundException
