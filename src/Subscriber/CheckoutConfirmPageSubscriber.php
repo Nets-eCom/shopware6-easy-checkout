@@ -23,8 +23,10 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
      */
     private $checkoutService;
 
+    /**
+     * @var Session
+     */
     private $session;
-
 
     /**
      * CheckoutConfirmPageSubscriber constructor.
@@ -57,7 +59,6 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
      */
     public function onCheckoutConfirmLoaded(CheckoutConfirmPageLoadedEvent $event): void
     {
-
         $salesChannelContext = $event->getSalesChannelContext();
 
         $paymentMethod = $salesChannelContext->getPaymentMethod();
@@ -66,7 +67,6 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 
         $checkoutType = $this->configService->getCheckoutType($salesChannelContextId);
 
-        $page = $event->getPage();
         if ($paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout' &&
             $checkoutType == $this->checkoutService::CHECKOUT_TYPE_EMBEDDED) {
 
@@ -89,8 +89,6 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 
             $easyCheckoutIsActive = $paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout' ? 1 : 0;
 
-            $errors = $page->getCart()->getErrors();
-
             $environment = $this->configService->getEnvironment($salesChannelContextId);
 
             $easyCheckoutJsAsset = 'test' == $environment ? $this->checkoutService::EASY_CHECKOUT_JS_ASSET_TEST :
@@ -101,13 +99,12 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                 'paymentId' => $paymentId,
                 'checkoutType' => $this->configService->getCheckoutType($salesChannelContextId),
                 'easy_checkout_is_active' => $easyCheckoutIsActive,
-                'cart_errors' => $errors->count(),
                 'place_order_url' => $event->getRequest()->getUriForPath('/nets/order/finish'),
                 'easy_checkout_ja_asset' => $easyCheckoutJsAsset];
 
             $variablesStruct->assign($templateVars);
 
-            $page->addExtension('easy_checkout_variables', $variablesStruct);
+            $event->getPage()->addExtension('easy_checkout_variables', $variablesStruct);
         }
     }
 }

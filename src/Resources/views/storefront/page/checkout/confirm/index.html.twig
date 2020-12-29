@@ -11,21 +11,19 @@
             <div id="dibs-complete-checkout"></div>
         </div>
 
-
         {% set easyCheckoutKey = easyCheckoutVariables.checkoutKey %}
         {% set easyPaymentId = easyCheckoutVariables.paymentId %}
         {% set easyEnvironment = easyCheckoutVariables.environment %}
-        {% set easyCartErrors  = easyCheckoutVariables.cart_errors %}
         {% set easyPlaceOrderUrl = easyCheckoutVariables.place_order_url %}
         {% set easyCheckoutJsAsset = easyCheckoutVariables.easy_checkout_ja_asset %}
 
         <script type="text/javascript" src="{{ easyCheckoutJsAsset }}"></script>
-		
+
 		{% set isoCode = page.header.activeLanguage.translationCode.code|lower|split('-') %}
 		{% set country = isoCode[0] %}
 		{% set language = isoCode[1] %}
         {% set easyLanguage = country ~ '-' ~ language %}
-		
+
 		{% if easyLanguage == 'en-gb' %}
             {% set eCheckoutLanguage = 'en-GB' %}
         {% elseif easyLanguage == 'da-dk' %}
@@ -66,7 +64,7 @@
                 window.location.href = '{{ easyPlaceOrderUrl }}' + '?paymentId=' + response.paymentId;
             });
 
-            {% if easyCartErrors > 0 %}
+            {% if page.cart.errors|length > 0 %}
                 checkout.freezeCheckout();
             {% endif %}
             //]]>
@@ -80,13 +78,11 @@
 
 {% endblock %}
 
-
 {% block page_checkout_aside_container %}
     <div class="checkout-summary">
         {{ parent() }}
     </div>
 {% endblock %}
-
 
 {% block page_checkout_confirm_form_submit %}
         <button id="confirmFormSubmit"
