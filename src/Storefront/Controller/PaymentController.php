@@ -107,7 +107,12 @@ class PaymentController extends StorefrontController
 		$this->easyApiService->updateReference($_REQUEST['paymentId'],json_encode($refUpdate));
 
         $finishUrl = $this->generateUrl('frontend.checkout.finish.page', ['orderId' => $orderId]);
-
+		
+		 $this->orderRepository->update([
+		 ['id' => $orderId,
+		 'customFields' => ['paymentId' => $_REQUEST['paymentId']]]]
+		 ,$context); 
+		 
         // TODO: add Exceptions
         return $this->paymentService->handlePaymentByOrder($orderId, $data, $ctx, $finishUrl);
     }
