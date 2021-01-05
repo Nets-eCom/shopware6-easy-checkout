@@ -63,6 +63,11 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
     public $configService;
 
     /**
+     * @var EntityRepositoryInterface
+     */
+    private $orderRepository;
+
+    /**
      * Checkout constructor.
      * @param CheckoutService $checkout
      * @param SystemConfigService $systemConfigService
@@ -70,7 +75,8 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      * @param OrderTransactionStateHandler $transactionStateHandler
      * @param EasyApiService $easyApiService
      * @param EntityRepositoryInterface $orderTransactionRepo
-     * @param \Nets\Checkout\Service\ConfigService $configService
+     * @param ConfigService $configService
+     * @param EntityRepositoryInterface $orderRepository
      */
     public function __construct(CheckoutService $checkout,
                                 SystemConfigService $systemConfigService,
@@ -78,7 +84,8 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
                                 OrderTransactionStateHandler $transactionStateHandler,
                                 EasyApiService $easyApiService,
                                 EntityRepositoryInterface $orderTransactionRepo,
-                                ConfigService $configService
+                                ConfigService $configService,
+                                EntityRepositoryInterface $orderRepository
                                 )     {
         $this->systemConfigService = $systemConfigService;
         $this->checkout = $checkout;
@@ -87,6 +94,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
         $this->easyApiService = $easyApiService;
         $this->orderTransactionRepo = $orderTransactionRepo;
         $this->configService = $configService;
+        $this->orderRepository = $orderRepository;
     }
 
     /**
@@ -113,14 +121,20 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
 
             $transactionId = $transaction->getOrderTransaction()->getId();
 
+            $orderId = $transaction->getOrder()->getId();
+
             $context = $salesChannelContext->getContext();
 
-            if (empty($payment->getReservedAmount())) {
-                throw new CustomerCanceledAsyncPaymentException(
-                    $transactionId,
-                    'Customer canceled the payment on the Easy payment page'
-                );
-            }
+            $this->orderRepository->update([['id' => $orderId,
+                                             'customFields' =>
+                                           ['paymentId' => $paymentId]]], $context);
+
+//            if (empty($payment->getReservedAmount())) {
+//                throw new CustomerCanceledAsyncPaymentException(
+//                    $transactionId,
+//                    'Customer canceled the payment on the Easy payment page'
+//                );
+//            }
 
             $this->orderTransactionRepo->update([[
                 'id' => $transactionId,

@@ -5,15 +5,13 @@ class NetsCheckoutApiPaymentService extends ApiService {
         super(httpClient, loginService, apiEndpoint);
     }
 
-    captureTransaction(currentOrder) {
-        const transaction = currentOrder.transactions.first();
-        const orderId = currentOrder.id;
+    captureTransaction(orderId, paymentId, amount) {
         const route = '/nets/transaction/charge';
         return this.httpClient
             .post(
                 route,
                 {
-                    params: {transaction, orderId}
+                    params: {orderId, paymentId, amount}
                 },
                 {
                     headers: this.getBasicHeaders()
@@ -24,15 +22,13 @@ class NetsCheckoutApiPaymentService extends ApiService {
             });
     }
 
-    refundTransaction(currentOrder) {
-        const transaction = currentOrder.transactions.first();
-        const orderId = currentOrder.id;
+    refundTransaction(orderId, paymentId, amount) {
         const route = '/nets/transaction/refund';
         return this.httpClient
             .post(
                 route,
                 {
-                    params: {transaction, orderId}
+                    params: {orderId, paymentId, amount}
                 },
                 {
                     headers: this.getBasicHeaders()

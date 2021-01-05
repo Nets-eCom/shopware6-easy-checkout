@@ -1,22 +1,33 @@
 {% block sw_order_detail_base_secondary_info_payment %}
     {% parent %}
+
     {% block sw_order_detail_base_secondary_info_transaction_id %}
-        <div v-if="getTransactionId(currentOrder) != false">
-            <dt>{{ 'Nets Transaction id:' }}</dt>
+        <div v-if="getTransactionId(currentOrder) != null">
+            <dt>{{ $tc('nets-checkout.payment-id') }}</dt>
             <dd>{{ getTransactionId(currentOrder) }}</dd>
-            <dt>{{ 'Transaction Actions:' }}</dt>
         </div>
     {% endblock %}
 
-    <template v-if="getTransactionId(currentOrder) != false">
-        <div class="capture-controls" v-if="amountToBeCaptured > 0">
-            <input type="text" v-model="amountToBeCaptured">
+    <template v-if="getTransactionId(currentOrder) != null">
+        <div v-if="canCapture()">
+            {{ $tc('nets-checkout.api-actions') }}
+        </div>
 
-
-            <sw-button-process @click="capture()" :disabled="false">
-                Capture
+        <div class="capture-controls" v-if="canCapture()">
+            <sw-number-field numberType="float" :step="null" :min="null" :max="null"  v-model="amountAvailableForCapturing" :digits="2" :allowEmpty="false">
+            </sw-number-field>
+            <sw-button-process @click="capture(getTransactionId(currentOrder))" :isLoading="captureButtonLoading">
+                {{ $tc('nets-checkout.capture.buttonTitle') }}
             </sw-button-process>
         </div>
 
+        <div class="refund-controls" v-if="canRefund()">
+            <sw-number-field numberType="float" :step="null" :min="null" :max="null"  v-model="amountAvailableForRefunding" :digits="2" :allowEmpty="false">
+            </sw-number-field>
+            <sw-button-process @click="refund(getTransactionId(currentOrder))" :isLoading="refundButtonLoading">
+                {{ $tc('nets-checkout.refund.buttonTitle') }}
+            </sw-button-process>
+        </div>
     </template>
+
 {% endblock %}

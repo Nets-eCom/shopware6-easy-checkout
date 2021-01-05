@@ -6,9 +6,11 @@ use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Cart\LineItem\LineItemCollection;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
@@ -17,7 +19,10 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEnti
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
+use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions;
+use Shopware\Core\System\StateMachine\Transition;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Shopware\Core\System\StateMachine\StateMachineRegistry;
 
 class CheckoutService
 {
@@ -57,6 +62,10 @@ class CheckoutService
      */
     private $requestStack;
 
+    /**
+     * @var StateMachineRegistry
+     */
+    private $stateMachineRegistry;
 
     /**
      * regexp for filtering strings
@@ -73,13 +82,15 @@ class CheckoutService
      * @param OrderTransactionStateHandler $orderTransactionStateHandler
      * @param CartService $cartService
      * @param RequestStack $requestStack
+     * @param StateMachineRegistry $machineRegistry
      */
     public function __construct(EasyApiService $easyApiService,
                                 ConfigService $configService,
                                 EntityRepositoryInterface $transactionRepository,
                                 OrderTransactionStateHandler $orderTransactionStateHandler,
                                 CartService $cartService,
-                                RequestStack $requestStack
+                                RequestStack $requestStack,
+                                StateMachineRegistry $machineRegistry
 )
     {
         $this->easyApiService = $easyApiService;
@@ -88,6 +99,7 @@ class CheckoutService
         $this->transactionStateHandler = $orderTransactionStateHandler;
         $this->cartService = $cartService;
         $this->requestStack = $requestStack;
+        $this->stateMachineRegistry = $machineRegistry;
     }
 
     /**
@@ -169,7 +181,7 @@ class CheckoutService
     }
 
     /**
-     * @param OrderEntity $orderEntity
+     * @param Struct $cartOrderEntityObject
      * @return array
      */
     private function getOrderItems(Struct $cartOrderEntityObject) {
@@ -222,12 +234,19 @@ class CheckoutService
 
     /**
      * @param OrderEntity $orderEntity
+     * @param $amount
      * @return array
      */
-    public function getTransactionOrderItems(OrderEntity $orderEntity) {
+    public function getTransactionOrderItems(OrderEntity $orderEntity, $amount) {
+        if($amount == $orderEntity->getAmountTotal()) {
+            $orderItems = $this->getOrderItems($orderEntity);
+         } else {
+            $orderItems = $this->getDummyOrderItem($this->prepareAmount($amount));
+         }
 
-        return ['amount' => $this->prepareAmount($orderEntity->getAmountTotal()),
-         'orderItems' => $this->getOrderItemsFromOrder($orderEntity)];
+         return ['amount' => $this->prepareAmount($amount),
+                  'orderItems' => $orderItems
+        ];
     }
 
     /**
@@ -283,41 +302,53 @@ class CheckoutService
     /**
      * @param OrderEntity $orderEntity
      * @param $salesChannelContextId
+     * @param Context $context
      * @param $paymentId
-     * @return false|string
+     * @param $amount
+     * @return array
      */
-    public function chargePayment(OrderEntity $orderEntity, $salesChannelContextId, \Shopware\Core\Framework\Context $context, $paymentId) {
+    public function chargePayment(OrderEntity $orderEntity, $salesChannelContextId, Context $context, $paymentId, $amount) {
         $transaction = $orderEntity->getTransactions()->first();
         $environment = $this->configService->getEnvironment($salesChannelContextId);
         $secretKey = $this->configService->getSecretKey($salesChannelContextId);
         $this->easyApiService->setEnv($environment);
         $this->easyApiService->setAuthorizationKey($secretKey);
-        $payload = json_encode($this->getTransactionOrderItems($orderEntity));
-        $this->easyApiService->chargePayment($paymentId, $payload);
-        $this->updateTransactionCustomFields($transaction, $context, ['can_capture' => false, 'can_refund' => true]);
-        $this->transactionStateHandler->pay($transaction->getId(), $context);
+        $payload = $this->getTransactionOrderItems($orderEntity, $amount);
+        $this->easyApiService->chargePayment($paymentId, json_encode($payload));
+        $payment = $this->easyApiService->getPayment($paymentId);
+        if($this->prepareAmount($amount) == $payment->getOrderAmount()) {
+            $this->transactionStateHandler->pay($transaction->getId(), $context);
+        }else {
+            $this->payPartially($transaction->getId(), $context);
+        }
         return $payload;
     }
 
     /**
      * @param OrderEntity $orderEntity
      * @param $salesChannelContextId
-     * @param $chargeId
-     * @return false|string
+     * @param Context $context
+     * @param $paymentId
+     * @param $amount
+     * @return array
      * @throws EasyApiException
      */
-    public function refundPayment(OrderEntity $orderEntity, $salesChannelContextId, \Shopware\Core\Framework\Context $context, $chargeId) {
+    public function refundPayment(OrderEntity $orderEntity, $salesChannelContextId, Context $context, $paymentId, $amount) {
         $transaction = $orderEntity->getTransactions()->first();
         $environment = $this->configService->getEnvironment($salesChannelContextId);
         $secretKey = $this->configService->getSecretKey($salesChannelContextId);
         $this->easyApiService->setEnv($environment);
         $this->easyApiService->setAuthorizationKey($secretKey);
-        $payment = $this->easyApiService->getPayment($chargeId);
+        $payment = $this->easyApiService->getPayment($paymentId);
         $chargeId = $payment->getFirstChargeId();
-        $payload = json_encode($this->getTransactionOrderItems($orderEntity));
-        $this->easyApiService->refundPayment($chargeId, $payload);
-        $this->updateTransactionCustomFields($transaction, $context, ['can_refund' => false]);
-        $this->transactionStateHandler->refund($transaction->getId(), $context);
+        $payload = $this->getTransactionOrderItems($orderEntity, $amount);
+        $this->easyApiService->refundPayment($chargeId, json_encode($payload));
+        $payment = $this->easyApiService->getPayment($paymentId);
+        if($this->prepareAmount($amount) == $payment->getOrderAmount()) {
+            $this->transactionStateHandler->refund($transaction->getId(), $context);
+        }else {
+            $this->transactionStateHandler->refundPartially($transaction->getId(), $context);
+        }
         return $payload;
     }
 
@@ -337,5 +368,39 @@ class CheckoutService
         ];
         $transaction->setCustomFields($customFields);
         $this->transactionRepository->update([$update], $context);
+    }
+
+    /**
+     * @param $amount
+     * @return array
+     */
+    private function getDummyOrderItem($amount) {
+        $items = [];
+        // Products
+        $ref = 'item'. rand(1, 100);
+        $items[] = [
+            'reference' => $ref,
+            'name' => $ref,
+            'quantity' => 1,
+            'unit' => 'pcs',
+            'unitPrice' => $amount,
+            'taxRate' => 0,
+            'taxAmount' => 0,
+            'grossTotalAmount' => $amount,
+            'netTotalAmount' => $amount];
+        return $items;
+    }
+
+    private function payPartially(string $transactionId, Context $context): void
+    {
+        $this->stateMachineRegistry->transition(
+            new Transition(
+                OrderTransactionDefinition::ENTITY_NAME,
+                $transactionId,
+                StateMachineTransitionActions::ACTION_PAY_PARTIALLY,
+                'stateId'
+            ),
+            $context
+        );
     }
 }
