@@ -3,6 +3,7 @@
 namespace Nets\Checkout\Storefront\Controller;
 
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -11,6 +12,8 @@ use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -75,10 +78,16 @@ class PaymentController extends StorefrontController
     /**
      * @RouteScope(scopes={"storefront"})
      * @Route("/nets/order/finish", name="nets.test.controller", options={"seo"="false"}, methods={"GET"})
+     * @param Context $context
+     * @param SalesChannelContext $ctx
+     * @param Request $request
+     * @param RequestDataBag $data
+     * @return RedirectResponse|null
+     * @throws EasyApiException
      */
-    public function placeOrder( \Shopware\Core\Framework\Context $context,
-                          \Shopware\Core\System\SalesChannel\SalesChannelContext $ctx,
-                          Request $request, RequestDataBag $data)
+    public function placeOrder(Context $context,
+                               SalesChannelContext $ctx,
+                               Request $request, RequestDataBag $data)
     {
 
         $cart = $this->cartService->getCart($ctx->getToken(), $ctx);
@@ -116,7 +125,7 @@ class PaymentController extends StorefrontController
      * @RouteScope(scopes={"storefront"})
      * @Route("/nets/caheckout/validate", name="nets.test.controller.validate", options={"seo"="false"}, methods={"GET"})
      */
-    public function validate(\Shopware\Core\System\SalesChannel\SalesChannelContext $ctx) {
+    public function validate(SalesChannelContext $ctx) {
         try {
             $secretKey = $this->configService->getSecretKey($ctx->getSalesChannel()->getId());
             $environment = $this->configService->getSecretKey($ctx->getSalesChannel()->getId());
@@ -133,17 +142,23 @@ class PaymentController extends StorefrontController
 
     /**
      * @RouteScope(scopes={"api"})
-     * @Route("/api/v1/nets/transaction/charge", name="nets.charge.payment.action", options={"seo"="false"}, methods={"POST"})
+     * @Route("/api/v{version}/nets/transaction/charge", name="nets.charge.payment.action", options={"seo"="false"}, methods={"POST"})
+     * @param Context $context
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function chargePayment(\Shopware\Core\Framework\Context $context, Request $request): JsonResponse {
-        $orderId = $request->get('params')['transaction']['orderId'];
-        $paymentId =  $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
+    public function chargePayment(Context $context, Request $request): JsonResponse {
+        $orderId = $request->get('params')['orderId'];
+        $paymentId =  $request->get('params')['paymentId'];
+        $amount = $request->get('params')['amount'];
         $orderEntity  = $this->getOrderEntityById($context, $orderId);
         $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
         try {
-            $this->checkout->chargePayment($orderEntity, $salesChannelId, $context ,$paymentId);
+
+            $this->checkout->chargePayment($orderEntity, $salesChannelId, $context ,$paymentId, $amount);
 
         } catch (EasyApiException $ex) {
+
             return new JsonResponse(
                 [
                     'status'  => false,
@@ -153,6 +168,7 @@ class PaymentController extends StorefrontController
                 Response::HTTP_BAD_REQUEST
             );
         } catch (Exception $ex) {
+
             return new JsonResponse(
                 [
                     'status'  => false,
@@ -167,16 +183,57 @@ class PaymentController extends StorefrontController
 
     /**
      * @RouteScope(scopes={"api"})
-     * @Route("/api/v1/nets/transaction/refund", name="nets.refund.payment.action", options={"seo"="false"}, methods={"POST"})
+     * @Route("/api/v{version}/nets/transaction/summary", name="nets.summary.payment.action", options={"seo"="false"}, methods={"POST"})
+     * @param Context $context
+     * @param Request $request
+     * @return JsonResponse
+     * @throws EasyApiException
      */
-    public function refundPayment(\Shopware\Core\Framework\Context $context, Request $request): JsonResponse {
+    public function getSummaryAmounts(Context $context, Request $request ) {
         $orderId = $request->get('params')['transaction']['orderId'];
+        $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
+        $environment = $this->configService->getEnvironment($salesChannelId);
+        $secretKey = $this->configService->getSecretKey($salesChannelId);
+        $this->easyApiService->setEnv($environment);
+        $this->easyApiService->setAuthorizationKey($secretKey);
+        $orderEntity  = $this->getOrderEntityById($context, $orderId);
+        $transaction = $orderEntity->getTransactions()->first();
         $paymentId =  $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
+        $payment = $this->easyApiService->getPayment($paymentId);
+
+        $amountAvailableForCapturing = 0;
+        if ($payment->getChargedAmount() == 0) {
+            $amountAvailableForCapturing = $payment->getOrderAmount() / 100;
+        }
+
+        $amountAvailableForRefunding = 0;
+        if($payment->getChargedAmount() > 0 && $payment->getRefundedAmount() == 0) {
+            $amountAvailableForRefunding = $payment->getChargedAmount() / 100;
+        }
+
+        return new JsonResponse(['amountAvailableForCapturing' => $amountAvailableForCapturing,
+                                 'amountAvailableForRefunding' => $amountAvailableForRefunding,
+                                 'orderState' => $transaction->getStateMachineState()->getTechnicalName()]);
+
+    }
+
+    /**
+     * @RouteScope(scopes={"api"})
+     * @Route("/api/v{version}/nets/transaction/refund", name="nets.refund.payment.action", options={"seo"="false"}, methods={"POST"})
+     * @param Context $context
+     * @param Request $request
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function refundPayment(Context $context, Request $request): JsonResponse {
+        $orderId = $request->get('params')['orderId'];
+        $paymentId =  $request->get('params')['paymentId'];
+        $amount = $request->get('params')['amount'];
         $orderEntity  = $this->getOrderEntityById($context, $orderId);
         $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
 
         try {
-            $this->checkout->refundPayment($orderEntity, $salesChannelId, $context, $paymentId);
+            $this->checkout->refundPayment($orderEntity, $salesChannelId, $context, $paymentId, $amount);
 
         } catch (EasyApiException $ex) {
             return new JsonResponse(
@@ -205,7 +262,7 @@ class PaymentController extends StorefrontController
      * @param $orderId
      * @return mixed|null
      */
-    private function getOrderEntityById(\Shopware\Core\Framework\Context $context, $orderId) {
+    private function getOrderEntityById(Context $context, $orderId) {
         $criteria = new Criteria([$orderId]);
         $criteria->addAssociation('lineItems.payload')
             ->addAssociation('deliveries.shippingCosts')
@@ -219,35 +276,7 @@ class PaymentController extends StorefrontController
          return $this->orderRepository->search($criteria, $context)->first();
     }
 
-    /**
-     * @RouteScope(scopes={"api"})
-     * @Route("/api/v{version}/nets/transaction/summary", name="nets.summary.payment.action", options={"seo"="false"}, methods={"POST"})
-     * @param Context $context
-     * @param Request $request
-     * @return JsonResponse
-     * @throws EasyApiException
-     */
-    public function getSummaryAmounts(Context $context, Request $request ) {
-        $orderId = $request->get('params')['transaction']['orderId'];
-        $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
-        $environment = $this->configService->getEnvironment($salesChannelId);
-        $secretKey = $this->configService->getSecretKey($salesChannelId);
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
-        $paymentId =  $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
-        $payment = $this->easyApiService->getPayment($paymentId);
 
-        /*
-        return new JsonResponse(['reservedAmount' => ($payment->getReservedAmount() - $payment->getChargedAmount()) / 100,
-                                 'chargedAmount' => ($payment->getChargedAmount() - $payment->getRefundedAmount())  / 100]);
-        */
-
-        $amountToCapture = $payment->getReservedAmount() - $payment->getChargedAmount();
-        if ($amountToCapture < 0) $amountToCapture = 0;
-
-        return new JsonResponse(['amountToCapture' => $amountToCapture / 100,
-            'amountToRefund' =>  $payment->getChargedAmount()  / 100]);
-    }
 
     /**
      * @throws OrderNotFoundException
@@ -262,6 +291,14 @@ class PaymentController extends StorefrontController
         }
 
         return $order->getSalesChannelId();
+    }
+
+    /**
+     * @param $amount
+     * @return int
+     */
+    private function prepareAmount($amount = 0) {
+        return (int)round($amount * 100);
     }
 
 }

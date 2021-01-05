@@ -13,65 +13,26 @@ Shopware.Component.override('sw-order-user-card', {
 
     data() {
         return {
-            disableCaptureButton: false,
-            disableRefundButton: true,
-            isLoading: true
+            isLoading: true,
+            amountAvailableForCapturing: 0,
+            amountAvailableForRefunding: 0,
+            captureButtonLoading: false,
+            refundButtonLoading: false,
+            orderState: null
         };
     },
 
+    beforeMount(){
+        this.getSummaryAmounts();
+    },
+
+    props: ['currentOrder'],
+
     methods: {
-        captureOrder(currentOrder) {
-            let me = this;
-            me.disableCaptureButton = true;
-            me.isLoading = true;
-
-            this.NetsCheckoutApiPaymentService.captureTransaction(currentOrder)
-                .then(() => {
-                    this.createNotificationSuccess({
-                        title: this.$tc('Nets'),
-                        message: this.$tc('Capture processed successfully.')
-                    });
-                    me.disableCaptureButton = true;
-                    me.disableRefundButton = false;
-                    me.isLoading = false;
-               })
-                .catch((errorResponse) => {
-                    this.createNotificationError({
-                        title: this.$tc('Nets'),
-                        message: this.$tc('Error occurred during capture.')
-                    });
-                    me.disableCaptureButton = false;
-                    me.isLoading = false;
-                });
-        },
-
-        refundOrder(currentOrder) {
-            let me = this;
-            me.disableRefundButton = true;
-            me.isLoading = true;
-
-            this.NetsCheckoutApiPaymentService.refundTransaction(currentOrder)
-                .then(() => {
-                    this.createNotificationSuccess({
-                        title: this.$tc('Nets'),
-                        message: this.$tc('Refund processed successfully.')
-                    });
-                    me.disableRefundButton = true;
-                    me.isLoading = false;
-                })
-                .catch((errorResponse) => {
-                    this.createNotificationError({
-                        title: this.$tc('Nets'),
-                        message: this.$tc('Error occurred during refund')
-                    });
-                    me.disableRefundButton = false;
-                    me.isLoading = false;
-                });
-        },
 
         getTransactionId(currentOrder) {
-            var transaction = currentOrder.transactions.first();
-            var result = false;
+            const transaction = currentOrder.transactions.first();
+            let result = null;
             if(transaction.hasOwnProperty('customFields') && transaction['customFields']) {
                 if(transaction.customFields.hasOwnProperty('nets_easy_payment_details') &&
                     transaction.customFields['nets_easy_payment_details']) {
@@ -81,29 +42,91 @@ Shopware.Component.override('sw-order-user-card', {
             return result;
         },
 
-        canCapture(currentOrder) {
-           let me = this;
-
-           if(me.disableCaptureButton == true ) {
-                return false;
-            }
-
-
-           var transaction = currentOrder.transactions.first();
-           return transaction.customFields.nets_easy_payment_details.can_capture;
-        },
-
-        canRefund(currentOrder) {
-            let me = this;
-            if(me.disableRefundButton == false) {
+        canCapture() {
+            if(this.amountAvailableForCapturing > 0 && this.orderState == 'open') {
                 return true;
             }
-            if(me.disableRefundButton == true) {
-                return false;
-            }
-            var transaction = currentOrder.transactions.first();
-            return transaction.customFields.nets_easy_payment_details.can_refund;
-        }
-    }
+            return false;
+        },
 
+        getSummaryAmounts() {
+            let me;
+            me = this;
+            me.isLoading = true;
+            if(this.getTransactionId(this.currentOrder)) {
+                this.NetsCheckoutApiPaymentService.getSummaryAmounts(this.currentOrder)
+                    .then((response) => {
+                        //
+                        me.amountAvailableForCapturing = response.amountAvailableForCapturing;
+                        me.amountAvailableForRefunding = response.amountAvailableForRefunding;
+                        me.isLoading = false;
+                        me.orderState = response.orderState;
+                    })
+                    .catch((errorResponse) => {
+                        //
+                        me.isLoading = false;
+                    });
+            }
+        },
+
+        canRefund() {
+            if(this.amountAvailableForRefunding > 0
+                && this.orderState == 'paid' ||
+                this.orderState == 'paid_partially' ||
+                this.orderState == 'pay_partially') {
+                return true;
+            }
+            return false;
+        },
+
+        capture(paymentId) {
+            let me = this;
+            const orderId = this.currentOrder.id;
+            const amount = this.amountAvailableForCapturing;
+            me.isLoading = true;
+            this.NetsCheckoutApiPaymentService.captureTransaction(orderId, paymentId, amount)
+                .then((result) => {
+                    this.createNotificationSuccess({
+                        title: this.$tc('Nets'),
+                        message: this.$tc('Capture processed successfully.')
+                    });
+                    me.isLoading = false;
+                    this.getSummaryAmounts();
+                })
+                .catch((errorResponse) => {
+                    this.createNotificationError({
+                        title: this.$tc('Nets'),
+                        message: this.$tc(errorResponse.message)
+                    });
+                    me.isLoading = false;
+                    this.getSummaryAmounts();
+                });
+        },
+
+        refund(paymentId) {
+            let me = this;
+            me.isLoading = true;
+
+            const orderId = this.currentOrder.id;
+            const amount = this.amountAvailableForRefunding;
+
+            this.NetsCheckoutApiPaymentService.refundTransaction(orderId, paymentId, amount)
+                .then(() => {
+                    this.createNotificationSuccess({
+                        title: this.$tc('Nets'),
+                        message: this.$tc('Refund processed successfully.')
+                    });
+                    me.isLoading = false;
+                    this.getSummaryAmounts();
+                })
+                .catch((errorResponse) => {
+                    this.createNotificationError({
+                        title: this.$tc('Nets'),
+                        message: this.$tc('Error occurred during refund')
+                    });
+                    me.isLoading = false;
+                    this.getSummaryAmounts();
+                });
+        },
+    },
 });

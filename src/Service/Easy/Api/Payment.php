@@ -47,4 +47,19 @@ class Payment
             return $charges->chargeId;
         }
     }
+
+    public function getChargedAmount() {
+        return isset($this->paymentObj->payment->summary->chargedAmount) ?
+            $this->paymentObj->payment->summary->chargedAmount : 0;
+    }
+
+    public function getRefundedAmount() {
+        return isset($this->paymentObj->payment->summary->refundedAmount) ?
+            $this->paymentObj->payment->summary->refundedAmount : 0;
+
+    }
+
+    public function getOrderAmount() {
+        return $this->paymentObj->payment->orderDetails->amount;
+    }
 }

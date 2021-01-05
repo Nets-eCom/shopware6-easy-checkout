@@ -1,6 +1,8 @@
 {
     "nets-checkout": {
         "title": "Nets",
+        "api-actions": "Nets API actions",
+        "payment-id": "Nets paymentId",
         "general": {
             "mainMenuItemGeneral": "Nets",
             "descriptionTextModule": "Einstellungen für Nets"
