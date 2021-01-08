@@ -19,34 +19,7 @@
 
         <script type="text/javascript" src="{{ easyCheckoutJsAsset }}"></script>
 
-		{% set isoCode = page.header.activeLanguage.translationCode.code|lower|split('-') %}
-		{% set country = isoCode[0] %}
-		{% set language = isoCode[1] %}
-        {% set easyLanguage = country ~ '-' ~ language %}
-
-		{% if easyLanguage == 'en-gb' %}
-            {% set eCheckoutLanguage = 'en-GB' %}
-        {% elseif easyLanguage == 'da-dk' %}
-            {% set eCheckoutLanguage = 'da-DK' %}
-        {% elseif easyLanguage == 'sv-se' %}
-            {% set eCheckoutLanguage = 'sv-SE' %}
-        {% elseif easyLanguage == 'nb-no' %}
-            {% set eCheckoutLanguage = 'nb-NO' %}
-        {% elseif easyLanguage == 'de-de' %}
-            {% set eCheckoutLanguage = 'de-DE' %}
-        {% elseif easyLanguage == 'pl-pl' %}
-            {% set eCheckoutLanguage = 'pl-PL' %}
-        {% elseif easyLanguage == 'fr-fr' %}
-            {% set eCheckoutLanguage = 'fr-FR' %}
-        {% elseif easyLanguage == 'es-es' %}
-            {% set eCheckoutLanguage = 'es-ES' %}
-        {% elseif easyLanguage == 'nl-nl' %}
-            {% set eCheckoutLanguage = 'nl-NL' %}
-        {% elseif easyLanguage == 'fi-fi' %}
-            {% set eCheckoutLanguage = 'fi-FI' %}
-        {% else %}
-            {% set eCheckoutLanguage = 'en-GB' %}
-        {% endif %}
+		{% set eCheckoutLanguage = easyCheckoutVariables.languageCode %}	
 
         <script>
             //<![CDATA[

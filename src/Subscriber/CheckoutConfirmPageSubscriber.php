@@ -93,6 +93,12 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 
             $easyCheckoutJsAsset = 'test' == $environment ? $this->checkoutService::EASY_CHECKOUT_JS_ASSET_TEST :
                                              $this->checkoutService::EASY_CHECKOUT_JS_ASSET_LIVE;
+											 
+			$languageCode = $event->getPage()->getHeader()->getActiveLanguage()->getTranslationCode()->getCode();
+			
+			if($languageCode == 'de-CH'){
+				$languageCode = 'de-DE';
+			}
 
             $templateVars = ['checkoutKey' => $this->configService->getCheckoutKey($salesChannelContextId),
                 'environment' => $environment,
@@ -100,7 +106,8 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                 'checkoutType' => $this->configService->getCheckoutType($salesChannelContextId),
                 'easy_checkout_is_active' => $easyCheckoutIsActive,
                 'place_order_url' => $event->getRequest()->getUriForPath('/nets/order/finish'),
-                'easy_checkout_ja_asset' => $easyCheckoutJsAsset];
+                'easy_checkout_ja_asset' => $easyCheckoutJsAsset,
+				'languageCode' => $languageCode];
 
             $variablesStruct->assign($templateVars);
 
