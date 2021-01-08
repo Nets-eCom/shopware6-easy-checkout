@@ -18,7 +18,7 @@ use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler;
 use \Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
-
+use Shopware\Storefront\Framework\Routing\Router;
 
 /**
  * Description of NetsCheckout
@@ -67,6 +67,11 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      */
     private $orderRepository;
 
+	 /**
+     * @var Router
+     */
+    private $router;
+	
     /**
      * Checkout constructor.
      * @param CheckoutService $checkout
@@ -77,6 +82,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      * @param EntityRepositoryInterface $orderTransactionRepo
      * @param ConfigService $configService
      * @param EntityRepositoryInterface $orderRepository
+	 * @param Router $router
      */
     public function __construct(CheckoutService $checkout,
                                 SystemConfigService $systemConfigService,
@@ -85,7 +91,8 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
                                 EasyApiService $easyApiService,
                                 EntityRepositoryInterface $orderTransactionRepo,
                                 ConfigService $configService,
-                                EntityRepositoryInterface $orderRepository
+                                EntityRepositoryInterface $orderRepository,
+								Router $router
                                 )     {
         $this->systemConfigService = $systemConfigService;
         $this->checkout = $checkout;
@@ -95,6 +102,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
         $this->orderTransactionRepo = $orderTransactionRepo;
         $this->configService = $configService;
         $this->orderRepository = $orderRepository;
+		$this->router = $router;
     }
 
     /**
