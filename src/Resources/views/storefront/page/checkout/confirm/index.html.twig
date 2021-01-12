@@ -18,9 +18,12 @@
         {% set easyCheckoutJsAsset = easyCheckoutVariables.easy_checkout_ja_asset %}
 
         <script type="text/javascript" src="{{ easyCheckoutJsAsset }}"></script>
-
-		{% set eCheckoutLanguage = easyCheckoutVariables.languageCode %}	
-
+		
+		{% set isoCode = page.header.activeLanguage.translationCode.code|split('-') %}
+		{% set country = isoCode[0] %}
+		{% set language = isoCode[1] %}
+        {% set eCheckoutLanguage = country ~ '-' ~ language %}
+		
         <script>
             //<![CDATA[
             const checkoutOptions = {
