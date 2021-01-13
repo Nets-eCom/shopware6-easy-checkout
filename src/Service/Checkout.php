@@ -139,7 +139,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
             $chargeNow = $this->configService->getChargeNow($salesChannelContextId);
 
             if('yes' == $chargeNow) {
-                $this->transactionStateHandler->oaid($transaction->getOrderTransaction()->getId(), $context);
+                $this->transactionStateHandler->paid($transaction->getOrderTransaction()->getId(), $context);
             }
 
             $this->orderRepository->update([['id' => $orderId,
