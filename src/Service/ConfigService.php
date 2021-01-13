@@ -11,6 +11,7 @@ class ConfigService
     const LANGUAGE = 'language';
     const CHECKOUT_TYPE = 'checkoutType';
     const TERMS_URL = 'termsUrl';
+    const CHARGE_NOW = 'autoCharge';
 
    /**
      * @var SystemConfigService
@@ -82,5 +83,9 @@ class ConfigService
      */
     public function getTermsAndConditionsUrl($salesChannelContextId) {
          return $this->systemConfigService->get(sprintf("$this->prefix%s", self::TERMS_URL), $salesChannelContextId);
+    }
+
+    public function getChargeNow($salesChannelContextId) {
+        return $this->systemConfigService->get(sprintf("$this->prefix%s", self::CHARGE_NOW), $salesChannelContextId);
     }
 }

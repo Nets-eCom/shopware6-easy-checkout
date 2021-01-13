@@ -77,7 +77,7 @@ class PaymentController extends StorefrontController
 
     /**
      * @RouteScope(scopes={"storefront"})
-     * @Route("/nets/order/finish", name="nets.test.controller", options={"seo"="false"}, methods={"GET"})
+     * @Route("/nets/order/finish", name="nets.finish.order.controller", options={"seo"="false"}, methods={"GET"})
      * @param Context $context
      * @param SalesChannelContext $ctx
      * @param Request $request
@@ -91,32 +91,19 @@ class PaymentController extends StorefrontController
     {
 
         $cart = $this->cartService->getCart($ctx->getToken(), $ctx);
-
         $orderId = $this->cartService->order($cart, $ctx);
-
         $orderEntity  = $this->getOrderEntityById($context, $orderId);
-
-		$salesChannelId = $ctx->getSalesChannel()->getId();
-
+    	$salesChannelId = $ctx->getSalesChannel()->getId();
 		$secretKey = $this->configService->getSecretKey($salesChannelId);
-
 		$environment = $this->configService->getEnvironment($salesChannelId);
-
 		$this->easyApiService->setEnv($environment);
-
 		$this->easyApiService->setAuthorizationKey($secretKey);
-
 		$payment = $this->easyApiService->getPayment($_REQUEST['paymentId']);
-
 		$checkoutUrl = $payment->getCheckoutUrl();
-
 		$refUpdate = ['reference' => $orderEntity->getOrderNumber(),
                        'checkoutUrl' => $checkoutUrl];
-
 		$this->easyApiService->updateReference($_REQUEST['paymentId'],json_encode($refUpdate));
-
         $finishUrl = $this->generateUrl('frontend.checkout.finish.page', ['orderId' => $orderId]);
-
         // TODO: add Exceptions
         return $this->paymentService->handlePaymentByOrder($orderId, $data, $ctx, $finishUrl);
     }
@@ -201,6 +188,22 @@ class PaymentController extends StorefrontController
         $paymentId =  $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
         $payment = $this->easyApiService->getPayment($paymentId);
 
+//        if($payment->getReservedAmount() > 0) {
+//            $amountAvailableForCapturing = ($payment->getReservedAmount() - $payment->getChargedAmount()) / 100;
+//        } else {
+//            $amountAvailableForCapturing = 0;
+//        }
+//
+//        if($payment->getChargedAmount() - $payment->getRefundedAmount() > 0) {
+//            $amountAvailableForRefunding = ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100;
+//        } else {
+//            $amountAvailableForRefunding = 0;
+//        }
+//
+//        return new JsonResponse(['amountAvailableForCapturing' => $amountAvailableForCapturing,
+//                                 'amountAvailableForRefunding' => $amountAvailableForRefunding,
+//                                 'orderState' => $transaction->getStateMachineState()->getTechnicalName()]);
+
         $amountAvailableForCapturing = 0;
         if ($payment->getChargedAmount() == 0) {
             $amountAvailableForCapturing = $payment->getOrderAmount() / 100;
@@ -212,9 +215,8 @@ class PaymentController extends StorefrontController
         }
 
         return new JsonResponse(['amountAvailableForCapturing' => $amountAvailableForCapturing,
-                                 'amountAvailableForRefunding' => $amountAvailableForRefunding,
-                                 'orderState' => $transaction->getStateMachineState()->getTechnicalName()]);
-
+            'amountAvailableForRefunding' => $amountAvailableForRefunding,
+            'orderState' => $transaction->getStateMachineState()->getTechnicalName()]);
     }
 
     /**

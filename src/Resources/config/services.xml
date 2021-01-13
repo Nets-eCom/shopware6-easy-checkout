@@ -13,6 +13,7 @@
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="order.repository"/>
 			<argument type="service" id="router"/>
+            <argument type="service" id="session" />
             <tag name="shopware.payment.method.async" />
         </service>
         <service id="Nets\Checkout\Service\Test">
@@ -68,6 +69,8 @@
         </service>
 
         <service id="Nets\Checkout\Subscriber\OrderPlacedEventSubscriber">
+            <argument type="service" id="session" />
+            <argument type="service" id="request_stack" />
             <tag name="kernel.event_subscriber" />
         </service>
 
@@ -75,6 +78,7 @@
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
             <argument type="service" id="session"/>
+            <argument type="service" id="language.repository" />
             <tag name="kernel.event_subscriber" />
         </service>
 

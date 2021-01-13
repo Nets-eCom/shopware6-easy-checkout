@@ -62,4 +62,11 @@ class Payment
     public function getOrderAmount() {
         return $this->paymentObj->payment->orderDetails->amount;
     }
+
+    public function getAllCharges() {
+        if(isset($this->paymentObj->payment->charges)) {
+            return $this->paymentObj->payment->charges;
+
+        }
+    }
 }

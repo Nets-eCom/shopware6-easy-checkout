@@ -16,26 +16,17 @@
         {% set easyEnvironment = easyCheckoutVariables.environment %}
         {% set easyPlaceOrderUrl = easyCheckoutVariables.place_order_url %}
         {% set easyCheckoutJsAsset = easyCheckoutVariables.easy_checkout_ja_asset %}
+        {% set language = easyCheckoutVariables.language %}
 
         <script type="text/javascript" src="{{ easyCheckoutJsAsset }}"></script>
-		
-		{% set eCheckoutLanguage = 'en-GB' %}
-		{% set isoCode = page.header.activeLanguage.translationCode.code|split('-') %}
-		{% set country = isoCode[0] %}
-		{% set language = isoCode[1] %}
-        {% set eCheckoutLanguage = country ~ '-' ~ language %}
-		
-		{% if eCheckoutLanguage == 'de-CH' %}
-            {% set eCheckoutLanguage = 'de-DE' %}
-		{% endif %}
-		
+
         <script>
             //<![CDATA[
             const checkoutOptions = {
                 checkoutKey: '{{ easyCheckoutKey }}',
                 paymentId: '{{ easyPaymentId }}',
                 containerId: 'dibs-complete-checkout',
-                language: '{{ eCheckoutLanguage }}'
+                language: '{{ language }}'
             };
 
             const checkout = new Dibs.Checkout(checkoutOptions);

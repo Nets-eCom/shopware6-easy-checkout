@@ -150,7 +150,14 @@ class CheckoutService
             $data['checkout']['returnUrl'] = $transaction->getReturnUrl();
         }
         $data['checkout']['termsUrl'] = $this->configService->getTermsAndConditionsUrl($salesChannelContext->getSalesChannel()->getId());
+        $chargeNow = $this->configService->getChargeNow($salesChannelContext->getSalesChannel()->getId());
+
+        if('yes' == $chargeNow) {
+            $data['checkout']['charge'] = 'true';
+        }
+
         $data['checkout']['merchantHandlesConsumerData'] = true;
+
         if (self::CHECKOUT_TYPE_HOSTED == $checkoutType) {
             $data['checkout']['integrationType'] = 'HostedPaymentPage';
         }
@@ -313,13 +320,22 @@ class CheckoutService
         $secretKey = $this->configService->getSecretKey($salesChannelContextId);
         $this->easyApiService->setEnv($environment);
         $this->easyApiService->setAuthorizationKey($secretKey);
+
         $payload = $this->getTransactionOrderItems($orderEntity, $amount);
+
         $this->easyApiService->chargePayment($paymentId, json_encode($payload));
+
         $payment = $this->easyApiService->getPayment($paymentId);
+
+        if($transaction->getStateMachineState()->getTechnicalName() != 'open') {
+            $this->transactionStateHandler->reopen($transaction->getId(), $context);
+        }
+
         if($this->prepareAmount($amount) == $payment->getOrderAmount()) {
-            $this->transactionStateHandler->pay($transaction->getId(), $context);
+            $this->transactionStateHandler->paid($transaction->getId(), $context);
         }else {
             $this->payPartially($transaction->getId(), $context);
+
         }
         return $payload;
     }
@@ -344,9 +360,14 @@ class CheckoutService
         $payload = $this->getTransactionOrderItems($orderEntity, $amount);
         $this->easyApiService->refundPayment($chargeId, json_encode($payload));
         $payment = $this->easyApiService->getPayment($paymentId);
+
         if($this->prepareAmount($amount) == $payment->getOrderAmount()) {
             $this->transactionStateHandler->refund($transaction->getId(), $context);
         }else {
+           if($transaction->getStateMachineState()->getTechnicalName() == 'refunded_partially') {
+                $this->transactionStateHandler->reopen($transaction->getId(), $context);
+                $this->payPartially( $transaction->getId(), $context );
+            }
             $this->transactionStateHandler->refundPartially($transaction->getId(), $context);
         }
         return $payload;

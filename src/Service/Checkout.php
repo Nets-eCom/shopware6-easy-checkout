@@ -19,6 +19,7 @@ use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler;
 use \Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Storefront\Framework\Routing\Router;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * Description of NetsCheckout
@@ -71,7 +72,12 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      * @var Router
      */
     private $router;
-	
+
+    /**
+     * @var SessionInterface
+     */
+    private $session;
+
     /**
      * Checkout constructor.
      * @param CheckoutService $checkout
@@ -82,7 +88,8 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      * @param EntityRepositoryInterface $orderTransactionRepo
      * @param ConfigService $configService
      * @param EntityRepositoryInterface $orderRepository
-	 * @param Router $router
+     * @param Router $router
+     * @param SessionInterface $session
      */
     public function __construct(CheckoutService $checkout,
                                 SystemConfigService $systemConfigService,
@@ -92,7 +99,8 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
                                 EntityRepositoryInterface $orderTransactionRepo,
                                 ConfigService $configService,
                                 EntityRepositoryInterface $orderRepository,
-								Router $router
+								Router $router,
+                                SessionInterface $session
                                 )     {
         $this->systemConfigService = $systemConfigService;
         $this->checkout = $checkout;
@@ -103,6 +111,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
         $this->configService = $configService;
         $this->orderRepository = $orderRepository;
 		$this->router = $router;
+		$this->session = $session;
     }
 
     /**
@@ -119,30 +128,30 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
         try {
 
             $this->easyApiService->setEnv($environment);
-
             $this->easyApiService->setAuthorizationKey($secretKey);
-
             $paymentId = $this->extractPaymentId();
 
             // it is incorrect check for captured amount
             $payment = $this->easyApiService->getPayment($paymentId);
-
             $transactionId = $transaction->getOrderTransaction()->getId();
-
             $orderId = $transaction->getOrder()->getId();
-
             $context = $salesChannelContext->getContext();
+            $chargeNow = $this->configService->getChargeNow($salesChannelContextId);
+
+            if('yes' == $chargeNow) {
+                $this->transactionStateHandler->oaid($transaction->getOrderTransaction()->getId(), $context);
+            }
 
             $this->orderRepository->update([['id' => $orderId,
                                              'customFields' =>
                                            ['paymentId' => $paymentId]]], $context);
 
-//            if (empty($payment->getReservedAmount())) {
-//                throw new CustomerCanceledAsyncPaymentException(
-//                    $transactionId,
-//                    'Customer canceled the payment on the Easy payment page'
-//                );
-//            }
+            if (empty($payment->getReservedAmount()) && empty($payment->getChargedAmount())) {
+                throw new CustomerCanceledAsyncPaymentException(
+                    $transactionId,
+                    'Customer canceled the payment on the Easy payment page'
+                );
+            }
 
             $this->orderTransactionRepo->update([[
                 'id' => $transactionId,
@@ -169,11 +178,8 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
      * @throws \Exception
      */
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): RedirectResponse {
-
         $checkoutType = $this->configService->getCheckoutType($salesChannelContext->getSalesChannel()->getId());
-
         if($this->checkout::CHECKOUT_TYPE_EMBEDDED == $checkoutType) {
-
             $paymentId = $this->extractPaymentId();
             $redirectUrl = $transaction->getReturnUrl() . '&paymentId=' . $paymentId;
             return new RedirectResponse($redirectUrl);
@@ -183,6 +189,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface {
 
             $result = $this->checkout->createPayment($salesChannelContext, $this->checkout::CHECKOUT_TYPE_HOSTED, $transaction);
             $PaymentCreateResult = json_decode($result, true);
+            $this->session->set('nets_paymentId', $PaymentCreateResult['paymentId']);
 
         } catch(EasyApiException $ex) {
 
