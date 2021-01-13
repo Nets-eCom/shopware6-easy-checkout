@@ -103,9 +103,9 @@ class CheckoutService
     }
 
     /**
-     * @param AsyncPaymentTransactionStruct $transaction
      * @param SalesChannelContext $salesChannelContext
      * @param string $checkoutType
+     * @param AsyncPaymentTransactionStruct|null $transaction
      * @return string
      * @throws EasyApiException
      */
@@ -172,18 +172,27 @@ class CheckoutService
                 'addressLine2' => $salesChannelContext->getCustomer()->getActiveShippingAddress()->getStreet(),
                 'postalCode' => $salesChannelContext->getCustomer()->getActiveShippingAddress()->getZipcode(),
                 'city' => $salesChannelContext->getCustomer()->getActiveShippingAddress()->getCity(),
-                'country' => $salesChannelContext->getCustomer()->getActiveShippingAddress()->getCountry()->getIso3()],
-             'privatePerson' => [
-                'firstName' => $this->stringFilter($salesChannelContext->getCustomer()->getFirstname()),
-                'lastName' => $this->stringFilter($salesChannelContext->getCustomer()->getLastname())]];
+                'country' => $salesChannelContext->getCustomer()->getActiveShippingAddress()->getCountry()->getIso3()]];
 
-        $data['notifications'] =
-            ['webhooks' =>
-                [
-                    ['eventName' => 'payment.checkout.completed',
-                        'url' => 'https://some-url.com',
-                        'authorization' => substr(str_shuffle(MD5(microtime())), 0, 10)]
-                ]];
+//        $data['notifications'] =
+//            ['webhooks' =>
+//                [
+//                    ['eventName' => 'payment.checkout.completed',
+//                        'url' => 'https://some-url.com',
+//                        'authorization' => substr(str_shuffle(MD5(microtime())), 0, 10)]
+//                ]];
+
+        if(!empty($salesChannelContext->getCustomer()->getActiveBillingAddress()->getCompany())) {
+            $data['checkout']['consumer']['company'] = ['name' =>$salesChannelContext->getCustomer()->getActiveBillingAddress()->getCompany(),
+                    'contact' =>
+                        ['firstName' => $this->stringFilter($salesChannelContext->getCustomer()->getFirstname()),
+                         'lastName' => $this->stringFilter($salesChannelContext->getCustomer()->getLastname())]];
+         }else {
+
+            $data['checkout']['consumer']['privatePerson'] = ['firstName' => $this->stringFilter($salesChannelContext->getCustomer()->getFirstname()),
+                'lastName' => $this->stringFilter($salesChannelContext->getCustomer()->getLastname())];
+        }
+
         return $data;
     }
 
