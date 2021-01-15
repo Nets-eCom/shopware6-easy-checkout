@@ -8,9 +8,9 @@ $(function() {
             $('.confirm-address, .confirm-payment-shipping').appendTo('.ttmain');
             $('#confirmOrderForm, .confirm-tos').hide();
             $('.is-act-confirmpage .checkout .checkout-main, .is-act-confirmpage .checkout .checkout-aside').css({
-                'margin-left' : '0',
-                'padding' : '0',
-                'flex' : '0 0 100%',
+                'margin-left' : '0', 
+                'padding' : '0', 
+                'flex' : '0 0 100%', 
                 'max-width' : '100%'
             });
             $('.checkout').css({'padding' : '70px 50px'});
@@ -24,9 +24,9 @@ $(function() {
             $('.confirm-address, .confirm-payment-shipping').appendTo('.ssbtm');
             $('#confirmOrderForm, .confirm-tos').hide();
             $('.is-act-confirmpage .checkout .checkout-main, .is-act-confirmpage .checkout .checkout-aside').css({
-                'margin-left' : '0',
-                'padding' : '0',
-                'flex' : '0 0 100%',
+                'margin-left' : '0', 
+                'padding' : '0', 
+                'flex' : '0 0 100%', 
                 'max-width' : '100%'
             });
             $('.checkout').css({'padding' : '70px 50px'});
