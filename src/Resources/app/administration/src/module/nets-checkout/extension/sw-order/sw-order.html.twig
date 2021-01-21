@@ -9,21 +9,17 @@
     {% endblock %}
 
     <template v-if="getTransactionId(currentOrder) != null">
-        <div v-if="canCapture()">
+        <dt v-if="canCapture()">
             {{ $tc('nets-checkout.api-actions') }}
-        </div>
+        </dt>
 
         <div class="capture-controls" v-if="canCapture()">
-            <sw-number-field numberType="float" :step="null" :min="null" :max="null"  v-model="amountAvailableForCapturing" :digits="2" :allowEmpty="false">
-            </sw-number-field>
             <sw-button-process @click="capture(getTransactionId(currentOrder))" :isLoading="captureButtonLoading">
                 {{ $tc('nets-checkout.capture.buttonTitle') }}
             </sw-button-process>
         </div>
 
         <div class="refund-controls" v-if="canRefund()">
-            <sw-number-field numberType="float" :step="null" :min="null" :max="null"  v-model="amountAvailableForRefunding" :digits="2" :allowEmpty="false">
-            </sw-number-field>
             <sw-button-process @click="refund(getTransactionId(currentOrder))" :isLoading="refundButtonLoading">
                 {{ $tc('nets-checkout.refund.buttonTitle') }}
             </sw-button-process>
