@@ -30,8 +30,8 @@ NOTE : .
 2. Locate the Nets payment plugin and press the 3 dotted button to access Configuration.
 
 * Settings Description
-1. Login to your Nets Easy account. Keys can be found in Company > Integration :
-2. Payment Environment. Select between Test/Live transactions. Live mode requires an approved account. Testcard information can be found here : https://portal.dibspayment.eu/
+1. Login to your Nets Easy account (https://portal.dibspayment.eu/). Test and Live Keys can be found in Company > Integration.
+2. Payment Environment. Select between Test/Live transactions. Live mode requires an approved account. Testcard information can be found here: https://tech.dibspayment.com/easy/test-information 
 3. Checkout Flow. Redirect / Embedded. Select between 2 checkout types. Redirect - Nets Hosted loads a new payment page. Embedded checkout inserts the payment window directly on the checkout page.
 4. Enable auto-capture. This function allows you to instantly charge a payment straight after the order is placed.
    NOTE. Capturing a payment before shipment of the order might be lia ble to restrictions based upon legislations set in your country. Misuse can result in your Easy account bei ng forfeit.
