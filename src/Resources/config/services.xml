@@ -28,7 +28,7 @@
             <argument type="service" id="kernel"/>
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
-
+			
             <argument type="service" id="Shopware\Core\Checkout\Payment\PaymentService" />
 
             <call method="setContainer">
@@ -44,6 +44,7 @@
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <argument type="service" id="request_stack" />
             <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
+            <argument type="service" id="Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupDefinition"/>
         </service>
 
         <service id="Nets\Checkout\Service\Easy\Api\Client">

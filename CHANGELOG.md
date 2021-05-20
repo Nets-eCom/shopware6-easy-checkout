@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6+`
-|Version | `1.1.2`
+|Version | `1.1.3`
 |Guide | https://tech.nets.eu/shopmodules
 |Github | https://github.com/DIBS-Payment-Services/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.1.3 - Released 2021-05-20
+* Fixed : Bugfixes in product net/gross amount and tax calculations
+* Update : added merchant terms url for embedded/hosted checkout and cancel url for hosted checkout
 
 ### Version 1.1.2 - Released 2021-01-21
 * Fixed : Bugfixes in order details section

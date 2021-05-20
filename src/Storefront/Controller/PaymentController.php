@@ -1,5 +1,5 @@
-<?php declare(strict_types=1);
-
+<?php
+declare(strict_types = 1);
 namespace Nets\Checkout\Storefront\Controller;
 
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
@@ -18,22 +18,20 @@ use Symfony\Component\Routing\Annotation\Route;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
-
 use Shopware\Core\Checkout\Payment\PaymentService;
-
-
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
-
 use Symfony\Component\HttpFoundation\Request;
 
 class PaymentController extends StorefrontController
 {
+
     private $orderRepository;
 
     /** @var Context $context */
     private $context;
 
     /**
+     *
      * @var SystemConfigService
      */
     public $systemConfigService;
@@ -52,17 +50,8 @@ class PaymentController extends StorefrontController
 
     private $paymentService;
 
-    public function __construct(EntityRepositoryInterface $orderRepository,
-                                \Psr\Log\LoggerInterface $logger,
-                                \Nets\Checkout\Service\Easy\CheckoutService $checkout,
-                                SystemConfigService $systemConfigService,
-                                EasyApiService $easyApiService,
-                                \Symfony\Component\HttpKernel\KernelInterface $kernel,
-                                ConfigService $configService,
-                                CartService $cartService,
-                                PaymentService $paymentService
-
-    ) {
+    public function __construct(EntityRepositoryInterface $orderRepository, \Psr\Log\LoggerInterface $logger, \Nets\Checkout\Service\Easy\CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiService $easyApiService, \Symfony\Component\HttpKernel\KernelInterface $kernel, ConfigService $configService, CartService $cartService, PaymentService $paymentService)
+    {
         $this->orderRepository = $orderRepository;
         $this->context = Context::createDefaultContext();
         $this->logger = $logger;
@@ -76,6 +65,7 @@ class PaymentController extends StorefrontController
     }
 
     /**
+     *
      * @RouteScope(scopes={"storefront"})
      * @Route("/nets/order/finish", name="nets.finish.order.controller", options={"seo"="false"}, methods={"GET"})
      * @param Context $context
@@ -85,90 +75,94 @@ class PaymentController extends StorefrontController
      * @return RedirectResponse|null
      * @throws EasyApiException
      */
-    public function placeOrder(Context $context,
-                               SalesChannelContext $ctx,
-                               Request $request, RequestDataBag $data)
+    public function placeOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data)
     {
-
         $cart = $this->cartService->getCart($ctx->getToken(), $ctx);
         $orderId = $this->cartService->order($cart, $ctx);
-        $orderEntity  = $this->getOrderEntityById($context, $orderId);
-    	$salesChannelId = $ctx->getSalesChannel()->getId();
-		$secretKey = $this->configService->getSecretKey($salesChannelId);
-		$environment = $this->configService->getEnvironment($salesChannelId);
-		$this->easyApiService->setEnv($environment);
-		$this->easyApiService->setAuthorizationKey($secretKey);
-		$payment = $this->easyApiService->getPayment($_REQUEST['paymentId']);
-		$checkoutUrl = $payment->getCheckoutUrl();
-		$refUpdate = ['reference' => $orderEntity->getOrderNumber(),
-                       'checkoutUrl' => $checkoutUrl];
-		$this->easyApiService->updateReference($_REQUEST['paymentId'],json_encode($refUpdate));
-        $finishUrl = $this->generateUrl('frontend.checkout.finish.page', ['orderId' => $orderId]);
+        $orderEntity = $this->getOrderEntityById($context, $orderId);
+        $salesChannelId = $ctx->getSalesChannel()->getId();
+        $secretKey = $this->configService->getSecretKey($salesChannelId);
+        $environment = $this->configService->getEnvironment($salesChannelId);
+        $this->easyApiService->setEnv($environment);
+        $this->easyApiService->setAuthorizationKey($secretKey);
+        $payment = $this->easyApiService->getPayment($_REQUEST['paymentId']);
+        $checkoutUrl = $payment->getCheckoutUrl();
+        $refUpdate = [
+            'reference' => $orderEntity->getOrderNumber(),
+            'checkoutUrl' => $checkoutUrl
+        ];
+        $this->easyApiService->updateReference($_REQUEST['paymentId'], json_encode($refUpdate));
+        $finishUrl = $this->generateUrl('frontend.checkout.finish.page', [
+            'orderId' => $orderId
+        ]);
         // TODO: add Exceptions
         return $this->paymentService->handlePaymentByOrder($orderId, $data, $ctx, $finishUrl);
     }
 
     /**
+     *
      * @RouteScope(scopes={"storefront"})
      * @Route("/nets/caheckout/validate", name="nets.test.controller.validate", options={"seo"="false"}, methods={"GET"})
      */
-    public function validate(SalesChannelContext $ctx) {
+    public function validate(SalesChannelContext $ctx)
+    {
         try {
-            $secretKey = $this->configService->getSecretKey($ctx->getSalesChannel()->getId());
-            $environment = $this->configService->getSecretKey($ctx->getSalesChannel()->getId());
+            $secretKey = $this->configService->getSecretKey($ctx->getSalesChannel()
+                ->getId());
+            $environment = $this->configService->getSecretKey($ctx->getSalesChannel()
+                ->getId());
             $this->easyApiService->setEnv($environment);
             $this->easyApiService->setAuthorizationKey($secretKey);
             $payment = $this->easyApiService->getPayment($_REQUEST['paymentid']);
             if (empty($payment->getReservedAmount())) {
                 return $this->redirectToRoute('frontend.checkout.cart.page');
             }
-        }catch (EasyApiException $ex) {
+        } catch (EasyApiException $ex) {
             return $this->redirectToRoute('frontend.checkout.cart.page');
         }
     }
 
     /**
+     *
      * @RouteScope(scopes={"api"})
      * @Route("/api/v{version}/nets/transaction/charge", name="nets.charge.payment.action", options={"seo"="false"}, methods={"POST"})
      * @param Context $context
      * @param Request $request
      * @return JsonResponse
      */
-    public function chargePayment(Context $context, Request $request): JsonResponse {
+    public function chargePayment(Context $context, Request $request): JsonResponse
+    {
         $orderId = $request->get('params')['orderId'];
-        $paymentId =  $request->get('params')['paymentId'];
+        $paymentId = $request->get('params')['paymentId'];
         $amount = $request->get('params')['amount'];
-        $orderEntity  = $this->getOrderEntityById($context, $orderId);
+        $orderEntity = $this->getOrderEntityById($context, $orderId);
         $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
+
         try {
 
-            $this->checkout->chargePayment($orderEntity, $salesChannelId, $context ,$paymentId, $amount);
-
+            $this->checkout->chargePayment($orderEntity, $salesChannelId, $context, $paymentId, $amount);
         } catch (EasyApiException $ex) {
 
-            return new JsonResponse(
-                [
-                    'status'  => false,
-                    'message' => $ex->getMessage(),
-                    'code'    => $ex->getCode()
-                ],
-                Response::HTTP_BAD_REQUEST
-            );
+            return new JsonResponse([
+                'status' => false,
+                'message' => $ex->getMessage(),
+                'code' => $ex->getCode()
+            ], Response::HTTP_BAD_REQUEST);
         } catch (Exception $ex) {
 
-            return new JsonResponse(
-                [
-                    'status'  => false,
-                    'message' => $ex->getMessage(),
-                    'code'    => 0,
-                ],
-                Response::HTTP_BAD_REQUEST
-            );
+            return new JsonResponse([
+                'status' => false,
+                'message' => $ex->getMessage(),
+                'code' => 0
+            ], Response::HTTP_BAD_REQUEST);
         }
-        return new JsonResponse(['status' => true]);
+        return new JsonResponse([
+            'status' => true
+        ]);
     }
 
     /**
+     *
      * @RouteScope(scopes={"api"})
      * @Route("/api/v{version}/nets/transaction/summary", name="nets.summary.payment.action", options={"seo"="false"}, methods={"POST"})
      * @param Context $context
@@ -176,33 +170,34 @@ class PaymentController extends StorefrontController
      * @return JsonResponse
      * @throws EasyApiException
      */
-    public function getSummaryAmounts(Context $context, Request $request ) {
+    public function getSummaryAmounts(Context $context, Request $request)
+    {
         $orderId = $request->get('params')['transaction']['orderId'];
         $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
         $environment = $this->configService->getEnvironment($salesChannelId);
         $secretKey = $this->configService->getSecretKey($salesChannelId);
         $this->easyApiService->setEnv($environment);
         $this->easyApiService->setAuthorizationKey($secretKey);
-        $orderEntity  = $this->getOrderEntityById($context, $orderId);
+        $orderEntity = $this->getOrderEntityById($context, $orderId);
         $transaction = $orderEntity->getTransactions()->first();
-        $paymentId =  $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
+        $paymentId = $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
         $payment = $this->easyApiService->getPayment($paymentId);
 
-//        if($payment->getReservedAmount() > 0) {
-//            $amountAvailableForCapturing = ($payment->getReservedAmount() - $payment->getChargedAmount()) / 100;
-//        } else {
-//            $amountAvailableForCapturing = 0;
-//        }
-//
-//        if($payment->getChargedAmount() - $payment->getRefundedAmount() > 0) {
-//            $amountAvailableForRefunding = ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100;
-//        } else {
-//            $amountAvailableForRefunding = 0;
-//        }
-//
-//        return new JsonResponse(['amountAvailableForCapturing' => $amountAvailableForCapturing,
-//                                 'amountAvailableForRefunding' => $amountAvailableForRefunding,
-//                                 'orderState' => $transaction->getStateMachineState()->getTechnicalName()]);
+        // if($payment->getReservedAmount() > 0) {
+        // $amountAvailableForCapturing = ($payment->getReservedAmount() - $payment->getChargedAmount()) / 100;
+        // } else {
+        // $amountAvailableForCapturing = 0;
+        // }
+        //
+        // if($payment->getChargedAmount() - $payment->getRefundedAmount() > 0) {
+        // $amountAvailableForRefunding = ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100;
+        // } else {
+        // $amountAvailableForRefunding = 0;
+        // }
+        //
+        // return new JsonResponse(['amountAvailableForCapturing' => $amountAvailableForCapturing,
+        // 'amountAvailableForRefunding' => $amountAvailableForRefunding,
+        // 'orderState' => $transaction->getStateMachineState()->getTechnicalName()]);
 
         $amountAvailableForCapturing = 0;
         if ($payment->getChargedAmount() == 0) {
@@ -210,16 +205,19 @@ class PaymentController extends StorefrontController
         }
 
         $amountAvailableForRefunding = 0;
-        if($payment->getChargedAmount() > 0 && $payment->getRefundedAmount() == 0) {
+        if ($payment->getChargedAmount() > 0 && $payment->getRefundedAmount() == 0) {
             $amountAvailableForRefunding = $payment->getChargedAmount() / 100;
         }
 
-        return new JsonResponse(['amountAvailableForCapturing' => $amountAvailableForCapturing,
+        return new JsonResponse([
+            'amountAvailableForCapturing' => $amountAvailableForCapturing,
             'amountAvailableForRefunding' => $amountAvailableForRefunding,
-            'orderState' => $transaction->getStateMachineState()->getTechnicalName()]);
+            'orderState' => $transaction->getStateMachineState()->getTechnicalName()
+        ]);
     }
 
     /**
+     *
      * @RouteScope(scopes={"api"})
      * @Route("/api/v{version}/nets/transaction/refund", name="nets.refund.payment.action", options={"seo"="false"}, methods={"POST"})
      * @param Context $context
@@ -227,45 +225,46 @@ class PaymentController extends StorefrontController
      * @return JsonResponse
      * @throws \Exception
      */
-    public function refundPayment(Context $context, Request $request): JsonResponse {
+    public function refundPayment(Context $context, Request $request): JsonResponse
+    {
         $orderId = $request->get('params')['orderId'];
-        $paymentId =  $request->get('params')['paymentId'];
+        $paymentId = $request->get('params')['paymentId'];
         $amount = $request->get('params')['amount'];
-        $orderEntity  = $this->getOrderEntityById($context, $orderId);
+        $orderEntity = $this->getOrderEntityById($context, $orderId);
         $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
 
         try {
             $this->checkout->refundPayment($orderEntity, $salesChannelId, $context, $paymentId, $amount);
-
         } catch (EasyApiException $ex) {
-            return new JsonResponse(
-                [
-                    'status'  => false,
-                    'message' => $ex->getMessage(),
-                    'code'    => $ex->getCode()
-                ],
-                Response::HTTP_BAD_REQUEST
-            );
+            return new JsonResponse([
+                'status' => false,
+                'message' => $ex->getMessage(),
+                'code' => $ex->getCode()
+            ], Response::HTTP_BAD_REQUEST);
         } catch (Exception $ex) {
-            return new JsonResponse(
-                [
-                    'status'  => false,
-                    'message' => $ex->getMessage(),
-                    'code'    => 0,
-                ],
-                Response::HTTP_BAD_REQUEST
-            );
+            return new JsonResponse([
+                'status' => false,
+                'message' => $ex->getMessage(),
+                'code' => 0
+            ], Response::HTTP_BAD_REQUEST);
         }
-        return new JsonResponse(['status' => true]);
+        return new JsonResponse([
+            'status' => true
+        ]);
     }
 
     /**
+     *
      * @param Context $context
-     * @param $orderId
+     * @param
+     *            $orderId
      * @return mixed|null
      */
-    private function getOrderEntityById(Context $context, $orderId) {
-        $criteria = new Criteria([$orderId]);
+    private function getOrderEntityById(Context $context, $orderId)
+    {
+        $criteria = new Criteria([
+            $orderId
+        ]);
         $criteria->addAssociation('lineItems.payload')
             ->addAssociation('deliveries.shippingCosts')
             ->addAssociation('deliveries.shippingMethod')
@@ -275,18 +274,19 @@ class PaymentController extends StorefrontController
             ->addAssociation('currency')
             ->addAssociation('addresses.country')
             ->addAssociation('transactions.stateMachineState');
-         return $this->orderRepository->search($criteria, $context)->first();
+        return $this->orderRepository->search($criteria, $context)->first();
     }
 
-
-
     /**
+     *
      * @throws OrderNotFoundException
      */
     private function getSalesChannelIdByOrderId(string $orderId, Context $context): string
     {
         /** @var OrderEntity|null $order */
-        $order = $this->orderRepository->search(new Criteria([$orderId]), $context)->first();
+        $order = $this->orderRepository->search(new Criteria([
+            $orderId
+        ]), $context)->first();
 
         if ($order === null) {
             throw new OrderNotFoundException($orderId);
@@ -296,11 +296,13 @@ class PaymentController extends StorefrontController
     }
 
     /**
-     * @param $amount
+     *
+     * @param
+     *            $amount
      * @return int
      */
-    private function prepareAmount($amount = 0) {
-        return (int)round($amount * 100);
+    private function prepareAmount($amount = 0)
+    {
+        return (int) round($amount * 100);
     }
-
 }
