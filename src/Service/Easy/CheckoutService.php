@@ -144,15 +144,19 @@ class CheckoutService
             $reference = $salesChannelContext->getToken();
         }
 
+        $orderItems = $this->getOrderItems($cartOrderEntityObject, $salesChannelContext);
+        $grossTotalAmount = $orderItems['sumAmount'];
+        unset($orderItems['sumAmount']);
         $data = [
             'order' => [
-                'items' => $this->getOrderItems($cartOrderEntityObject, $salesChannelContext),
-                'amount' => $this->prepareAmount($amount),
+                'items' => $orderItems,
+                'amount' => $grossTotalAmount,
                 'currency' => $salesChannelContext->getCurrency()->getIsoCode(),
                 'reference' => $reference
             ]
         ];
 
+        // print_r($data);
         if (is_object($transaction)) {
             $data['checkout']['returnUrl'] = $transaction->getReturnUrl();
             $data['checkout']['cancelUrl'] = $this->requestStack->getCurrentRequest()->getUriForPath('/checkout/cart');
@@ -313,11 +317,18 @@ class CheckoutService
         }
         $shippingCost = $cartOrderEntityObject->getShippingCosts();
 
+        $taxes = $this->getRowTaxes($shippingCost->getCalculatedTaxes());
+
+        $shipItems = $this->shippingCostLine($shippingCost, $display_gross);
         if ($shippingCost->getTotalPrice() > 0) {
-            $items[] = $this->shippingCostLine($shippingCost);
+            $items[] = $shipItems;
+            $sumAmount += $shipItems['grossTotalAmount'];
         }
-        // echo "<pre>";
-        // print_r($items);
+
+        if (! empty($salesChannelContext)) {
+            $items['sumAmount'] = $sumAmount;
+        }
+
         return $items;
     }
 
@@ -352,6 +363,7 @@ class CheckoutService
         $taxAmount = 0;
         $taxRate = 0;
         foreach ($calculatedTaxCollection as $calculatedTax) {
+
             $taxRate += $calculatedTax->getTaxRate();
             $taxAmount += $calculatedTax->getTax();
         }
@@ -366,18 +378,32 @@ class CheckoutService
      * @param CalculatedPrice $cost
      * @return array
      */
-    private function shippingCostLine(CalculatedPrice $cost)
+    private function shippingCostLine(CalculatedPrice $cost, $gross)
     {
+        $taxes = $this->getRowTaxes($cost->getCalculatedTaxes());
+
+        $product = $cost->getTotalPrice();
+        $quantity = 1;
+        if ($gross) {
+            $taxFormat = '1' . str_pad(number_format((float) $taxes['taxRate'], 2, '.', ''), 5, '0', STR_PAD_LEFT);
+            $unitPrice = round(round(($product * 100) / $taxFormat, 2) * 100);
+            $grossAmount = round($quantity * ($product * 100));
+        } else {
+            $unitPrice = $this->prepareAmount($product);
+            $taxPrice = $taxes['taxAmount'] * 100;
+            $grossAmount = round($quantity * ($product * 100)) + $taxPrice;
+        }
+        $netAmount = round($quantity * $unitPrice);
         return [
             'reference' => 'shipping',
             'name' => 'Shipping',
             'quantity' => 1,
             'unit' => 'pcs',
-            'unitPrice' => $this->prepareAmount($cost->getTotalPrice()),
-            'taxRate' => 0,
-            'taxAmount' => 0,
-            'grossTotalAmount' => $this->prepareAmount($cost->getTotalPrice()),
-            'netTotalAmount' => $this->prepareAmount($cost->getTotalPrice())
+            'unitPrice' => $unitPrice,
+            'taxRate' => $this->prepareAmount($taxes['taxRate']),
+            'taxAmount' => $this->prepareAmount($taxes['taxAmount']),
+            'grossTotalAmount' => $grossAmount,
+            'netTotalAmount' => $netAmount
         ];
     }
 
