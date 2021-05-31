@@ -6,7 +6,7 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6+`
-|Version | `1.1.3`
+|Version | `1.1.4`
 |Guide | https://tech.nets.eu/shopmodules
 |Github | https://github.com/DIBS-Payment-Services/shopware6-easy-checkout
 
