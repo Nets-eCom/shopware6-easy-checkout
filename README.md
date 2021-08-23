@@ -8,7 +8,7 @@
 |Shop Version | `6.4+`
 |Version | `1.2.0`
 |Guide | https://tech.nets.eu/shopmodules
-|Github | https://github.com/DIBS-Payment-Services/shopware6-easy-checkout
+|Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 
 ### Note: This version 1.2.0 of Nets Easy Module is supported for shopware 6.4+ version, if you want to get this module installed for other shopware version i.e. 6.3 or lower,
