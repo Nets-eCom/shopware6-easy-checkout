@@ -21,6 +21,8 @@ use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Shopware\Core\System\StateMachine\Transition;
 use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 
 class CheckoutService
 {
@@ -77,6 +79,9 @@ class CheckoutService
      */
     private $stateMachineRegistry;
 
+    private $netsApiRepository;
+   
+
     /**
      * regexp for filtering strings
      */
@@ -93,7 +98,7 @@ class CheckoutService
      * @param RequestStack $requestStack
      * @param StateMachineRegistry $machineRegistry
      */
-    public function __construct(EasyApiService $easyApiService, ConfigService $configService, EntityRepositoryInterface $transactionRepository, OrderTransactionStateHandler $orderTransactionStateHandler, CartService $cartService, RequestStack $requestStack, StateMachineRegistry $machineRegistry)
+    public function __construct(EasyApiService $easyApiService, ConfigService $configService, EntityRepositoryInterface $transactionRepository, OrderTransactionStateHandler $orderTransactionStateHandler, CartService $cartService, RequestStack $requestStack, StateMachineRegistry $machineRegistry,EntityRepositoryInterface $netsApiRepository)
     {
         $this->easyApiService = $easyApiService;
         $this->configService = $configService;
@@ -102,6 +107,7 @@ class CheckoutService
         $this->cartService = $cartService;
         $this->requestStack = $requestStack;
         $this->stateMachineRegistry = $machineRegistry;
+        $this->netsApiRepository = $netsApiRepository;
     }
 
     /**
@@ -444,6 +450,8 @@ class CheckoutService
      */
     public function chargePayment(OrderEntity $orderEntity, $salesChannelContextId, Context $context, $paymentId, $amount)
     {
+        
+
         $transaction = $orderEntity->getTransactions()->first();
         $environment = $this->configService->getEnvironment($salesChannelContextId);
         $secretKey = $this->configService->getSecretKey($salesChannelContextId);
@@ -452,19 +460,38 @@ class CheckoutService
 
         $payload = $this->getTransactionOrderItems($orderEntity, $amount);
 
-        $this->easyApiService->chargePayment($paymentId, json_encode($payload));
+        $chargeId= $this->easyApiService->chargePayment($paymentId, json_encode($payload));
 
+        $chargeIdArr= json_decode($chargeId);
         $payment = $this->easyApiService->getPayment($paymentId);
 
         if ($transaction->getStateMachineState()->getTechnicalName() != 'open') {
             $this->transactionStateHandler->reopen($transaction->getId(), $context);
         }
 
-        if ($this->prepareAmount($amount) == $payment->getOrderAmount()) {
+        $allChargeAmount = $payment->getChargedAmount();
+
+        if ($this->prepareAmount($amount) == $payment->getOrderAmount() || $allChargeAmount == $payment->getOrderAmount()) {
             $this->transactionStateHandler->paid($transaction->getId(), $context);
         } else {
+
             $this->payPartially($transaction->getId(), $context);
         }
+
+        //For inserting amount available respect to charge id
+        
+
+            $this->netsApiRepository->create([
+            [
+            'order_id' => $payment->getOrderId()?$payment->getOrderId():'',
+            'charge_id' => $chargeIdArr->chargeId?$chargeIdArr->chargeId:'',
+            'operation_type' =>'capture',
+            'operation_amount' => $amount,
+            'amount_available' => $amount,
+            ]
+            ], $context);
+        
+
         return $payload;
     }
 
@@ -490,19 +517,98 @@ class CheckoutService
         $this->easyApiService->setAuthorizationKey($secretKey);
         $payment = $this->easyApiService->getPayment($paymentId);
         $chargeId = $payment->getFirstChargeId();
-        $payload = $this->getTransactionOrderItems($orderEntity, $amount);
-        $this->easyApiService->refundPayment($chargeId, json_encode($payload));
-        $payment = $this->easyApiService->getPayment($paymentId);
+        $payload = false; 
 
-        if ($this->prepareAmount($amount) == $payment->getOrderAmount()) {
-            $this->transactionStateHandler->refund($transaction->getId(), $context);
-        } else {
-            if ($transaction->getStateMachineState()->getTechnicalName() == 'refunded_partially') {
-                $this->transactionStateHandler->reopen($transaction->getId(), $context);
-                $this->payPartially($transaction->getId(), $context);
+        //Refund functionality 960
+        $chargeArrWithAmountAvailable =array();
+        $chargeIdArr = $payment->getAllCharges();
+        $refundResult = false;
+        foreach($chargeIdArr as $row){ 
+            
+            //select query based on charge to get amount available
+            $criteria = new Criteria();
+             $criteria->addFilter(new EqualsFilter('charge_id', $row->chargeId)); 
+            $result = $this->netsApiRepository->search($criteria, $context)->first();
+
+            if($result){  
+                $chargeArrWithAmountAvailable[$row->chargeId] = $result->amount_available;
             }
-            $this->transactionStateHandler->refundPartially($transaction->getId(), $context);
         }
+        array_multisort($chargeArrWithAmountAvailable, SORT_DESC);
+        // second block
+        $amountToRefund = $amount;
+        $refundChargeIdArray = array();
+        foreach ($chargeArrWithAmountAvailable as $key => $value) {
+            if($amountToRefund<=$value) {
+                $refundChargeIdArray[$key] = $amountToRefund; 
+                break;
+            }
+            if ($amount >= $value) {
+                $amount = $amount - $value;
+                $refundChargeIdArray[$key] = $value;
+            }
+            else {
+                $refundChargeIdArray[$key] = $amount;
+            }
+            if(array_sum($refundChargeIdArray) == $amountToRefund){
+                break;
+            }
+        }
+
+        //third block
+        if($amountToRefund <= array_sum($refundChargeIdArray))
+        {
+
+            $count = 0;
+            foreach($refundChargeIdArray as $key => $value){
+
+            //refund method
+            $payload = $this->getTransactionOrderItems($orderEntity, $value);
+
+            $refundResult = $this->easyApiService->refundPayment($key, json_encode($payload));
+
+            //update table for amount available
+            if($refundResult){
+
+            //get amount available based on charge id
+
+            $criteria = new Criteria();
+            $criteria->addFilter(new EqualsFilter('charge_id', $key)); 
+            $result = $this->netsApiRepository->search($criteria, $context)->first();
+
+                    if($result){
+                        $availableAmount = $result->amount_available - $value;
+
+                        $update = [
+                            'id'=>$result->id,
+                            'amount_available' => $availableAmount
+                        ];
+                        
+                        $this->netsApiRepository->update([
+                            $update
+                        ], $context);
+                    }
+ 
+                }
+
+            }
+        }
+        //End of refund 
+        $allRefundAmount = $payment->getRefundedAmount();
+        if($refundResult){
+            $payment = $this->easyApiService->getPayment($paymentId);
+
+            if ($this->prepareAmount($amountToRefund) == $payment->getOrderAmount() || $allRefundAmount == $payment->getOrderAmount()) {
+                $this->transactionStateHandler->refund($transaction->getId(), $context);
+            } else {
+                if ($transaction->getStateMachineState()->getTechnicalName() == 'refunded_partially') {
+                    $this->transactionStateHandler->reopen($transaction->getId(), $context);
+                    $this->payPartially($transaction->getId(), $context);
+                }
+                $this->transactionStateHandler->refundPartially($transaction->getId(), $context);
+            }
+        }
+
         return $payload;
     }
 
@@ -556,6 +662,6 @@ class CheckoutService
 
     private function payPartially(string $transactionId, Context $context): void
     {
-        $this->stateMachineRegistry->transition(new Transition(OrderTransactionDefinition::ENTITY_NAME, $transactionId, StateMachineTransitionActions::ACTION_PAY_PARTIALLY, 'stateId'), $context);
+        $this->stateMachineRegistry->transition(new Transition(OrderTransactionDefinition::ENTITY_NAME, $transactionId, StateMachineTransitionActions::ACTION_PAID_PARTIALLY, 'stateId'), $context);
     }
 }

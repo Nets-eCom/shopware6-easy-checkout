@@ -5,10 +5,15 @@
 |------|----------
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
-|Shop Version | `6+`
-|Version | `1.1.4`
+|Shop Version | `6.4+`
+|Version | `1.2.0`
 |Guide | https://tech.nets.eu/shopmodules
 |Github | https://github.com/DIBS-Payment-Services/shopware6-easy-checkout
+
+
+### Note: This version 1.2.0 of Nets Easy Module is supported for shopware 6.4+ version, if you want to get this module installed for other shopware version i.e. 6.3 or lower,
+please go for Nets Checkout Module released version 1.1.4
+
 
 ## INSTALLATION
 
@@ -22,8 +27,6 @@
 bin/console plugin:install NetsCheckout
 bin/console plugin:activate NetsCheckout
 bin/console cache:clear
-
-NOTE : .
 
 ### Configuration
 1. To configure and setup the plugin navigate to : Admin > Settings > System > Plugins

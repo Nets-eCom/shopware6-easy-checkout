@@ -86,7 +86,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface
      * @var SessionInterface
      */
     private $session;
-
+    private $netsApiRepository;
     /**
      * Checkout constructor.
      *
@@ -101,7 +101,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface
      * @param Router $router
      * @param SessionInterface $session
      */
-    public function __construct(CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiExceptionHandler $easyApiExceptionHandler, OrderTransactionStateHandler $transactionStateHandler, EasyApiService $easyApiService, EntityRepositoryInterface $orderTransactionRepo, ConfigService $configService, EntityRepositoryInterface $orderRepository, Router $router, SessionInterface $session)
+    public function __construct(CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiExceptionHandler $easyApiExceptionHandler, OrderTransactionStateHandler $transactionStateHandler, EasyApiService $easyApiService, EntityRepositoryInterface $orderTransactionRepo, ConfigService $configService, EntityRepositoryInterface $orderRepository, Router $router, SessionInterface $session,EntityRepositoryInterface $netsApiRepository)
     {
         $this->systemConfigService = $systemConfigService;
         $this->checkout = $checkout;
@@ -113,6 +113,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface
         $this->orderRepository = $orderRepository;
         $this->router = $router;
         $this->session = $session;
+        $this->netsApiRepository = $netsApiRepository;
     }
 
     /**
@@ -170,6 +171,21 @@ class Checkout implements AsynchronousPaymentHandlerInterface
                     ]
                 ]
             ], $context);
+
+        //For inserting amount available respect to charge id
+        if($this->configService->getChargeNow($salesChannelContextId) == 'yes'){
+
+            $this->netsApiRepository->create([
+            [
+            'order_id' => $orderId?$orderId:'',
+            'charge_id' => $payment->getFirstChargeId()?$payment->getFirstChargeId():'',
+            'operation_type' =>'capture',
+            'operation_amount' => $payment->getChargedAmount()?$payment->getChargedAmount():'',
+            'amount_available' => $payment->getChargedAmount()?$payment->getChargedAmount():'',
+            ]
+            ], $context);
+        }
+
         } catch (EasyApiException $ex) {
             throw new CustomerCanceledAsyncPaymentException($transactionId, 'Exception during transaction completion');
         }

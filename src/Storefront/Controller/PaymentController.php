@@ -49,8 +49,9 @@ class PaymentController extends StorefrontController
     private $cartService;
 
     private $paymentService;
+    private $netsApiRepository;
 
-    public function __construct(EntityRepositoryInterface $orderRepository, \Psr\Log\LoggerInterface $logger, \Nets\Checkout\Service\Easy\CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiService $easyApiService, \Symfony\Component\HttpKernel\KernelInterface $kernel, ConfigService $configService, CartService $cartService, PaymentService $paymentService)
+    public function __construct(EntityRepositoryInterface $orderRepository, \Psr\Log\LoggerInterface $logger, \Nets\Checkout\Service\Easy\CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiService $easyApiService, \Symfony\Component\HttpKernel\KernelInterface $kernel, ConfigService $configService, CartService $cartService, PaymentService $paymentService,EntityRepositoryInterface $netsApiRepository)
     {
         $this->orderRepository = $orderRepository;
         $this->context = Context::createDefaultContext();
@@ -62,6 +63,7 @@ class PaymentController extends StorefrontController
         $this->configService = $configService;
         $this->cartService = $cartService;
         $this->paymentService = $paymentService;
+        $this->netsApiRepository = $netsApiRepository;
     }
 
     /**
@@ -78,7 +80,7 @@ class PaymentController extends StorefrontController
     public function placeOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data)
     {
         $cart = $this->cartService->getCart($ctx->getToken(), $ctx);
-        $orderId = $this->cartService->order($cart, $ctx);
+        $orderId = $this->cartService->order($cart, $ctx, $data);
         $orderEntity = $this->getOrderEntityById($context, $orderId);
         $salesChannelId = $ctx->getSalesChannel()->getId();
         $secretKey = $this->configService->getSecretKey($salesChannelId);
@@ -92,6 +94,21 @@ class PaymentController extends StorefrontController
             'checkoutUrl' => $checkoutUrl
         ];
         $this->easyApiService->updateReference($_REQUEST['paymentId'], json_encode($refUpdate));
+
+        //For inserting amount available respect to charge id
+        if($this->configService->getChargeNow($ctx->getsalesChannel()->getId()) == 'yes'){
+
+            $this->netsApiRepository->create([
+            [
+            'order_id' => $orderId?$orderId:'',
+            'charge_id' => $payment->getFirstChargeId()?$payment->getFirstChargeId():'',
+            'operation_type' =>'capture',
+            'operation_amount' => $payment->getChargedAmount()?$payment->getChargedAmount():'',
+            'amount_available' => $payment->getChargedAmount()?$payment->getChargedAmount():'',
+            ]
+            ], $context);
+        }
+
         $finishUrl = $this->generateUrl('frontend.checkout.finish.page', [
             'orderId' => $orderId
         ]);
@@ -125,7 +142,7 @@ class PaymentController extends StorefrontController
     /**
      *
      * @RouteScope(scopes={"api"})
-     * @Route("/api/v{version}/nets/transaction/charge", name="nets.charge.payment.action", options={"seo"="false"}, methods={"POST"})
+     * @Route("/api/nets/transaction/charge", name="nets.charge.payment.action", options={"seo"="false"}, methods={"POST"})
      * @param Context $context
      * @param Request $request
      * @return JsonResponse
@@ -164,7 +181,7 @@ class PaymentController extends StorefrontController
     /**
      *
      * @RouteScope(scopes={"api"})
-     * @Route("/api/v{version}/nets/transaction/summary", name="nets.summary.payment.action", options={"seo"="false"}, methods={"POST"})
+     * @Route("/api/nets/transaction/summary", name="nets.summary.payment.action", options={"seo"="false"}, methods={"POST"})
      * @param Context $context
      * @param Request $request
      * @return JsonResponse
@@ -172,6 +189,8 @@ class PaymentController extends StorefrontController
      */
     public function getSummaryAmounts(Context $context, Request $request)
     {
+        
+
         $orderId = $request->get('params')['transaction']['orderId'];
         $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
         $environment = $this->configService->getEnvironment($salesChannelId);
@@ -183,6 +202,9 @@ class PaymentController extends StorefrontController
         $paymentId = $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
         $payment = $this->easyApiService->getPayment($paymentId);
 
+        
+             
+        
         // if($payment->getReservedAmount() > 0) {
         // $amountAvailableForCapturing = ($payment->getReservedAmount() - $payment->getChargedAmount()) / 100;
         // } else {
@@ -201,25 +223,47 @@ class PaymentController extends StorefrontController
 
         $amountAvailableForCapturing = 0;
         if ($payment->getChargedAmount() == 0) {
-            $amountAvailableForCapturing = $payment->getOrderAmount() / 100;
+        $amountAvailableForCapturing = $payment->getOrderAmount() / 100;
+        } else {
+        $amountAvailableForCapturing = ($payment->getReservedAmount() - $payment->getChargedAmount()) / 100;
         }
 
-        $amountAvailableForRefunding = 0;
+         $amountAvailableForRefunding = 0;
         if ($payment->getChargedAmount() > 0 && $payment->getRefundedAmount() == 0) {
-            $amountAvailableForRefunding = $payment->getChargedAmount() / 100;
+        $amountAvailableForRefunding = $payment->getChargedAmount() / 100;
+        } else {
+            if ($payment->getChargedAmount() - $payment->getRefundedAmount() > 0) {
+            $amountAvailableForRefunding = ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100;
+            }
         }
+        
+         
+        $refundsArray = $payment->getAllRefund();
+        $refundPendingStatus = false;
+        if(!empty($refundsArray)){
+        foreach($refundsArray as $row){
+                if($row->state== 'Pending')
+                {
+                    $refundPendingStatus = true;
+                }
+            }
+        }
+        //echo "<pre>";print_r($recreafundPendingStatus);die;
+
+         //return new JsonResponse(['obj'=>$payment->getPaymentData()]);exit;
 
         return new JsonResponse([
             'amountAvailableForCapturing' => $amountAvailableForCapturing,
             'amountAvailableForRefunding' => $amountAvailableForRefunding,
-            'orderState' => $transaction->getStateMachineState()->getTechnicalName()
+            'orderState' => $transaction->getStateMachineState()->getTechnicalName(),
+            'refundPendingStatus' => $refundPendingStatus
         ]);
     }
 
     /**
      *
      * @RouteScope(scopes={"api"})
-     * @Route("/api/v{version}/nets/transaction/refund", name="nets.refund.payment.action", options={"seo"="false"}, methods={"POST"})
+     * @Route("/api/nets/transaction/refund", name="nets.refund.payment.action", options={"seo"="false"}, methods={"POST"})
      * @param Context $context
      * @param Request $request
      * @return JsonResponse

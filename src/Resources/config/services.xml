@@ -14,6 +14,7 @@
             <argument type="service" id="order.repository"/>
 			<argument type="service" id="router"/>
             <argument type="service" id="session" />
+            <argument type="service" id="nets_payment_operations.repository" />
             <tag name="shopware.payment.method.async" />
         </service>
         <service id="Nets\Checkout\Service\Test">
@@ -30,6 +31,7 @@
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
 			
             <argument type="service" id="Shopware\Core\Checkout\Payment\PaymentService" />
+            <argument type="service" id="nets_payment_operations.repository" />
 
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -44,7 +46,9 @@
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <argument type="service" id="request_stack" />
             <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
+            <argument type="service" id="nets_payment_operations.repository" />
             <argument type="service" id="Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupDefinition"/>
+            
         </service>
 
         <service id="Nets\Checkout\Service\Easy\Api\Client">
@@ -82,6 +86,8 @@
             <argument type="service" id="language.repository" />
             <tag name="kernel.event_subscriber" />
         </service>
-
+	<service id="Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentDefinition">
+ <tag name="shopware.entity.definition" entity="nets_payment_operations" />
+ </service>	
     </services>
 </container>

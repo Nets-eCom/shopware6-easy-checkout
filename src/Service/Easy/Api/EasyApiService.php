@@ -86,13 +86,13 @@ class EasyApiService
     public function chargePayment(string $paymentId, string $data)
     {
         $url = $this->getChargePaymentUrl($paymentId);
-        $this->handleResponse($this->client->post($url, $data));
+        return $this->handleResponse($this->client->post($url, $data));
     }
 
     public function refundPayment(string $chargeId, string $data)
     {
         $url = $this->getRefundPaymentUrl($chargeId);
-        $this->handleResponse($this->client->post($url, $data));
+        return $this->handleResponse($this->client->post($url, $data));
     }
 
     public function voidPayment(string $paymentId, string $data)
