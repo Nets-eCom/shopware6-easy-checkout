@@ -8,12 +8,12 @@
 |Shop Version | `6+`
 |Version | `1.2.0`
 |Guide | https://tech.nets.eu/shopmodules
-|Github | https://github.com/DIBS-Payment-Services/shopware6-easy-checkout
+|Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
 
 ### Version 1.2.0 - Released 2021-08-23
-* Fixed : Partial CApture/Refund of order amount, Support for shopware 6.4+ version
+* Fixed : Partial Capture/Refund of order amount, Support for shopware 6.4+ version
 
 ### Version 1.1.4 - Released 2021-05-31
 * Fixed : shipping cost fix as per net/gross and multi sales channel
