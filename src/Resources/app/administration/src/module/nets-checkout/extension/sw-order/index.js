@@ -18,7 +18,8 @@ Shopware.Component.override('sw-order-user-card', {
             amountAvailableForRefunding: 0,
             captureButtonLoading: false,
             refundButtonLoading: false,
-            orderState: null
+            orderState: null,
+            refundPendingStatus:false
         };
     },
 
@@ -43,7 +44,8 @@ Shopware.Component.override('sw-order-user-card', {
         },
 
         canCapture() {
-            if(this.amountAvailableForCapturing > 0 && this.orderState == 'open') {
+
+            if(this.amountAvailableForCapturing > 0 ) {
                 return true;
             }
             return false;
@@ -53,6 +55,7 @@ Shopware.Component.override('sw-order-user-card', {
             let me;
             me = this;
             me.isLoading = true;
+
             if(this.getTransactionId(this.currentOrder)) {
                 this.NetsCheckoutApiPaymentService.getSummaryAmounts(this.currentOrder)
                     .then((response) => {
@@ -61,6 +64,7 @@ Shopware.Component.override('sw-order-user-card', {
                         me.amountAvailableForRefunding = response.amountAvailableForRefunding;
                         me.isLoading = false;
                         me.orderState = response.orderState;
+                        me.refundPendingStatus = response.refundPendingStatus; 
                     })
                     .catch((errorResponse) => {
                         //
@@ -70,12 +74,13 @@ Shopware.Component.override('sw-order-user-card', {
         },
 
         canRefund() {
-            if(this.amountAvailableForRefunding > 0
-                && this.orderState == 'paid' ||
-                this.orderState == 'paid_partially' ||
-                this.orderState == 'pay_partially') {
+            if(this.refundPendingStatus){
+                return false;
+            }
+            if(this.amountAvailableForRefunding > 0 && this.amountAvailableForCapturing == 0) {
                 return true;
             }
+
             return false;
         },
 

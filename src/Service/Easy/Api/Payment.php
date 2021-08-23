@@ -69,4 +69,18 @@ class Payment
 
         }
     }
+
+    public function getAllRefund()
+    {
+        if (isset($this->paymentObj->payment->refunds)) {
+            return $this->paymentObj->payment->refunds;
+        }
+    }
+    public function getPaymentData() {
+         return $this->paymentObj; 
+    }
+    public function getOrderId()
+    {
+        return $this->paymentObj->payment->orderDetails->reference;
+    }
 }
