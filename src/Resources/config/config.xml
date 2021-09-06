@@ -126,6 +126,7 @@
             <placeholder lang="da-DK">Indsæt Handelsbetingelser URL her</placeholder>
             <placeholder lang="sv-SE">Infoga dina villkor url här</placeholder>
             <placeholder lang="nb-NO">Sett inn vilkårens url her</placeholder>
+            <defaultValue>https://yoursite.com/terms</defaultValue>
         </input-field>
          <input-field>
             <name>merchantTermsUrl</name>
@@ -144,7 +145,7 @@
             <placeholder lang="da-DK">Indsæt Handelsbetingelser URL her</placeholder>
             <placeholder lang="sv-SE">Infoga dina villkor url här</placeholder>
             <placeholder lang="nb-NO">Sett inn vilkårens url her</placeholder>
+            <defaultValue>https://cdn.dibspayment.com/terms/easy/terms_of_use.pdf</defaultValue>
         </input-field>
-           
     </card>
 </config>
