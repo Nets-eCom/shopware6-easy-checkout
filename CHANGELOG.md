@@ -5,12 +5,16 @@
 |------|----------
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
-|Shop Version | `6+`
-|Version | `1.2.0`
+|Shop Version | `6.4+`
+|Version | `1.2.1`
 |Guide | https://tech.nets.eu/shopmodules
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.2.1 - Released 2021-09-06
+* Fixed : frontend responsive design
+* Update : Minor changes to settings
 
 ### Version 1.2.0 - Released 2021-08-23
 * Fixed : Partial Capture/Refund of order amount, Support for shopware 6.4+ version

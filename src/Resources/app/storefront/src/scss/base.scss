@@ -1,14 +1,11 @@
 .checkout .checkout-container .checkout-aside .checkout-summary {
-    margin-left: 15%;
+    margin-left: 0;
 }
 
 #dibs-checkout-embedded {
-    margin-left: 18%;
-    width: 375px;
+    width: auto;
 }
 
 @media (min-width: 768px) {
-.is-act-confirmpage .checkout .checkout-aside {
-    margin-left: 5% !important;
-}
+
 }
