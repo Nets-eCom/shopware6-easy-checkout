@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4+`
-|Version | `1.2.1`
+|Version | `1.2.2`
 |Guide | https://tech.nets.eu/shopmodules
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.2.2 - Released 2021-10-26
+* Fixed : Hosted checkout language fix for nets easy checkout
+
 
 ### Version 1.2.1 - Released 2021-09-06
 * Fixed : frontend responsive design

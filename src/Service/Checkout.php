@@ -86,7 +86,11 @@ class Checkout implements AsynchronousPaymentHandlerInterface
      * @var SessionInterface
      */
     private $session;
+
     private $netsApiRepository;
+
+    private $languageRepo;
+
     /**
      * Checkout constructor.
      *
@@ -101,7 +105,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface
      * @param Router $router
      * @param SessionInterface $session
      */
-    public function __construct(CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiExceptionHandler $easyApiExceptionHandler, OrderTransactionStateHandler $transactionStateHandler, EasyApiService $easyApiService, EntityRepositoryInterface $orderTransactionRepo, ConfigService $configService, EntityRepositoryInterface $orderRepository, Router $router, SessionInterface $session,EntityRepositoryInterface $netsApiRepository)
+    public function __construct(CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiExceptionHandler $easyApiExceptionHandler, OrderTransactionStateHandler $transactionStateHandler, EasyApiService $easyApiService, EntityRepositoryInterface $orderTransactionRepo, ConfigService $configService, EntityRepositoryInterface $orderRepository, Router $router, SessionInterface $session, EntityRepositoryInterface $netsApiRepository, EntityRepositoryInterface $languageRepo)
     {
         $this->systemConfigService = $systemConfigService;
         $this->checkout = $checkout;
@@ -114,6 +118,7 @@ class Checkout implements AsynchronousPaymentHandlerInterface
         $this->router = $router;
         $this->session = $session;
         $this->netsApiRepository = $netsApiRepository;
+        $this->languageRepo = $languageRepo;
     }
 
     /**
@@ -172,20 +177,19 @@ class Checkout implements AsynchronousPaymentHandlerInterface
                 ]
             ], $context);
 
-        //For inserting amount available respect to charge id
-        if($this->configService->getChargeNow($salesChannelContextId) == 'yes'){
+            // For inserting amount available respect to charge id
+            if ($this->configService->getChargeNow($salesChannelContextId) == 'yes') {
 
-            $this->netsApiRepository->create([
-            [
-            'order_id' => $orderId?$orderId:'',
-            'charge_id' => $payment->getFirstChargeId()?$payment->getFirstChargeId():'',
-            'operation_type' =>'capture',
-            'operation_amount' => $payment->getChargedAmount()?$payment->getChargedAmount():'',
-            'amount_available' => $payment->getChargedAmount()?$payment->getChargedAmount():'',
-            ]
-            ], $context);
-        }
-
+                $this->netsApiRepository->create([
+                    [
+                        'order_id' => $orderId ? $orderId : '',
+                        'charge_id' => $payment->getFirstChargeId() ? $payment->getFirstChargeId() : '',
+                        'operation_type' => 'capture',
+                        'operation_amount' => $payment->getChargedAmount() ? $payment->getChargedAmount() : '',
+                        'amount_available' => $payment->getChargedAmount() ? $payment->getChargedAmount() : ''
+                    ]
+                ], $context);
+            }
         } catch (EasyApiException $ex) {
             throw new CustomerCanceledAsyncPaymentException($transactionId, 'Exception during transaction completion');
         }
@@ -221,8 +225,25 @@ class Checkout implements AsynchronousPaymentHandlerInterface
             return new RedirectResponse($this->router->generate('frontend.checkout.cart.page'));
         }
 
-        $language = $this->configService->getLanguage($salesChannelContext->getSalesChannel()
-            ->getId());
+        $langShort = $this->configService->getLang($salesChannelContext->getContext(), $this->languageRepo);
+
+        switch ($langShort) {
+            case 'de':
+                $language = 'de-DE';
+                break;
+            case 'da':
+                $language = 'da-DK';
+                break;
+            case 'sv':
+                $language = 'sv-SE';
+                break;
+            case 'nb':
+                $language = 'nb-NO';
+                break;
+            default:
+                $language = 'en-GB';
+        }
+
         return new RedirectResponse($PaymentCreateResult['hostedPaymentPageUrl'] . '&language=' . $language);
     }
 

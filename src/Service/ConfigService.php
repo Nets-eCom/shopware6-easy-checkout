@@ -1,6 +1,8 @@
 <?php
 namespace Nets\Checkout\Service;
 
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ConfigService
@@ -87,6 +89,24 @@ class ConfigService
     public function getLanguage($salesChannelContextId)
     {
         return $this->systemConfigService->get(sprintf("$this->prefix%s", self::LANGUAGE), $salesChannelContextId);
+    }
+
+    public function getLang($context, $languageRepo)
+    {
+        $languages = $context->getLanguageId();
+        $criteria = new Criteria([
+            $languages
+        ]);
+        $criteria->addAssociation('locale');
+
+        /** @var null|LanguageEntity $language */
+        $language = $languageRepo->search($criteria, $context)->first();
+
+        if (null === $language || null === $language->getLocale()) {
+            return 'en';
+        }
+
+        return substr($language->getLocale()->getCode(), 0, 2);
     }
 
     /**
