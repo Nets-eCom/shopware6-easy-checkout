@@ -15,6 +15,7 @@
 			<argument type="service" id="router"/>
             <argument type="service" id="session" />
             <argument type="service" id="nets_payment_operations.repository" />
+             <argument type="service" id="language.repository" />
             <tag name="shopware.payment.method.async" />
         </service>
         <service id="Nets\Checkout\Service\Test">
