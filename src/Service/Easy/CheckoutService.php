@@ -15,14 +15,14 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStat
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Shopware\Core\System\StateMachine\Transition;
 use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 
 class CheckoutService
 {
@@ -80,7 +80,6 @@ class CheckoutService
     private $stateMachineRegistry;
 
     private $netsApiRepository;
-   
 
     /**
      * regexp for filtering strings
@@ -98,7 +97,7 @@ class CheckoutService
      * @param RequestStack $requestStack
      * @param StateMachineRegistry $machineRegistry
      */
-    public function __construct(EasyApiService $easyApiService, ConfigService $configService, EntityRepositoryInterface $transactionRepository, OrderTransactionStateHandler $orderTransactionStateHandler, CartService $cartService, RequestStack $requestStack, StateMachineRegistry $machineRegistry,EntityRepositoryInterface $netsApiRepository)
+    public function __construct(EasyApiService $easyApiService, ConfigService $configService, EntityRepositoryInterface $transactionRepository, OrderTransactionStateHandler $orderTransactionStateHandler, CartService $cartService, RequestStack $requestStack, StateMachineRegistry $machineRegistry, EntityRepositoryInterface $netsApiRepository)
     {
         $this->easyApiService = $easyApiService;
         $this->configService = $configService;
@@ -187,6 +186,35 @@ class CheckoutService
             $data['checkout']['url'] = $this->requestStack->getCurrentRequest()->getUriForPath('/nets/order/finish');
         }
 
+        $countryIso = $salesChannelContext->getCustomer()
+            ->getActiveShippingAddress()
+            ->getCountry()
+            ->getIso3();
+
+        if ($countryIso == "DNK") {
+            $prefix = "+45";
+        } elseif ($countryIso == "SWE") {
+            $prefix = "+46";
+        } elseif ($countryIso == "USA") {
+            $prefix = "+1";
+        } else if ($countryIso == "NOR") {
+            $prefix = "+47";
+        } else if ($countryIso == "DEU") {
+            $prefix = "+49";
+        } else if ($countryIso == "FIN") {
+            $prefix = "+358";
+        } else if ($countryIso == "GBR") {
+            $prefix = "+44";
+        } else if ($countryIso == "FRA") {
+            $prefix = "+33";
+        } else if ($countryIso == "AUT") {
+            $prefix = "+43";
+        } else if ($countryIso == "NLD") {
+            $prefix = "+31";
+        } else if ($countryIso == "CHE") {
+            $prefix = "+41";
+        }
+
         $data['checkout']['consumer'] = [
             'email' => $salesChannelContext->getCustomer()->getEmail(),
             'shippingAddress' => [
@@ -209,6 +237,17 @@ class CheckoutService
             ]
         ];
 
+        $phoneNumber = $salesChannelContext->getCustomer()
+            ->getActiveShippingAddress()
+            ->getPhoneNumber();
+
+        if ($phoneNumber) {
+            $data['checkout']['consumer']['phoneNumber'] = [
+                'prefix' => $prefix,
+                'number' => $phoneNumber
+            ];
+        }
+
         if (! empty($salesChannelContext->getCustomer()
             ->getActiveBillingAddress()
             ->getCompany())) {
@@ -224,7 +263,6 @@ class CheckoutService
                 ]
             ];
         } else {
-
             $data['checkout']['consumer']['privatePerson'] = [
                 'firstName' => $this->stringFilter($salesChannelContext->getCustomer()
                     ->getFirstname()),
@@ -450,8 +488,6 @@ class CheckoutService
      */
     public function chargePayment(OrderEntity $orderEntity, $salesChannelContextId, Context $context, $paymentId, $amount)
     {
-        
-
         $transaction = $orderEntity->getTransactions()->first();
         $environment = $this->configService->getEnvironment($salesChannelContextId);
         $secretKey = $this->configService->getSecretKey($salesChannelContextId);
@@ -460,9 +496,9 @@ class CheckoutService
 
         $payload = $this->getTransactionOrderItems($orderEntity, $amount);
 
-        $chargeId= $this->easyApiService->chargePayment($paymentId, json_encode($payload));
+        $chargeId = $this->easyApiService->chargePayment($paymentId, json_encode($payload));
 
-        $chargeIdArr= json_decode($chargeId);
+        $chargeIdArr = json_decode($chargeId);
         $payment = $this->easyApiService->getPayment($paymentId);
 
         if ($transaction->getStateMachineState()->getTechnicalName() != 'open') {
@@ -478,19 +514,17 @@ class CheckoutService
             $this->payPartially($transaction->getId(), $context);
         }
 
-        //For inserting amount available respect to charge id
-        
+        // For inserting amount available respect to charge id
 
-            $this->netsApiRepository->create([
+        $this->netsApiRepository->create([
             [
-            'order_id' => $payment->getOrderId()?$payment->getOrderId():'',
-            'charge_id' => $chargeIdArr->chargeId?$chargeIdArr->chargeId:'',
-            'operation_type' =>'capture',
-            'operation_amount' => $amount,
-            'amount_available' => $amount,
+                'order_id' => $payment->getOrderId() ? $payment->getOrderId() : '',
+                'charge_id' => $chargeIdArr->chargeId ? $chargeIdArr->chargeId : '',
+                'operation_type' => 'capture',
+                'operation_amount' => $amount,
+                'amount_available' => $amount
             ]
-            ], $context);
-        
+        ], $context);
 
         return $payload;
     }
@@ -517,20 +551,20 @@ class CheckoutService
         $this->easyApiService->setAuthorizationKey($secretKey);
         $payment = $this->easyApiService->getPayment($paymentId);
         $chargeId = $payment->getFirstChargeId();
-        $payload = false; 
+        $payload = false;
 
-        //Refund functionality 960
-        $chargeArrWithAmountAvailable =array();
+        // Refund functionality 960
+        $chargeArrWithAmountAvailable = array();
         $chargeIdArr = $payment->getAllCharges();
         $refundResult = false;
-        foreach($chargeIdArr as $row){ 
-            
-            //select query based on charge to get amount available
+        foreach ($chargeIdArr as $row) {
+
+            // select query based on charge to get amount available
             $criteria = new Criteria();
-             $criteria->addFilter(new EqualsFilter('charge_id', $row->chargeId)); 
+            $criteria->addFilter(new EqualsFilter('charge_id', $row->chargeId));
             $result = $this->netsApiRepository->search($criteria, $context)->first();
 
-            if($result){  
+            if ($result) {
                 $chargeArrWithAmountAvailable[$row->chargeId] = $result->amount_available;
             }
         }
@@ -539,63 +573,59 @@ class CheckoutService
         $amountToRefund = $amount;
         $refundChargeIdArray = array();
         foreach ($chargeArrWithAmountAvailable as $key => $value) {
-            if($amountToRefund<=$value) {
-                $refundChargeIdArray[$key] = $amountToRefund; 
+            if ($amountToRefund <= $value) {
+                $refundChargeIdArray[$key] = $amountToRefund;
                 break;
             }
             if ($amount >= $value) {
                 $amount = $amount - $value;
                 $refundChargeIdArray[$key] = $value;
-            }
-            else {
+            } else {
                 $refundChargeIdArray[$key] = $amount;
             }
-            if(array_sum($refundChargeIdArray) == $amountToRefund){
+            if (array_sum($refundChargeIdArray) == $amountToRefund) {
                 break;
             }
         }
 
-        //third block
-        if($amountToRefund <= array_sum($refundChargeIdArray))
-        {
+        // third block
+        if ($amountToRefund <= array_sum($refundChargeIdArray)) {
 
             $count = 0;
-            foreach($refundChargeIdArray as $key => $value){
+            foreach ($refundChargeIdArray as $key => $value) {
 
-            //refund method
-            $payload = $this->getTransactionOrderItems($orderEntity, $value);
+                // refund method
+                $payload = $this->getTransactionOrderItems($orderEntity, $value);
 
-            $refundResult = $this->easyApiService->refundPayment($key, json_encode($payload));
+                $refundResult = $this->easyApiService->refundPayment($key, json_encode($payload));
 
-            //update table for amount available
-            if($refundResult){
+                // update table for amount available
+                if ($refundResult) {
 
-            //get amount available based on charge id
+                    // get amount available based on charge id
 
-            $criteria = new Criteria();
-            $criteria->addFilter(new EqualsFilter('charge_id', $key)); 
-            $result = $this->netsApiRepository->search($criteria, $context)->first();
+                    $criteria = new Criteria();
+                    $criteria->addFilter(new EqualsFilter('charge_id', $key));
+                    $result = $this->netsApiRepository->search($criteria, $context)->first();
 
-                    if($result){
+                    if ($result) {
                         $availableAmount = $result->amount_available - $value;
 
                         $update = [
-                            'id'=>$result->id,
+                            'id' => $result->id,
                             'amount_available' => $availableAmount
                         ];
-                        
+
                         $this->netsApiRepository->update([
                             $update
                         ], $context);
                     }
- 
                 }
-
             }
         }
-        //End of refund 
+        // End of refund
         $allRefundAmount = $payment->getRefundedAmount();
-        if($refundResult){
+        if ($refundResult) {
             $payment = $this->easyApiService->getPayment($paymentId);
 
             if ($this->prepareAmount($amountToRefund) == $payment->getOrderAmount() || $allRefundAmount == $payment->getOrderAmount()) {
