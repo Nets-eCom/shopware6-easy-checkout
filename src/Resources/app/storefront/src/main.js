@@ -7,8 +7,6 @@ $(function() {
             $('.checkout-aside').appendTo('.sstop');
             $('.confirm-address, .confirm-payment-shipping').appendTo('.ttmain');
 
-            $('.col-10.col-md-5.cart-item-info').removeClass('col-md-5').addClass('col-md-7');
-
             $('#confirmOrderForm, .confirm-tos').hide();
             $('.is-act-confirmpage .checkout .checkout-main, .is-act-confirmpage .checkout .checkout-aside').css({
                 'margin-left' : '0',
@@ -28,7 +26,7 @@ $(function() {
             
             $('.col-sm-6.card-col.confirm-billing-address').removeClass('col-sm-6').addClass('col-12 col-sm-6 col-md-6 col-lg-12 col-xl-6');
             $('.col-sm-6.card-col.confirm-shipping-address').removeClass('col-sm-6').addClass('col-12 col-sm-6 col-md-6 col-lg-12 col-xl-6');
-            $('.col-10.col-md-5.cart-item-info').removeClass('col-md-5').addClass('col-md-7');
+           
             
             $('#confirmOrderForm, .confirm-tos').hide();
             $('.is-act-confirmpage .checkout .checkout-main, .is-act-confirmpage .checkout .checkout-aside').css({
