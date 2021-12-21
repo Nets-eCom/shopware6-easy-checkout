@@ -6,11 +6,14 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4+`
-|Version | `1.2.3`
+|Version | `1.2.4`
 |Guide | https://tech.nets.eu/shopmodules
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.2.4 - Released 2021-12-21
+* Fixed : layout issue in nets easy checkout
 
 ### Version 1.2.3 - Released 2021-11-03
 * Fixed : Phone number fix for ratepay payment in nets easy checkout
