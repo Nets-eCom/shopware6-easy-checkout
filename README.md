@@ -11,8 +11,12 @@
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 
-### Note: This version 1.3.0 of Nets Easy Module is supported for shopware 6.4+ version, if you want to get this module installed for other shopware version i.e. 6.3 or lower, please go for Nets Checkout Module released version 1.1.4
+### :memo: Note: This version 1.3.0 of Nets Easy Module is supported for shopware 6.4+ version, if you want to get this module installed for other shopware version i.e. 6.3 or lower, please go for Nets Checkout Module released version 1.1.4
 
+### :bookmark: Few Important Points to consider : 
+#### 1. When upgrading to this new version, make sure to "build storefront and administration" and clear cache
+#### 2. Note that due to some code changes, you may not be able to charge / refund passed transactions from Shopware Admin Order details page but will need to do it from Nets Easy portal
+#### 3. It might take time to reflect Nets Easy Payment status change in shopware admin order details page due to browser caching, please try to refresh the page or clear cache.  
 
 ## INSTALLATION
 
