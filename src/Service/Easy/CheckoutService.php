@@ -270,7 +270,7 @@ class CheckoutService
                     ->getLastname())
             ];
         }
-
+		
         return $data;
     }
 
@@ -553,7 +553,7 @@ class CheckoutService
         $chargeId = $payment->getFirstChargeId();
         $payload = false;
 
-        // Refund functionality 960
+        // Refund functionality 
         $chargeArrWithAmountAvailable = array();
         $chargeIdArr = $payment->getAllCharges();
         $refundResult = false;

@@ -35,7 +35,8 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
 
     public function orderPlaced(CheckoutOrderPlacedEvent $event) {
         $paymentId = null;
-
+		$orderId = $event->getOrderId();
+		$_SESSION['orderId'] = $orderId;
         $currentRequest = $this->request->getCurrentRequest();
         if(!empty($currentRequest->get('paymentId'))) {
             $paymentId = $currentRequest->get('paymentId');

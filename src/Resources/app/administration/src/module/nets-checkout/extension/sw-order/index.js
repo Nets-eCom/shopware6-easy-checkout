@@ -19,7 +19,8 @@ Shopware.Component.override('sw-order-user-card', {
             captureButtonLoading: false,
             refundButtonLoading: false,
             orderState: null,
-            refundPendingStatus:false
+            refundPendingStatus:false,
+			paymentMethod : null
         };
     },
 
@@ -45,7 +46,7 @@ Shopware.Component.override('sw-order-user-card', {
 
         canCapture() {
 
-            if(this.amountAvailableForCapturing > 0 ) {
+            if(this.amountAvailableForCapturing > 0 && this.orderState != "cancelled") {
                 return true;
             }
             return false;
@@ -65,6 +66,7 @@ Shopware.Component.override('sw-order-user-card', {
                         me.isLoading = false;
                         me.orderState = response.orderState;
                         me.refundPendingStatus = response.refundPendingStatus; 
+						me.paymentMethod = response.paymentMethod;
                     })
                     .catch((errorResponse) => {
                         //
@@ -77,7 +79,7 @@ Shopware.Component.override('sw-order-user-card', {
             if(this.refundPendingStatus){
                 return false;
             }
-            if(this.amountAvailableForRefunding > 0 && this.amountAvailableForCapturing == 0) {
+            if(this.amountAvailableForRefunding > 0 && this.amountAvailableForCapturing == 0 && this.orderState != "cancelled") {
                 return true;
             }
 
