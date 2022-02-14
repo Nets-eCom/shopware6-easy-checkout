@@ -6,11 +6,18 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4+`
-|Version | `1.2.4`
+|Version | `1.3.0`
 |Guide | https://tech.nets.eu/shopmodules
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.3.0 - Released 2022-02-14
+* Fixed : Redirection and order creation issue with embedded checkout flow
+* Update : 
+1. Improvements with Capture/Refund/Partial functionality
+2. Payment status update in admin order details page 
+3. Display actual payment source i.e. Payment via Mastercard, Visa etc. in admin order details page 
 
 ### Version 1.2.4 - Released 2021-12-21
 * Fixed : layout issue in nets easy checkout

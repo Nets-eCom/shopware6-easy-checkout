@@ -95,11 +95,10 @@ class EasyApiService
         return $this->handleResponse($this->client->post($url, $data));
     }
 
-    public function voidPayment(string $paymentId, string $data)
+    public function voidPayment(string $paymentId, string $data = NULL)
     {
         $url = $this->getVoidPaymentUrl($paymentId);
-        $this->client->post($url, $data);
-        $this->handleResponse($this->client);
+        $this->handleResponse($this->client->post($url,$data));
     }
 
     protected function handleResponse($response)

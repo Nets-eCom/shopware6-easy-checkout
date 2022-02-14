@@ -33,7 +33,17 @@
 			
             <argument type="service" id="Shopware\Core\Checkout\Payment\PaymentService" />
             <argument type="service" id="nets_payment_operations.repository" />
-
+			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+			 <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
+			       <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+		
+		<service id="Nets\Checkout\Storefront\Controller\WebhookController" public="true">
+            <argument type="service" id="nets_payment_operations.repository" />
+			<argument type="service" id="monolog.logger"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
@@ -68,19 +78,19 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
         </service>
 
-        <service id="Nets\Checkout\Subscriber\CheckoutFinishPageSubscriber">
+        <service id="Nets\Checkout\Subscriber\CheckoutFinishPageSubscriber" public="true">
            <argument type="service" id="order.repository"/>
            <argument type="service" id="request_stack" />
            <tag name="kernel.event_subscriber" />
         </service>
 
-        <service id="Nets\Checkout\Subscriber\OrderPlacedEventSubscriber">
+        <service id="Nets\Checkout\Subscriber\OrderPlacedEventSubscriber" public="true">
             <argument type="service" id="session" />
             <argument type="service" id="request_stack" />
             <tag name="kernel.event_subscriber" />
         </service>
 
-        <service id="Nets\Checkout\Subscriber\CheckoutConfirmPageSubscriber">
+        <service id="Nets\Checkout\Subscriber\CheckoutConfirmPageSubscriber" public="true">
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
             <argument type="service" id="session"/>

@@ -53,6 +53,11 @@ class Payment
             $this->paymentObj->payment->summary->chargedAmount : 0;
     }
 
+	 public function getCancelledAmount() {
+        return isset($this->paymentObj->payment->summary->cancelledAmount) ?
+            $this->paymentObj->payment->summary->cancelledAmount : 0;
+    }
+	
     public function getRefundedAmount() {
         return isset($this->paymentObj->payment->summary->refundedAmount) ?
             $this->paymentObj->payment->summary->refundedAmount : 0;
