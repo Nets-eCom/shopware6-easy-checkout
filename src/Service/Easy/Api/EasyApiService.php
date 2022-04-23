@@ -60,7 +60,7 @@ class EasyApiService
      */
     public function createPayment(string $data)
     {
-        $this->client->setHeader('commercePlatformTag:', 'Shopware6');
+        $this->client->setHeader('commercePlatformTag', 'Shopware6');
         $url = $this->getCreatePaymentUrl();
         return $this->handleResponse($this->client->post($url, $data));
     }

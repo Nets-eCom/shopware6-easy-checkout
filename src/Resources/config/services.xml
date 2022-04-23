@@ -3,7 +3,11 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <service id="Nets\Checkout\Service\Checkout">
+        <service id="Nets\Checkout\Service\Checkout" public="true">
+            <argument type="service" id="service_container"/>
+            <tag name="shopware.payment.method.async" />
+        </service>
+       <service id="Nets\Checkout\Facade\AsyncPaymentFinalizePay" public="true">
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler"/>
@@ -16,9 +20,7 @@
             <argument type="service" id="session" />
             <argument type="service" id="nets_payment_operations.repository" />
              <argument type="service" id="language.repository" />
-            <tag name="shopware.payment.method.async" />
-        </service>
-        <service id="Nets\Checkout\Service\Test">
+			 <argument type="service" id="request_stack" />
         </service>
 
         <service id="Nets\Checkout\Storefront\Controller\PaymentController" public="true">
@@ -30,20 +32,14 @@
             <argument type="service" id="kernel"/>
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
-			
             <argument type="service" id="Shopware\Core\Checkout\Payment\PaymentService" />
             <argument type="service" id="nets_payment_operations.repository" />
 			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
 			 <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
-			       <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
-            <call method="setContainer">
-                <argument type="service" id="service_container"/>
-            </call>
-        </service>
-		
-		<service id="Nets\Checkout\Storefront\Controller\WebhookController" public="true">
-            <argument type="service" id="nets_payment_operations.repository" />
-			<argument type="service" id="monolog.logger"/>
+		   <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
+			<argument type="service" id="request_stack" />
+			 <argument type="service" id="session" />
+			  <argument type="service" id="order_transaction.repository"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
@@ -58,8 +54,7 @@
             <argument type="service" id="request_stack" />
             <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
             <argument type="service" id="nets_payment_operations.repository" />
-            <argument type="service" id="Shopware\Core\Checkout\Customer\Aggregate\CustomerGroup\CustomerGroupDefinition"/>
-            
+            <argument type="service" id="session"/>
         </service>
 
         <service id="Nets\Checkout\Service\Easy\Api\Client">

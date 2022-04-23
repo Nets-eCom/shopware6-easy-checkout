@@ -23,6 +23,7 @@ use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Shopware\Core\System\StateMachine\Transition;
 use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class CheckoutService
 {
@@ -81,6 +82,7 @@ class CheckoutService
 
     private $netsApiRepository;
 
+	private $sess;
     /**
      * regexp for filtering strings
      */
@@ -97,7 +99,7 @@ class CheckoutService
      * @param RequestStack $requestStack
      * @param StateMachineRegistry $machineRegistry
      */
-    public function __construct(EasyApiService $easyApiService, ConfigService $configService, EntityRepositoryInterface $transactionRepository, OrderTransactionStateHandler $orderTransactionStateHandler, CartService $cartService, RequestStack $requestStack, StateMachineRegistry $machineRegistry, EntityRepositoryInterface $netsApiRepository)
+    public function __construct(EasyApiService $easyApiService, ConfigService $configService, EntityRepositoryInterface $transactionRepository, OrderTransactionStateHandler $orderTransactionStateHandler, CartService $cartService, RequestStack $requestStack, StateMachineRegistry $machineRegistry, EntityRepositoryInterface $netsApiRepository, SessionInterface $sess)
     {
         $this->easyApiService = $easyApiService;
         $this->configService = $configService;
@@ -107,6 +109,7 @@ class CheckoutService
         $this->requestStack = $requestStack;
         $this->stateMachineRegistry = $machineRegistry;
         $this->netsApiRepository = $netsApiRepository;
+		$this->sess = $sess;
     }
 
     /**
@@ -163,8 +166,11 @@ class CheckoutService
 
         // print_r($data);
         if (is_object($transaction)) {
+			$cartOrderEntityObject = $transaction->getOrder();
+			$this->sess->set('cancelOrderId', $cartOrderEntityObject->getOrderNumber());
+			$this->sess->set('sw_order_id', $cartOrderEntityObject->getId());
             $data['checkout']['returnUrl'] = $transaction->getReturnUrl();
-            $data['checkout']['cancelUrl'] = $this->requestStack->getCurrentRequest()->getUriForPath('/checkout/cart');
+            $data['checkout']['cancelUrl'] = $this->requestStack->getCurrentRequest()->getUriForPath('/nets/order/cancel');
         }
         $data['checkout']['merchantTermsUrl'] = $this->configService->getMerchantTermsUrl($salesChannelContext->getSalesChannel()
             ->getId());
