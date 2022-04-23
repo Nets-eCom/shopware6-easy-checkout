@@ -147,5 +147,11 @@
             <placeholder lang="nb-NO">Sett inn vilkårens url her</placeholder>
             <defaultValue>https://cdn.dibspayment.com/terms/easy/terms_of_use.pdf</defaultValue>
         </input-field>
+		 <component name="nets-api-test-button">
+            <name>apiTest</name>
+            <label>API Test Button </label>
+        </component>
+		
     </card>
+	
 </config>

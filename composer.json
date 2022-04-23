@@ -2,7 +2,7 @@
 	"name" : "netseu/checkout",
 	"description" : "Nets Payment Plugin",
 	"type" : "shopware-platform-plugin",
-	"version" : "1.3.0",
+	"version" : "1.3.3",
 	"license" : "MIT",
 	"authors" : [{
 			"name" : "Nets"

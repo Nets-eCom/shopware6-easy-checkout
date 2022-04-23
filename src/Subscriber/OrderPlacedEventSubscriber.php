@@ -26,7 +26,7 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
         $this->request = $request;
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents() : Array
     {
         return [
             CheckoutOrderPlacedEvent::class => 'orderPlaced'
@@ -36,7 +36,7 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
     public function orderPlaced(CheckoutOrderPlacedEvent $event) {
         $paymentId = null;
 		$orderId = $event->getOrderId();
-		$_SESSION['orderId'] = $orderId;
+		$this->session->set("orderId", $orderId);
         $currentRequest = $this->request->getCurrentRequest();
         if(!empty($currentRequest->get('paymentId'))) {
             $paymentId = $currentRequest->get('paymentId');
