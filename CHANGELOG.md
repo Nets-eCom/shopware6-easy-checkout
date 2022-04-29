@@ -6,13 +6,16 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4+`
-|Version | `1.3.3`
+|Version | `1.3.4`
 |Guide | https://tech.nets.eu/shopmodules
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
 
-### Version 1.3.3 - Released 2021-11-03
+### Version 1.3.4 - Released 2022-04-29
+* Fixed : Issue for order id function for older 6.4 shopware version
+
+### Version 1.3.3 - Released 2022-04-23
 * Fixed : 
 1. Compatibility issues for version 6.4.9.0 and onwards
 2. Cancel order on click of back button
