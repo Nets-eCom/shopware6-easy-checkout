@@ -2,7 +2,7 @@
     "nets-api-test-button": {
         "title": "API Test",
         "success": "Connection was successfully tested",
-        "error": "Connection could not be established. Please check the access data",
+        "error": "Error! Connection could not be established. Please check the secret/checkout key or configuration data on your Easy account.",
         "button": "Test"
     }
 }

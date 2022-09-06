@@ -164,7 +164,6 @@ class CheckoutService
             ]
         ];
 
-        // print_r($data);
         if (is_object($transaction)) {
 			$cartOrderEntityObject = $transaction->getOrder();
 			$this->sess->set('cancelOrderId', $cartOrderEntityObject->getOrderNumber());

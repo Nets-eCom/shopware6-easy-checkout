@@ -62,7 +62,11 @@ class EasyApiService
     {
         $this->client->setHeader('commercePlatformTag', 'Shopware6');
         $url = $this->getCreatePaymentUrl();
+		try {
         return $this->handleResponse($this->client->post($url, $data));
+		} Catch (Exception\EasyApiException $e){
+			return;
+		}
     }
 
     /**
