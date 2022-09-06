@@ -98,15 +98,15 @@ class AsyncPaymentFinalizePay
             ], $context);
 
             // For inserting amount available respect to charge id
-            if ($this->configService->getChargeNow($salesChannelContextId) == 'yes') {
+            if ($this->configService->getChargeNow($salesChannelContextId) == 'yes' || $payment->getPaymentType() == 'A2A') {
 
                 $this->netsApiRepository->create([
                     [
                         'order_id' => $orderId ? $orderId : '',
                         'charge_id' => $payment->getFirstChargeId() ? $payment->getFirstChargeId() : '',
                         'operation_type' => 'capture',
-                        'operation_amount' => $payment->getChargedAmount() ? $payment->getChargedAmount() : '',
-                        'amount_available' => $payment->getChargedAmount() ? $payment->getChargedAmount() : ''
+                        'operation_amount' => $payment->getChargedAmount() ? $payment->getChargedAmount()/100 : '',
+                        'amount_available' => $payment->getChargedAmount() ? $payment->getChargedAmount()/100 : ''
                     ]
                 ], $context);
             }

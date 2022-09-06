@@ -32,8 +32,13 @@ class Payment
     }
 
     public function getReservedAmount() {
-        return isset($this->paymentObj->payment->summary->reservedAmount) ?
-            $this->paymentObj->payment->summary->reservedAmount : null;
+        if( $this->getPaymentType() == 'A2A' ) {
+            return isset($this->paymentObj->payment->summary->chargedAmount) ?
+                 $this->paymentObj->payment->summary->chargedAmount : 0;
+        }else{
+            return isset($this->paymentObj->payment->summary->reservedAmount) ?
+                $this->paymentObj->payment->summary->reservedAmount : null;
+        }
     }
 
     public function getCheckoutUrl() {
@@ -59,9 +64,20 @@ class Payment
     }
 	
     public function getRefundedAmount() {
-        return isset($this->paymentObj->payment->summary->refundedAmount) ?
-            $this->paymentObj->payment->summary->refundedAmount : 0;
+        if(isset($this->paymentObj->payment->summary->refundedAmount)){
+            return $this->paymentObj->payment->summary->refundedAmount;
+        }else if(isset($this->paymentObj->payment->refunds)){
 
+            $refunds = json_decode(json_encode($this->paymentObj->payment->refunds), true);
+         
+            $new_array = array_filter($refunds , function($var) {
+                return $var['state'] == 'Pending' || $var['state'] == 'Completed';
+            });
+            $sum = array_sum(array_column($new_array ,'amount'));
+            return $sum;
+        }else{
+            return 0;
+        }
     }
 
     public function getOrderAmount() {

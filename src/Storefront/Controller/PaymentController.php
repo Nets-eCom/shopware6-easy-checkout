@@ -139,17 +139,25 @@ class PaymentController extends StorefrontController
         $this->easyApiService->updateReference($this->requestStack->getCurrentRequest()->get('paymentId'), json_encode($refUpdate));
 
         //For inserting amount available respect to charge id
-        if($this->configService->getChargeNow($ctx->getsalesChannel()->getId()) == 'yes'){
+        if($this->configService->getChargeNow($ctx->getsalesChannel()->getId()) == 'yes' || $payment->getPaymentType() == 'A2A'){
 
             $this->netsApiRepository->create([
             [
             'order_id' => $orderId?$orderId:'',
             'charge_id' => $payment->getFirstChargeId()?$payment->getFirstChargeId():'',
             'operation_type' =>'capture',
-            'operation_amount' => $payment->getChargedAmount()?$payment->getChargedAmount():'',
-            'amount_available' => $payment->getChargedAmount()?$payment->getChargedAmount():'',
+            'operation_amount' => $payment->getChargedAmount()?$payment->getChargedAmount()/100:'',
+            'amount_available' => $payment->getChargedAmount()?$payment->getChargedAmount()/100:'',
             ]
             ], $context);
+			
+			$this->stateMachineRegistry->transition(new Transition(
+						OrderTransactionDefinition::ENTITY_NAME,
+						$orderEntity->getTransactions()->first()
+						->getId(),
+						StateMachineTransitionActions::ACTION_PAID,
+						'stateId'
+					), $context);
         }
 
 		 $this->orderTransactionRepo->update([
@@ -291,13 +299,7 @@ class PaymentController extends StorefrontController
 				}
 			}
 			
-			return new JsonResponse([
-            'amountAvailableForCapturing' => $amountAvailableForCapturing,
-            'amountAvailableForRefunding' => ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100,
-            'orderState' => $transaction->getStateMachineState()->getTechnicalName(),
-            'refundPendingStatus' => $refundPendingStatus,
-			'paymentMethod' => $payment->getPaymentMethod()
-			]);
+			
 		} else  {
       
         if ($payment->getChargedAmount() == 0) {
@@ -360,6 +362,7 @@ class PaymentController extends StorefrontController
 					
 			} 
 		}
+
 		if($payment->getRefundedAmount() > 0 ) {
 			if($payment->getChargedAmount() == $payment->getRefundedAmount()){
 			$this->transHandler->refund($orderEntity->getTransactions()->first()
@@ -376,6 +379,8 @@ class PaymentController extends StorefrontController
 		$chargeIdArr = array();
         $chargeIdArr = $payment->getAllCharges();
         $refundResult = false;
+        $remainingAmount = null;
+
 		if(!empty($chargeIdArr)) {
         foreach ($chargeIdArr as $row) {
             // select query based on charge to get amount available
@@ -384,6 +389,7 @@ class PaymentController extends StorefrontController
             $result = $this->netsApiRepository->search($criteria, $context)->first();
             if ($result) {
                 $chargeArrWithAmountAvailable[$row->chargeId] = $result->amount_available;
+                $remainingAmount +=$result->amount_available;
             }
         }
         array_multisort($chargeArrWithAmountAvailable, SORT_DESC);
@@ -391,10 +397,11 @@ class PaymentController extends StorefrontController
 		}
 		
         // second block
-			$refundsArray = $payment->getAllRefund();
+        $refundsArray = $payment->getAllRefund();
 			
-			
-		if($payment->getRefundedAmount() > 0 ) {
+        $amountAvailableForRefunding = ($payment->getChargedAmount() - $payment->getRefundedAmount())/100;
+      
+        if ($payment->getRefundedAmount() > 0 && $remainingAmount != $amountAvailableForRefunding) {
 			
 			foreach($refundsArray as $vl => $ky) {
 				$amountToRefund = $ky->amount / 100;
@@ -455,13 +462,14 @@ class PaymentController extends StorefrontController
                 }
             }
         }
-		
+
 			return new JsonResponse([
 				'amountAvailableForCapturing' => $amountAvailableForCapturing,
 				'amountAvailableForRefunding' => ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100,
 				'orderState' => $transaction->getStateMachineState()->getTechnicalName(),
 				'refundPendingStatus' => $refundPendingStatus,
-				'paymentMethod' => $payment->getPaymentMethod()
+				'paymentMethod' => $payment->getPaymentMethod(),
+				'refunded'=> $payment->getRefundedAmount()
 			]);
 		}
         
@@ -595,19 +603,41 @@ class PaymentController extends StorefrontController
     public function check(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
     {
        $environment = $dataBag->get("NetsCheckout.config.enviromnent"); 
-		
+	   $checkoutType = $dataBag->get("NetsCheckout.config.checkoutType");
+	   $success = false;
 	   if($environment == "test"){
-		   $secretKey = "test-secret-key-f9b4a4d659e042e28f81bb187f990a39";
-	   }  else {
-		   $secretKey = "live-secret-key-fdb669e4e0094c5286751b6834c58fcd";
+		   $secretKey = $dataBag->get("NetsCheckout.config.testSecretKey");
+		   if($checkoutType == "embedded"){
+			   $checkoutKey = $dataBag->get("NetsCheckout.config.testCheckoutKey");
+		   }
+	   } else {
+		   $secretKey = $dataBag->get("NetsCheckout.config.liveSecretKey");
+		   if($checkoutType == "embedded"){
+			   $checkoutKey = $dataBag->get("NetsCheckout.config.liveCheckoutKey");
+		   }
 	   }
 	   
+	    if($checkoutType == "hosted"){
+			if(empty($secretKey)){
+			return new JsonResponse(['success' => $success]);
+			}
+			$integrationType = "HostedPaymentPage";
+			$url = '"returnUrl": "https://localhost","cancelUrl": "https://localhost"';
+		} else {
+			if(empty($secretKey) or empty($checkoutKey)){
+			return new JsonResponse(['success' => $success]);
+			}
+			$integrationType = "EmbeddedCheckout";
+			$url = '"url": "https://localhost"';
+		}
+		
+		
 	   $payload = '{
 				  "checkout": {
-					"integrationType": "HostedPaymentPage",
-					"termsUrl": "https://localhost/terms.html",
-					"merchantHandlesConsumerData" :true,
-					"returnUrl": "https://localhost/"
+					"integrationType": "'. $integrationType .'",
+					"termsUrl": "'. $dataBag->get("NetsCheckout.config.termsUrl").'",
+					"merchantHandlesConsumerData":true,'.
+					$url .'
 				  },
 				  "order": {
 					"items": [
@@ -627,15 +657,17 @@ class PaymentController extends StorefrontController
 				  }
 				}';
 	   
+
 	    $this->easyApiService->setEnv($environment);
         $this->easyApiService->setAuthorizationKey($secretKey);
-		$result = $this->easyApiService->createPayment($payload);
 		
-		$response = json_decode($result,true); 
-        if(!empty($response['paymentId'])){
-			$success = true;
-		} else  $success = false;
-       
+		$result = $this->easyApiService->createPayment($payload);
+		if($result) {
+			$response = json_decode($result,true); 
+			if(!empty($response['paymentId'])){
+				$success = true;
+			} 
+		}
         return new JsonResponse(['success' => $success]);
     }
 }
