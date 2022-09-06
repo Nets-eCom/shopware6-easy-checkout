@@ -15,12 +15,6 @@
 ### Version 1.3.7 - Released 2022-09-06
 * Improved A2A Payment Methods compatibility
 
-### Version 1.3.6 - Released 2022-05-13
-* Validation Message Fixed for API Test button
-
-### Version 1.3.5 - Released 2022-05-10
-* Minor fixes
-
 ### Version 1.3.4 - Released 2022-04-29
 * Fixed : Issue for order id function for older 6.4 shopware version
 
