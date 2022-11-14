@@ -22,6 +22,8 @@ class EasyApiService
     const ENV_LIVE = 'live';
 
     const ENV_TEST = 'test';
+	
+	const CUSTOM_API = "https://reporting.sokoni.it/enquiry";
 
     /**
      *
@@ -113,6 +115,13 @@ class EasyApiService
         }
     }
 
+	public function getPluginVersion($data){
+		$this->client->setHeader('Content-Type', "application/json");
+		$this->client->setHeader('Accept', "application/json");
+        return $this->handleResponse($this->client->post(self::CUSTOM_API, $data));
+    }
+	
+	
     protected function getCreatePaymentUrl()
     {
         return ($this->getEnv() == self::ENV_LIVE) ? self::ENDPOINT_LIVE : self::ENDPOINT_TEST;

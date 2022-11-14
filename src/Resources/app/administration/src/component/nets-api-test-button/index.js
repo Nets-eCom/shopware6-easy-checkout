@@ -15,6 +15,7 @@ Component.register('nets-api-test-button', {
         return {
             isLoading: false,
             isSaveSuccessful: false,
+			isUpdate : true
         };
     },
 
@@ -37,6 +38,7 @@ Component.register('nets-api-test-button', {
 
         check() {
             this.isLoading = true;
+			this.isUpdate = false; 
             this.netsApiTest.check(this.pluginConfig).then((res) => {
                 if (res.success) {
                     this.isSaveSuccessful = true;
@@ -53,6 +55,21 @@ Component.register('nets-api-test-button', {
 
                 this.isLoading = false;
             });
-        }
+        },
+		
+		pluginversion() {
+		
+            this.netsApiTest.pluginversion().then((res) => {
+                if (res.plugin_version && this.isUpdate == true) {
+                    this.isSaveSuccessful = false;
+                    this.createNotificationSuccess({
+                        title: "Update Nets Easy Checkout Plugin ",
+                        message: res.notification_message +"     Please update your nets easy plugin version " + res.plugin_version +  " Github repo " + res.repo_links
+                    });
+                } 
+               
+            });
+		}
+		
     }
 })

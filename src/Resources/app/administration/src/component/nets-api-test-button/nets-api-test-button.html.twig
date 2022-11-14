@@ -1,4 +1,6 @@
 <div>
+	<div v-if="pluginversion()">
+	</div>
     <sw-button-process
         :isLoading="isLoading"
         :processSuccess="isSaveSuccessful"
@@ -6,3 +8,4 @@
         @click="check"
     >{{ $tc('nets-api-test-button.button') }}</sw-button-process>
 </div>
+

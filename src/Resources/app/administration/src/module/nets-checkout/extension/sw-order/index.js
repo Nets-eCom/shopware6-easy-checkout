@@ -72,7 +72,9 @@ Shopware.Component.override('sw-order-user-card', {
                         //
                         me.isLoading = false;
                     });
-            }
+            } else { 
+				me.isLoading = false;
+			}
         },
 
         canRefund() {
