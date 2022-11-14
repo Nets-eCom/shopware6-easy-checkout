@@ -712,7 +712,7 @@ class PaymentController extends StorefrontController
 		    $dataArray = array('merchant_id' => $merchantId , //merchant Id
 				'merchant_email_id' => "",
 				'plugin_name' => "Shopware6", //plugin Name
-				'plugin_version' => "1.2.3", //plugin version
+				'plugin_version' => $resultData->version, //plugin version
 				'shop_url' => getenv("APP_URL"), //shop url
 				'integration_type' => $checkoutType,
 				'timestamp' => date('Y-m-d H:i:s'),
