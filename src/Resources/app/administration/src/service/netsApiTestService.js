@@ -17,6 +17,18 @@ class ApiClient extends ApiService {
                 return ApiService.handleResponse(response);
             });
     }
+	
+	pluginversion() {
+        const headers = this.getBasicHeaders({});
+
+        return this.httpClient
+            .post(`/pluginversion`,{
+                headers
+            })
+            .then((response) => {
+                return ApiService.handleResponse(response);
+            });
+    }
 }
 
 Application.addServiceProvider('netsApiTest', (container) => {

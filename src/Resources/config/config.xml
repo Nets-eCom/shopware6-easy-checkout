@@ -7,6 +7,12 @@
         <title lang="da-DK">Nets konfiguration</title>
         <title lang="sv-SE">Nets konfigurering</title>
         <title lang="nb-NO">Nets konfigurasjon</title>
+		 <input-field>
+            <name>merchantId</name>
+            <label>Merchant Id</label>
+            <helpText> Merchant id can be found in Nets Easy Portal on dashboard top center or Company -> Integration. For e.g. 100001234 </helpText>
+			<required>1</required>
+		</input-field>
         <input-field>
             <name>liveSecretKey</name>
             <label>Live secret key</label>

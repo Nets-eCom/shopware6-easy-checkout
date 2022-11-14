@@ -350,7 +350,7 @@ class CheckoutService
                 $netAmount = round($quantity * $unitPrice);
 
                 $items[] = [
-                    'reference' => $item->getProductId(),
+                    'reference' => $item->getProductId() ?? $item->getId(),
                     'name' => $this->stringFilter($item->getLabel()),
                     'quantity' => $quantity,
                     'unit' => 'pcs',

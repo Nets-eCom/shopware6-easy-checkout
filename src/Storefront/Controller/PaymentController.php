@@ -77,7 +77,11 @@ class PaymentController extends StorefrontController
 	
 	private $router; 
 	
-    public function __construct(EntityRepositoryInterface $orderRepository, \Psr\Log\LoggerInterface $logger, \Nets\Checkout\Service\Easy\CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiService $easyApiService, \Symfony\Component\HttpKernel\KernelInterface $kernel, ConfigService $configService, CartService $cartService, PaymentService $paymentService,EntityRepositoryInterface $netsApiRepository, OrderTransactionStateHandler $transHandler, StateMachineRegistry $machineRegistry, CartOrderRoute $orderRoute, RequestStack $requestStack, SessionInterface $session, EntityRepositoryInterface $orderTransactionRepo)
+	private $pluginRepo;
+	
+
+	
+    public function __construct(EntityRepositoryInterface $orderRepository, \Psr\Log\LoggerInterface $logger, \Nets\Checkout\Service\Easy\CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiService $easyApiService, \Symfony\Component\HttpKernel\KernelInterface $kernel, ConfigService $configService, CartService $cartService, PaymentService $paymentService,EntityRepositoryInterface $netsApiRepository, OrderTransactionStateHandler $transHandler, StateMachineRegistry $machineRegistry, CartOrderRoute $orderRoute, RequestStack $requestStack, SessionInterface $session, EntityRepositoryInterface $orderTransactionRepo, EntityRepositoryInterface $pluginRepo)
     {
         $this->orderRepository = $orderRepository;
         $this->context = Context::createDefaultContext();
@@ -96,6 +100,8 @@ class PaymentController extends StorefrontController
 		$this->requestStack = $requestStack;
 		$this->session = $session;
 		$this->orderTransactionRepo = $orderTransactionRepo;
+		$this->pluginRepo = $pluginRepo;
+			
     }
 
     /**
@@ -670,4 +676,63 @@ class PaymentController extends StorefrontController
 		}
         return new JsonResponse(['success' => $success]);
     }
+	
+	 
+	/**
+	 * @RouteScope(scopes={"api"})
+	 * @Route("/api/pluginversion", name="nets.api.custom.controller",defaults={"XmlHttpRequest"=true},options={"seo"="false"}, methods={"POST"})
+     */
+    public function customApi(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
+    {
+		
+       $environment = $this->systemConfigService->get("NetsCheckout.config.enviromnent"); 
+	   $checkoutType = $this->systemConfigService->get("NetsCheckout.config.checkoutType");
+	   $merchantId = $this->systemConfigService->get("NetsCheckout.config.merchantId");
+
+	   $success = false;
+	   if($environment == "test"){
+		   $secretKey = $dataBag->get("NetsCheckout.config.testSecretKey");
+		   if($checkoutType == "embedded"){
+			   $checkoutKey = $dataBag->get("NetsCheckout.config.testCheckoutKey");
+		   }
+	   } else {
+		   $secretKey = $dataBag->get("NetsCheckout.config.liveSecretKey");
+		   if($checkoutType == "embedded"){
+			   $checkoutKey = $dataBag->get("NetsCheckout.config.liveCheckoutKey");
+		   }
+	   }
+	   
+		
+			$criteria = new Criteria();
+			$criteria->addFilter(new EqualsFilter('name', "NetsCheckout"));
+			$resultData = $this->pluginRepo->search($criteria, $context)->first();
+	
+
+	
+		    $dataArray = array('merchant_id' => $merchantId , //merchant Id
+				'merchant_email_id' => "",
+				'plugin_name' => "Shopware6", //plugin Name
+				'plugin_version' => "1.2.3", //plugin version
+				'shop_url' => getenv("APP_URL"), //shop url
+				'integration_type' => $checkoutType,
+				'timestamp' => date('Y-m-d H:i:s'),
+				"env" => $environment
+			);
+			$postData = json_encode($dataArray);
+	
+		    $result = $this->easyApiService->getPluginVersion($postData);
+
+			if($result) {   
+				$response = json_decode($result,true);
+				if($response['status']=="00") {
+					return new JsonResponse(json_decode($response['data'], true));
+				} else { 
+				  return new JsonResponse(array('res' => 0));
+				}
+			} else {
+				return new JsonResponse(array('res' => 0));
+			}	
+       
+		
+	}
 }
