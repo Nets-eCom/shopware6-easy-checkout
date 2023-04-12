@@ -32,6 +32,7 @@ use shopware\core\Checkout\Cart\Order\OrderPersister;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute;
 use Shopware\Core\Checkout\Order\OrderDefinition;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Shopware\Core\Framework\Uuid\Uuid;
 
 class PaymentController extends StorefrontController
 {
@@ -637,7 +638,12 @@ class PaymentController extends StorefrontController
 			$url = '"url": "https://localhost"';
 		}
 		
-		
+        $connection = \Shopware\Core\Kernel::getConnection();
+		$currencyiso_code = $connection->fetchOne(
+            'SELECT `iso_code` FROM `currency` WHERE `id` = :currencyId',
+            ['currencyId' => Uuid::fromHexToBytes($context->getCurrencyId())]
+        );
+       
 	   $payload = '{
 				  "checkout": {
 					"integrationType": "'. $integrationType .'",
@@ -658,7 +664,7 @@ class PaymentController extends StorefrontController
 					  }
 					],
 					"amount": 1000,
-					"currency": "SEK",
+					"currency": "'.(empty($currencyiso_code) ? "EUR" : $currencyiso_code).'",
 					"reference": "Demo Test Order"
 				  }
 				}';
