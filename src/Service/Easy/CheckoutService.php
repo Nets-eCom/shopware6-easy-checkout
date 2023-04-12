@@ -247,9 +247,10 @@ class CheckoutService
             ->getPhoneNumber();
 
         if ($phoneNumber) {
+            $replace_array =array('/','-',' ',$prefix);
             $data['checkout']['consumer']['phoneNumber'] = [
                 'prefix' => $prefix,
-                'number' => $phoneNumber
+                'number' => str_replace( $replace_array, '', $phoneNumber)
             ];
         }
 
@@ -305,6 +306,14 @@ class CheckoutService
             $quantity = $item->getQuantity();
 
             if ($cartOrderEntityObject instanceof Cart) {
+                $ref_name = $item->getId();
+
+                if(method_exists($item,'getpayload')){
+                    $payload = $item->getpayload();
+                    if(isset($payload['productNumber'])){
+                        $ref_name = $payload['productNumber'];
+                    }
+                };
 
                 $product = $item->getPrice()->getUnitPrice();
                 if ($display_gross) {
@@ -320,7 +329,7 @@ class CheckoutService
                 $netAmount = round($quantity * $unitPrice);
 
                 $items[] = [
-                    'reference' => $item->getId(),
+                    'reference' => $ref_name,
                     'name' => $this->stringFilter($item->getLabel()),
                     'quantity' => $quantity,
                     'unit' => 'pcs',
@@ -337,6 +346,15 @@ class CheckoutService
             if ($cartOrderEntityObject instanceof OrderEntity) {
                 $product = $item->getUnitPrice();
 
+                $ref_name = $item->getProductId() ?? $item->getId();
+                if(method_exists($item,'getpayload')){
+                    $payload = $item->getpayload();
+                    if(isset($payload['productNumber'])){
+                        $ref_name = $payload['productNumber'];
+                    }
+                };
+
+              
                 if ($display_gross) {
                     $taxFormat = '1' . str_pad(number_format((float) $taxes['taxRate'], 2, '.', ''), 5, '0', STR_PAD_LEFT);
                     $unitPrice = round(round(($product * 100) / $taxFormat, 2) * 100);
@@ -350,7 +368,7 @@ class CheckoutService
                 $netAmount = round($quantity * $unitPrice);
 
                 $items[] = [
-                    'reference' => $item->getProductId() ?? $item->getId(),
+                    'reference' => $ref_name,
                     'name' => $this->stringFilter($item->getLabel()),
                     'quantity' => $quantity,
                     'unit' => 'pcs',
@@ -476,7 +494,12 @@ class CheckoutService
     public function stringFilter($string = '')
     {
         $string = substr($string, 0, 128);
-        return preg_replace(self::ALLOWED_CHARACTERS_PATTERN, '', $string);
+        $name = preg_replace(self::ALLOWED_CHARACTERS_PATTERN, '', $string);
+        if(empty($name)){
+            return preg_replace('/[^A-Za-z0-9() -]/', '', $string);
+        }else{
+            return $name;
+        }
     }
 
     /**

@@ -6,11 +6,14 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4+`
-|Version | `1.3.8`
+|Version | `1.3.9`
 |Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.3.9 - Released 2023-02-08
+* Plugin improvements and bug fixes
 
 ### Version 1.3.8 - Released 2022-11-14
 * Plugin version update notification api
