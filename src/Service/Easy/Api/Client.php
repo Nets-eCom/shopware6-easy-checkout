@@ -2,21 +2,18 @@
 
 namespace Nets\Checkout\Service\Easy\Api;
 
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Http\Message\ResponseInterface;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 /**
  * Description of Client
  */
 class Client {
 
-    /**
-     * @var \GuzzleHttp\Client
-     */
-    private $client;
+    private \GuzzleHttp\Client $client;
 
-    /**
-     * @var array
-     */
-    private $headers = [];
+    private array $headers = [];
 
     public function __construct() {
         $this->init();
@@ -40,9 +37,9 @@ class Client {
             $params = ['headers' => $this->headers,
                        'body' => $data];
             return $this->client->request('POST', $url, $params);
-        }catch (\GuzzleHttp\Exception\ClientException $ex) { 
+        }catch (ClientException $ex) { 
             throw new EasyApiException($ex->getResponse()->getBody(), $ex->getCode());
-        }catch(\GuzzleHttp\Exception\GuzzleException $ex) {
+        }catch(GuzzleException $ex) {
             throw new EasyApiException($ex->getMessage(), $ex->getCode());
         }
     }
@@ -66,14 +63,14 @@ class Client {
     /**
      * @param string $url
      * @param array $data
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      * @throws EasyApiException
      */
     public function get($url, $data = array()) {
         try {
             $params = ['headers' => $this->headers];
             return $this->client->request('GET', $url, $params);
-        }catch(\GuzzleHttp\Exception\GuzzleException $ex) {
+        }catch(GuzzleException $ex) {
             throw new EasyApiException($ex->getMessage(), $ex->getCode());
         }
     }
@@ -83,9 +80,9 @@ class Client {
             $params = ['headers' => $this->headers,
                 'body' => $data];
             return $this->client->request('PUT', $url, $params);
-        }catch (\GuzzleHttp\Exception\ClientException $ex) {
+        }catch (ClientException $ex) {
             throw new EasyApiException($ex->getResponse()->getBody(), $ex->getCode());
-        }catch(\GuzzleHttp\Exception\GuzzleException $ex) {
+        }catch(GuzzleException $ex) {
             throw new EasyApiException($ex->getMessage(), $ex->getCode());
         }
     }

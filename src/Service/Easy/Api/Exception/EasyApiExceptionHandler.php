@@ -2,6 +2,7 @@
 
 namespace Nets\Checkout\Service\Easy\Api\Exception;
 
+use Psr\Log\LoggerInterface;
 use Monolog\Handler\StreamHandler;
 use \Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use \Symfony\Component\HttpKernel\KernelInterface;
@@ -13,22 +14,16 @@ use \Symfony\Component\HttpKernel\KernelInterface;
  */
 class EasyApiExceptionHandler {
 
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /**
-     * @var KernelInterface
-     */
-    private $kernel;
+    private KernelInterface $kernel;
 
     /**
      * file for logging errors
      */
     const LOG_FILE_NAME = 'nets-easy-log.log';
 
-    public function __construct(\Psr\Log\LoggerInterface $logger, KernelInterface $kernel) {
+    public function __construct(LoggerInterface $logger, KernelInterface $kernel) {
         $this->logger = $logger;
         $this->kernel = $kernel;
     }

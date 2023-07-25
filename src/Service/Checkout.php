@@ -25,11 +25,7 @@ use Nets\Checkout\Facade\AsyncPaymentFinalizePay;
  */
 class Checkout implements AsynchronousPaymentHandlerInterface
 {
-    /**
-     *
-     * @var ContainerInterface
-     */
-    private $container;
+    private ContainerInterface $container;
 
 
      /**

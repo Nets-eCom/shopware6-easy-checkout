@@ -22,17 +22,13 @@ class ConfigService
 
     const CHARGE_NOW = 'autoCharge';
 
-    /**
-     *
-     * @var SystemConfigService
-     */
-    private $systemConfigService;
+    private SystemConfigService $systemConfigService;
 
     /**
      *
      * @var
      */
-    private $prefix;
+    private string $prefix;
 
     /**
      * ConfigService constructor.

@@ -12,21 +12,16 @@ use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\CheckoutService;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 {
 
-    /**
-     * @var ConfigService
-     */
-    private $configService;
+    private ConfigService $configService;
 
-    /**
-     * @var CheckoutService
-     */
-    private $checkoutService;
+    private CheckoutService $checkoutService;
 
     private RequestStack $requestStack;
 

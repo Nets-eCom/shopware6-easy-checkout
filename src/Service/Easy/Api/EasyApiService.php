@@ -27,11 +27,11 @@ class EasyApiService
 
     /**
      *
-     * @var Nets\Checkout\Service\Easy\Api\Client
+     * @var Client
      */
     private $client;
 
-    private $env;
+    private string $env;
 
     public function __construct(Client $client)
     {
@@ -66,7 +66,7 @@ class EasyApiService
         $url = $this->getCreatePaymentUrl();
 		try {
         return $this->handleResponse($this->client->post($url, $data));
-		} Catch (Exception\EasyApiException $e){
+		} Catch (EasyApiException $e){
 			return;
 		}
     }

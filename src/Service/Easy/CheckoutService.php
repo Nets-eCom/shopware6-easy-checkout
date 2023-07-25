@@ -38,17 +38,9 @@ class CheckoutService
 
     const NET_PRICE = 'net';
 
-    /**
-     *
-     * @var EasyApiService
-     */
-    private $easyApiService;
+    private EasyApiService $easyApiService;
 
-    /**
-     *
-     * @var ConfigService
-     */
-    private $configService;
+    private ConfigService $configService;
 
     /**
      *
@@ -56,29 +48,13 @@ class CheckoutService
      */
     private $transactionRepository;
 
-    /**
-     *
-     * @var OrderTransactionStateHandler
-     */
-    private $transactionStateHandler;
+    private OrderTransactionStateHandler $transactionStateHandler;
 
-    /**
-     *
-     * @var CartService
-     */
-    private $cartService;
+    private CartService $cartService;
 
-    /**
-     *
-     * @var RequestStack
-     */
-    private $requestStack;
+    private RequestStack $requestStack;
 
-    /**
-     *
-     * @var StateMachineRegistry
-     */
-    private $stateMachineRegistry;
+    private StateMachineRegistry $stateMachineRegistry;
 
     private $netsApiRepository;
 
