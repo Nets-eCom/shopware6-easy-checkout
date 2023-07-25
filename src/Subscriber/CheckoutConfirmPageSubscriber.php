@@ -2,6 +2,7 @@
 
 namespace Nets\Checkout\Subscriber;
 
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\TransactionDetailsStruct;
 use Shopware\Core\Framework\Context;
@@ -12,7 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\CheckoutService;
 use Symfony\Component\HttpFoundation\Session\Session;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 {
@@ -27,13 +28,10 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
      */
     private $checkoutService;
 
-    /**
-     * @var Session
-     */
-    private $session;
+    private RequestStack $requestStack;
 
     /**
-     * @var EntityRepositoryInterface
+     * @var EntityRepository
      */
     private $languageRepository;
 
@@ -41,16 +39,16 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
      * CheckoutConfirmPageSubscriber constructor.
      * @param ConfigService $configService
      * @param CheckoutService $checkoutService
-     * @param Session $session
-     * @param EntityRepositoryInterface $languageRepository
+     * @param RequestStack $requestStack
+     * @param EntityRepository $languageRepository
      */
     public function __construct(ConfigService $configService,
                                 CheckoutService $checkoutService,
-                                Session $session, EntityRepositoryInterface $languageRepository)
+                                RequestStack $requestStack, EntityRepository $languageRepository)
     {
         $this->configService = $configService;
         $this->checkoutService = $checkoutService;
-        $this->session = $session;
+        $this->requestStack = $requestStack;
         $this->languageRepository = $languageRepository;
     }
 
@@ -83,7 +81,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
             } catch (EasyApiException $ex) {
                 if($ex->getResponseErrors()) {
                     foreach ($ex->getResponseErrors() as $error ) {
-                        $this->session->getFlashBag()->add('danger', $error);
+                        $this->requestStack->getSession()->getFlashBag()->add('danger', $error);
                     }
                 }
                 // we still want payment window to be showed

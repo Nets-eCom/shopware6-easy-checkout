@@ -1,7 +1,7 @@
 <?php
 
 namespace Nets\Checkout\Subscriber;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Storefront\Page\Checkout\Finish\CheckoutFinishPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -12,21 +12,18 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class CheckoutFinishPageSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var EntityRepositoryInterface
+     * @var EntityRepository
      */
     private $orderRepository;
 
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
+    private RequestStack $requestStack;
 
     /**
      * CheckoutFinishPageSubscriber constructor.
-     * @param EntityRepositoryInterface $orderRepository
+     * @param EntityRepository $orderRepository
      * @param RequestStack $requestStack
      */
-    public function __construct(EntityRepositoryInterface $orderRepository, RequestStack $requestStack)
+    public function __construct(EntityRepository $orderRepository, RequestStack $requestStack)
     {
         $this->orderRepository = $orderRepository;
         $this->requestStack = $requestStack;

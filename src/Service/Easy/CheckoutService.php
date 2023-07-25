@@ -1,6 +1,7 @@
 <?php
 namespace Nets\Checkout\Service\Easy;
 
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
@@ -14,7 +15,6 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEnti
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
@@ -52,7 +52,7 @@ class CheckoutService
 
     /**
      *
-     * @var EntityRepositoryInterface
+     * @var EntityRepository
      */
     private $transactionRepository;
 
@@ -82,7 +82,6 @@ class CheckoutService
 
     private $netsApiRepository;
 
-	private $sess;
     /**
      * regexp for filtering strings
      */
@@ -93,13 +92,13 @@ class CheckoutService
      *
      * @param EasyApiService $easyApiService
      * @param ConfigService $configService
-     * @param EntityRepositoryInterface $transactionRepository
+     * @param EntityRepository $transactionRepository
      * @param OrderTransactionStateHandler $orderTransactionStateHandler
      * @param CartService $cartService
      * @param RequestStack $requestStack
      * @param StateMachineRegistry $machineRegistry
      */
-    public function __construct(EasyApiService $easyApiService, ConfigService $configService, EntityRepositoryInterface $transactionRepository, OrderTransactionStateHandler $orderTransactionStateHandler, CartService $cartService, RequestStack $requestStack, StateMachineRegistry $machineRegistry, EntityRepositoryInterface $netsApiRepository, SessionInterface $sess)
+    public function __construct(EasyApiService $easyApiService, ConfigService $configService, EntityRepository $transactionRepository, OrderTransactionStateHandler $orderTransactionStateHandler, CartService $cartService, RequestStack $requestStack, StateMachineRegistry $machineRegistry, EntityRepository $netsApiRepository)
     {
         $this->easyApiService = $easyApiService;
         $this->configService = $configService;
@@ -109,7 +108,6 @@ class CheckoutService
         $this->requestStack = $requestStack;
         $this->stateMachineRegistry = $machineRegistry;
         $this->netsApiRepository = $netsApiRepository;
-		$this->sess = $sess;
     }
 
     /**
@@ -166,8 +164,9 @@ class CheckoutService
 
         if (is_object($transaction)) {
 			$cartOrderEntityObject = $transaction->getOrder();
-			$this->sess->set('cancelOrderId', $cartOrderEntityObject->getOrderNumber());
-			$this->sess->set('sw_order_id', $cartOrderEntityObject->getId());
+            $session = $this->requestStack->getSession();
+			$session->set('cancelOrderId', $cartOrderEntityObject->getOrderNumber());
+			$session->set('sw_order_id', $cartOrderEntityObject->getId());
             $data['checkout']['returnUrl'] = $transaction->getReturnUrl();
             $data['checkout']['cancelUrl'] = $this->requestStack->getCurrentRequest()->getUriForPath('/nets/order/cancel');
         }
@@ -276,7 +275,7 @@ class CheckoutService
                     ->getLastname())
             ];
         }
-		
+
         return $data;
     }
 
@@ -354,7 +353,7 @@ class CheckoutService
                     }
                 };
 
-              
+
                 if ($display_gross) {
                     $taxFormat = '1' . str_pad(number_format((float) $taxes['taxRate'], 2, '.', ''), 5, '0', STR_PAD_LEFT);
                     $unitPrice = round(round(($product * 100) / $taxFormat, 2) * 100);
@@ -581,7 +580,7 @@ class CheckoutService
         $chargeId = $payment->getFirstChargeId();
         $payload = false;
 
-        // Refund functionality 
+        // Refund functionality
         $chargeArrWithAmountAvailable = array();
         $chargeIdArr = $payment->getAllCharges();
         $refundResult = false;

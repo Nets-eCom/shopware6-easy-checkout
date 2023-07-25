@@ -2,12 +2,16 @@
 declare(strict_types = 1);
 namespace Nets\Checkout\Storefront\Controller;
 
+use Psr\Log\LoggerInterface;
+use Nets\Checkout\Service\Easy\CheckoutService;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Kernel;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Core\Framework\Context;
 use Nets\Checkout\Service\ConfigService;
@@ -67,22 +71,20 @@ class PaymentController extends StorefrontController
     private $transHandler;
 	
 	private $machineRegistry;
-	
-	private $orderRoute; 
-	
-	private $requestStack;
-	
-	private $session; 
-	
-	private $orderTransactionRepo; 
-	
-	private $router; 
-	
-	private $pluginRepo;
-	
 
-	
-    public function __construct(EntityRepositoryInterface $orderRepository, \Psr\Log\LoggerInterface $logger, \Nets\Checkout\Service\Easy\CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiService $easyApiService, \Symfony\Component\HttpKernel\KernelInterface $kernel, ConfigService $configService, CartService $cartService, PaymentService $paymentService,EntityRepositoryInterface $netsApiRepository, OrderTransactionStateHandler $transHandler, StateMachineRegistry $machineRegistry, CartOrderRoute $orderRoute, RequestStack $requestStack, SessionInterface $session, EntityRepositoryInterface $orderTransactionRepo, EntityRepositoryInterface $pluginRepo)
+	private CartOrderRoute $orderRoute;
+
+	private RequestStack $requestStack;
+
+	private $orderTransactionRepo;
+
+	private $router;
+
+	private $pluginRepo;
+
+
+
+    public function __construct(EntityRepository $orderRepository, LoggerInterface $logger, CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiService $easyApiService, KernelInterface $kernel, ConfigService $configService, CartService $cartService, PaymentService $paymentService,EntityRepository $netsApiRepository, OrderTransactionStateHandler $transHandler, StateMachineRegistry $machineRegistry, CartOrderRoute $orderRoute, RequestStack $requestStack, EntityRepository $orderTransactionRepo, EntityRepository $pluginRepo)
     {
         $this->orderRepository = $orderRepository;
         $this->context = Context::createDefaultContext();
@@ -99,7 +101,6 @@ class PaymentController extends StorefrontController
 		$this->stateMachineRegistry = $machineRegistry;
 		$this->orderRoute = $orderRoute;
 		$this->requestStack = $requestStack;
-		$this->session = $session;
 		$this->orderTransactionRepo = $orderTransactionRepo;
 		$this->pluginRepo = $pluginRepo;
 			
@@ -118,18 +119,18 @@ class PaymentController extends StorefrontController
      */
     public function placeOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data) : RedirectResponse
     {
-		
+
         $cart = $this->cartService->getCart($ctx->getToken(), $ctx);
-		
+
 		try {
 		$orderId = $this->orderRoute->order($cart, $ctx, $data)->getOrder()->getId();
 		//$orderId = $this->cartService->order($cart, $ctx, $data);
 		} Catch(\Exception $e){
 		}
 		if(empty($orderId)){
-			$orderId = $this->session->get('orderId');
+			$orderId = $this->requestStack->getSession()->get('orderId');
 		}
-		
+
         $orderEntity = $this->getOrderEntityById($context, $orderId);
 		$transaction = $orderEntity->getTransactions()->first();
         $salesChannelId = $ctx->getSalesChannel()->getId();
@@ -157,7 +158,7 @@ class PaymentController extends StorefrontController
             'amount_available' => $payment->getChargedAmount()?$payment->getChargedAmount()/100:'',
             ]
             ], $context);
-			
+
 			$this->stateMachineRegistry->transition(new Transition(
 						OrderTransactionDefinition::ENTITY_NAME,
 						$orderEntity->getTransactions()->first()
@@ -574,20 +575,20 @@ class PaymentController extends StorefrontController
 	
 	
 	 /**
-     *
-     * @RouteScope(scopes={"storefront"})
-     * @Route("/nets/order/cancel", name="nets.cancel.order.controller", options={"seo"="false"}, methods={"GET"})
-     * @param Context $context
-     * @param SalesChannelContext $ctx
-     * @param Request $request
-     * @param RequestDataBag $data
-     * @return RedirectResponse|null
-     * @throws EasyApiException
-     */
-	public function cancelOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data){
-	
-		$orderId = $this->session->get('sw_order_id');
-		$orderNo = $this->session->get('cancelOrderId');
+  *
+  * @Route("/nets/order/cancel", name="nets.cancel.order.controller", options={"seo" = "false"}, methods={"GET"}, defaults={"_routeScope" = {"storefront"}})
+  * @param Context $context
+  * @param SalesChannelContext $ctx
+  * @param Request $request
+  * @param RequestDataBag $data
+  * @return RedirectResponse|null
+  * @throws EasyApiException
+  */
+ public function cancelOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data){
+
+     $session = $this->requestStack->getSession();
+		$orderId = $session->get('sw_order_id');
+		$orderNo = $session->get('cancelOrderId');
 		$salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
 		$orderEntity = $this->getOrderEntityById($context, $orderId);
 		$transaction = $orderEntity->getTransactions()->first();

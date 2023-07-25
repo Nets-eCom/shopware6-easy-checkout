@@ -2,9 +2,9 @@
 
 namespace Nets\Checkout;
 
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Nets\Checkout\Service\Checkout;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
@@ -13,6 +13,9 @@ use Shopware\Core\Framework\Plugin\Context\DeactivateContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Util\PluginIdProvider;
+
+include_once('Compatibility/EntityRepository.php');
+include_once 'Compatibility/RouteScope.php';
 
 class NetsCheckout extends Plugin
 {
@@ -61,14 +64,14 @@ class NetsCheckout extends Plugin
             'pluginId' => $pluginId,
         ];
 
-        /** @var EntityRepositoryInterface $paymentRepository */
+        /** @var EntityRepository $paymentRepository */
         $paymentRepository = $this->container->get('payment_method.repository');
         $paymentRepository->create([$netsCheckoutPaymentData], $context);
     }
 
     private function setPaymentMethodIsActive(bool $active, Context $context): void
     {
-        /** @var EntityRepositoryInterface $paymentRepository */
+        /** @var EntityRepository $paymentRepository */
         $paymentRepository = $this->container->get('payment_method.repository');
 
         $paymentMethodId = $this->getPaymentMethodId();
@@ -88,7 +91,7 @@ class NetsCheckout extends Plugin
 
     private function getPaymentMethodId(): ?string
     {
-        /** @var EntityRepositoryInterface $paymentRepository */
+        /** @var EntityRepository $paymentRepository */
         $paymentRepository = $this->container->get('payment_method.repository');
 
         // Fetch ID for update

@@ -9,24 +9,14 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class OrderPlacedEventSubscriber implements EventSubscriberInterface
 {
+    private RequestStack $request;
 
-    /**
-     * @var SessionInterface
-     */
-    private $session;
-
-    /**
-     * @var RequestStack
-     */
-    private $request;
-
-    public function __construct(SessionInterface $session, RequestStack $request)
+    public function __construct(RequestStack $request)
     {
-        $this->session = $session;
         $this->request = $request;
     }
 
-    public static function getSubscribedEvents() : Array
+    public static function getSubscribedEvents() : array
     {
         return [
             CheckoutOrderPlacedEvent::class => 'orderPlaced'
@@ -36,14 +26,15 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
     public function orderPlaced(CheckoutOrderPlacedEvent $event) {
         $paymentId = null;
 		$orderId = $event->getOrder()->getId();
-		$this->session->set("orderId", $orderId);
+        $session = $this->request->getSession();
+		$session->set("orderId", $orderId);
         $currentRequest = $this->request->getCurrentRequest();
         if(!empty($currentRequest->get('paymentId'))) {
             $paymentId = $currentRequest->get('paymentId');
         }elseif(!empty($currentRequest->get('paymentid'))) {
             $paymentId = $currentRequest->get('paymentid');
-        }elseif(!empty($this->session->get('nets_paymentId'))) {
-            $paymentId = $this->session->get('nets_paymentId');
+        }elseif(!empty($session->get('nets_paymentId'))) {
+            $paymentId = $session->get('nets_paymentId');
         }
 
         if($paymentId) {

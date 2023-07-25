@@ -2,6 +2,7 @@
 
 namespace Nets\Checkout\Facade;
 
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\CheckoutService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
@@ -11,7 +12,6 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStat
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AsynchronousPaymentHandlerInterface;
 use Shopware\Core\Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -23,8 +23,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class AsyncPaymentFinalizePay
 {
-	
-	 public function __construct(CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiExceptionHandler $easyApiExceptionHandler, OrderTransactionStateHandler $transactionStateHandler, EasyApiService $easyApiService, EntityRepositoryInterface $orderTransactionRepo, ConfigService $configService, EntityRepositoryInterface $orderRepository, Router $router, SessionInterface $session, EntityRepositoryInterface $netsApiRepository, EntityRepositoryInterface $languageRepo, RequestStack $requestStack)
+
+	 public function __construct(CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiExceptionHandler $easyApiExceptionHandler, OrderTransactionStateHandler $transactionStateHandler, EasyApiService $easyApiService, EntityRepository $orderTransactionRepo, ConfigService $configService, EntityRepository $orderRepository, Router $router, EntityRepository $netsApiRepository, EntityRepository $languageRepo, RequestStack $requestStack)
     {
         $this->systemConfigService = $systemConfigService;
         $this->checkout = $checkout;
@@ -35,12 +35,11 @@ class AsyncPaymentFinalizePay
         $this->configService = $configService;
         $this->orderRepository = $orderRepository;
         $this->router = $router;
-        $this->session = $session;
         $this->netsApiRepository = $netsApiRepository;
         $this->languageRepo = $languageRepo;
 		$this->requestStack = $requestStack;
     }
-	
+
     /**
      *
      * @param AsyncPaymentTransactionStruct $transaction
@@ -137,8 +136,8 @@ class AsyncPaymentFinalizePay
 
             $result = $this->checkout->createPayment($salesChannelContext, $this->checkout::CHECKOUT_TYPE_HOSTED, $transaction);
             $PaymentCreateResult = json_decode($result, true);
-            $this->session->set('nets_paymentId', $PaymentCreateResult['paymentId']);
-			
+            $this->requestStack->getSession()->set('nets_paymentId', $PaymentCreateResult['paymentId']);
+
         } catch (EasyApiException $ex) {
 
             $this->easyApiExceptionHandler->handle($ex);
