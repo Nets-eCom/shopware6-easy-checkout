@@ -9,7 +9,7 @@ class Migration1629459570NetsApiOperations extends MigrationStep
 {
     public function getCreationTimestamp(): int
     {
-        return 1629459570;
+        return 1_629_459_570;
     }
 
     public function update(Connection $connection): void

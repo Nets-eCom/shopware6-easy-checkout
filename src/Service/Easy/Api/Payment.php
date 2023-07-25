@@ -70,9 +70,7 @@ class Payment
 
             $refunds = json_decode(json_encode($this->paymentObj->payment->refunds), true);
          
-            $new_array = array_filter($refunds , function($var) {
-                return $var['state'] == 'Pending' || $var['state'] == 'Completed';
-            });
+            $new_array = array_filter($refunds , fn($var) => $var['state'] == 'Pending' || $var['state'] == 'Completed');
             $sum = array_sum(array_column($new_array ,'amount'));
             return $sum;
         }else{
