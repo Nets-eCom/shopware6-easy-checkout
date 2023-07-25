@@ -1,0 +1,45 @@
+name: PackPlugin
+on:
+  push:
+    branches:
+      - master
+
+env:
+    EXTENSION_NAME: NetsCheckout
+
+jobs:
+    Build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                # fetch all git entries for changelog generation
+                fetch-depth: 0
+
+            - name: Install shopware-cli
+              uses: FriendsOfShopware/shopware-cli-action@v1
+              with:
+                version: latest
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build & create zip
+              env:
+                NODE_OPTIONS: --openssl-legacy-provider
+              run: |
+                  shopware-cli extension zip --git-commit ${{ github.sha }} . --release
+                  mv ${{ env.EXTENSION_NAME }}-${{ github.sha }}.zip ${{ env.EXTENSION_NAME }}.zip
+
+            - name: Upload Artefact
+              uses: actions/upload-artifact@v3
+              with:
+                  name: ${{ env.EXTENSION_NAME }}
+                  path: ${{ env.EXTENSION_NAME }}.zip
+
+            - name: Get version
+              run: |
+                  echo "EXTENSION_VERSION=$(jq ".version" composer.json -r)" >> $GITHUB_ENV
+
+            - name: Validate Zip
+              run: shopware-cli extension validate $(pwd)/${EXTENSION_NAME}.zip
