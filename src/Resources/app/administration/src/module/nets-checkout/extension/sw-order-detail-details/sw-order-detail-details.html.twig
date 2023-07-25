@@ -1,0 +1,47 @@
+
+{% block sw_order_detail_details_payment_method_select %}
+    {% parent %}
+
+	  {% block sw_order_detail_base_secondary_info_payment_method_via %}
+        <div v-if="paymentMethod != null">
+            <sw-text-field
+                :disabled="true"
+                label="Payment via"
+                :value="paymentMethod"
+            />
+        </div>
+    {% endblock %}
+
+    {% block sw_order_detail_base_secondary_info_transaction_id %}
+       <div v-if="getTransactionId() != null">
+           <sw-text-field
+                   :disabled="true"
+                   :label="$tc('nets-checkout.payment-id')"
+                   :value="getTransactionId()"
+           />
+        </div>
+    {% endblock %}
+
+    <template v-if="getTransactionId() != null">
+        <div v-if="canCapture() || canRefund()">
+            {{ $tc('nets-checkout.api-actions') }}
+
+            <div class="capture-controls" v-if="canCapture()">
+                <sw-number-field numberType="float" :step="null" :min="null" :max="null"  v-model="amountAvailableForCapturing" :digits="2" :allowEmpty="false">
+                </sw-number-field>
+                <sw-button-process @click="capture(getTransactionId())" :isLoading="captureButtonLoading">
+                    {{ $tc('nets-checkout.capture.buttonTitle') }}
+                </sw-button-process>
+            </div>
+
+            <div class="refund-controls" v-if="canRefund()">
+                <sw-number-field numberType="float" :step="null" :min="null" :max="null"  v-model="amountAvailableForRefunding" :digits="2" :allowEmpty="false">
+                </sw-number-field>
+                <sw-button-process @click="refund(getTransactionId())" :isLoading="refundButtonLoading">
+                    {{ $tc('nets-checkout.refund.buttonTitle') }}
+                </sw-button-process>
+            </div>
+        </div>
+    </template>
+
+{% endblock %}

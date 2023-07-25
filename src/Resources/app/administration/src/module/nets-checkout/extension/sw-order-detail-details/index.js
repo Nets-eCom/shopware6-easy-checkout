@@ -1,10 +1,10 @@
 const { Component, Mixin } = Shopware;
-import template from './sw-order.html.twig';
+import template from './sw-order-detail-details.html.twig';
 
 /**
- * This is only used pre-6.5
+ * This is only used from 6.5 onwards
  */
-Shopware.Component.override('sw-order-user-card', {
+Shopware.Component.override('sw-order-detail-details', {
     template,
 
     inject: ['NetsCheckoutApiPaymentService'],
@@ -31,12 +31,10 @@ Shopware.Component.override('sw-order-user-card', {
         this.getSummaryAmounts();
     },
 
-    props: ['currentOrder'],
-
     methods: {
 
-        getTransactionId(currentOrder) {
-            const transaction = currentOrder.transactions.first();
+        getTransactionId() {
+            const transaction = this.transaction;
             let result = null;
             if(transaction.hasOwnProperty('customFields') && transaction['customFields']) {
                 if(transaction.customFields.hasOwnProperty('nets_easy_payment_details') &&
@@ -49,7 +47,7 @@ Shopware.Component.override('sw-order-user-card', {
 
         canCapture() {
 
-            if(this.amountAvailableForCapturing > 0 && this.orderState != "cancelled") {
+            if(this.amountAvailableForCapturing > 0 && this.order.stateMachineState.technicalName != "cancelled") {
                 return true;
             }
             return false;
@@ -60,8 +58,8 @@ Shopware.Component.override('sw-order-user-card', {
             me = this;
             me.isLoading = true;
 
-            if(this.getTransactionId(this.currentOrder)) {
-                this.NetsCheckoutApiPaymentService.getSummaryAmounts(this.currentOrder)
+            if(this.getTransactionId(this.order)) {
+                this.NetsCheckoutApiPaymentService.getSummaryAmounts(this.order)
                     .then((response) => {
                         //
                         me.amountAvailableForCapturing = response.amountAvailableForCapturing;
@@ -84,7 +82,7 @@ Shopware.Component.override('sw-order-user-card', {
             if(this.refundPendingStatus){
                 return false;
             }
-            if(this.amountAvailableForRefunding > 0 && this.amountAvailableForCapturing == 0 && this.orderState != "cancelled") {
+            if(this.amountAvailableForRefunding > 0 && this.amountAvailableForCapturing == 0 && this.order.stateMachineState.technicalName != "cancelled") {
                 return true;
             }
 
@@ -93,7 +91,7 @@ Shopware.Component.override('sw-order-user-card', {
 
         capture(paymentId) {
             let me = this;
-            const orderId = this.currentOrder.id;
+            const orderId = this.order.id;
             const amount = this.amountAvailableForCapturing;
             me.isLoading = true;
             this.NetsCheckoutApiPaymentService.captureTransaction(orderId, paymentId, amount)
@@ -119,7 +117,7 @@ Shopware.Component.override('sw-order-user-card', {
             let me = this;
             me.isLoading = true;
 
-            const orderId = this.currentOrder.id;
+            const orderId = this.order.id;
             const amount = this.amountAvailableForRefunding;
 
             this.NetsCheckoutApiPaymentService.refundTransaction(orderId, paymentId, amount)
