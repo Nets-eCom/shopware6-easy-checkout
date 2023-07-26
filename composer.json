@@ -9,7 +9,7 @@
 		}
 	],
 	"require" : {
-		"shopware/core" : "*"
+		"shopware/core" : "~6.4.0||~6.5.0"
 	},
 	"extra" : {
 		"shopware-plugin-class" : "Nets\\Checkout\\NetsCheckout",
