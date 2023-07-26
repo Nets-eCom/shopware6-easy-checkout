@@ -20,6 +20,14 @@
 		"description" : {
 			"de-DE" : "Nets Payment Plugin",
 			"en-GB" : "Nets Payment Plugin"
+		},
+		"manufacturerLink": {
+			"de-DE": "https://ecom.nets.eu/de/shopware-checkout",
+			"en-GB": "https://ecom.nets.eu/shopware-checkout"
+		},
+		"supportLink": {
+			"de-DE": "https://ecom.nets.eu/de/shopware-checkout",
+			"en-GB": "https://ecom.nets.eu/shopware-checkout"
 		}
 	},
 	"autoload" : {
