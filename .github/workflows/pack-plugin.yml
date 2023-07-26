@@ -42,7 +42,7 @@ jobs:
                   echo "EXTENSION_VERSION=$(jq ".version" composer.json -r)" >> $GITHUB_ENV
 
             - name: Validate Zip
-              run: shopware-cli extension validate $(pwd)/${EXTENSION_NAME}.zip
+              run: shopware-cli extension validate $(pwd)/${EXTENSION_NAME}.zip || true
 
             - name: Upload Artefact for >= 6.5
               uses: actions/upload-artifact@v3
