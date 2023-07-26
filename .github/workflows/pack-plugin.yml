@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - feature/6.5-compatibility
 
 env:
     EXTENSION_NAME: NetsCheckout
