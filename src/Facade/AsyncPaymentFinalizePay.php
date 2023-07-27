@@ -136,7 +136,7 @@ class AsyncPaymentFinalizePay
 
             $result = $this->checkout->createPayment($salesChannelContext, $this->checkout::CHECKOUT_TYPE_HOSTED, $transaction);
             $PaymentCreateResult = json_decode($result, true);
-            $this->requestStack->getSession()->set('nets_paymentId', $PaymentCreateResult['paymentId']);
+            $this->requestStack->getCurrentRequest()->getSession()->set('nets_paymentId', $PaymentCreateResult['paymentId']);
 
         } catch (EasyApiException $ex) {
 

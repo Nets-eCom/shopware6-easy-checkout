@@ -76,7 +76,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
             } catch (EasyApiException $ex) {
                 if($ex->getResponseErrors()) {
                     foreach ($ex->getResponseErrors() as $error ) {
-                        $this->requestStack->getSession()->getFlashBag()->add('danger', $error);
+                        $this->requestStack->getCurrentRequest()->getSession()->getFlashBag()->add('danger', $error);
                     }
                 }
                 // we still want payment window to be showed

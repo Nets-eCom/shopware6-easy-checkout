@@ -140,7 +140,7 @@ class CheckoutService
 
         if (is_object($transaction)) {
 			$cartOrderEntityObject = $transaction->getOrder();
-            $session = $this->requestStack->getSession();
+            $session = $this->requestStack->getCurrentRequest()->getSession();
 			$session->set('cancelOrderId', $cartOrderEntityObject->getOrderNumber());
 			$session->set('sw_order_id', $cartOrderEntityObject->getId());
             $data['checkout']['returnUrl'] = $transaction->getReturnUrl();

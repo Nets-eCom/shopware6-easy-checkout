@@ -129,7 +129,7 @@ class PaymentController extends StorefrontController
 		} Catch(\Exception $e){
 		}
 		if(empty($orderId)){
-			$orderId = $this->requestStack->getSession()->get('orderId');
+			$orderId = $request->getSession()->get('orderId');
 		}
 
         $orderEntity = $this->getOrderEntityById($context, $orderId);
@@ -586,7 +586,7 @@ class PaymentController extends StorefrontController
   */
  public function cancelOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data){
 
-     $session = $this->requestStack->getSession();
+     $session = $request->getSession();
 		$orderId = $session->get('sw_order_id');
 		$orderNo = $session->get('cancelOrderId');
 		$salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
