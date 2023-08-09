@@ -4,6 +4,7 @@ namespace Nets\Checkout\Storefront\Controller;
 
 use Psr\Log\LoggerInterface;
 use Nets\Checkout\Service\Easy\CheckoutService;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Kernel;
@@ -289,7 +290,9 @@ class PaymentController extends StorefrontController
 			$this->easyApiService->setEnv($environment);
 			$this->easyApiService->setAuthorizationKey($secretKey);
 
-			$this->transHandler->cancel($orderEntity->getTransactions()->first()->getId(), $context);
+            if($transaction->getStateMachineState()->getTechnicalName() != OrderStates::STATE_CANCELLED) {
+                $this->transHandler->cancel($orderEntity->getTransactions()->first()->getId(), $context);
+            }
 
 			if($transaction->getStateMachineState()->getTechnicalName() == OrderStates::STATE_CANCELLED){
 				$payment = $this->easyApiService->getPayment($paymentId);
@@ -350,7 +353,7 @@ class PaymentController extends StorefrontController
 
 		if($payment->getRefundedAmount() == 0) {
 			if($payment->getReservedAmount() == $payment->getChargedAmount()){
-				if($transaction->getStateMachineState()->getTechnicalName() == "paid_partially") {
+				if($transaction->getStateMachineState()->getTechnicalName() == OrderTransactionStates::STATE_PARTIALLY_PAID) {
 					 $this->transHandler->reopen($orderEntity->getTransactions()->first()
 						->getId(), $context);
 
@@ -361,10 +364,10 @@ class PaymentController extends StorefrontController
 						StateMachineTransitionActions::ACTION_PAID,
 						'stateId'
 					), $context);
-				} else {
+				} elseif($transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PAID) {
 					 $this->transHandler->paid($orderEntity->getTransactions()->first()->getId(), $context);
 				}
-			}else if ($payment->getChargedAmount() < $payment->getReservedAmount() && $payment->getChargedAmount() > 0){
+			}else if ($payment->getChargedAmount() < $payment->getReservedAmount() && $payment->getChargedAmount() > 0 && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PARTIALLY_PAID){
 				$this->transHandler->payPartially($orderEntity->getTransactions()->first()
 						->getId(), $context);
 
@@ -372,10 +375,10 @@ class PaymentController extends StorefrontController
 		}
 
 		if($payment->getRefundedAmount() > 0 ) {
-			if($payment->getChargedAmount() == $payment->getRefundedAmount()){
+			if($payment->getChargedAmount() == $payment->getRefundedAmount() && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_REFUNDED){
 			$this->transHandler->refund($orderEntity->getTransactions()->first()
                     ->getId(), $context);
-			} else if ($payment->getRefundedAmount() < $payment->getChargedAmount()){
+			} else if ($payment->getRefundedAmount() < $payment->getChargedAmount() && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PARTIALLY_REFUNDED){
 				$this->transHandler->refundPartially($orderEntity->getTransactions()->first()
 						->getId(), $context);
 			}
