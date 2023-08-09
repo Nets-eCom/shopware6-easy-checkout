@@ -2,6 +2,7 @@
 declare(strict_types = 1);
 namespace Nets\Checkout\Storefront\Controller;
 
+use Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentEntity;
 use Psr\Log\LoggerInterface;
 use Nets\Checkout\Service\Easy\CheckoutService;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
@@ -397,10 +398,11 @@ class PaymentController extends StorefrontController
             // select query based on charge to get amount available
             $criteria = new Criteria();
             $criteria->addFilter(new EqualsFilter('charge_id', $row->chargeId));
+            /** @var NetsPaymentEntity|null $result */
             $result = $this->netsApiRepository->search($criteria, $context)->first();
             if ($result) {
-                $chargeArrWithAmountAvailable[$row->chargeId] = $result->amount_available;
-                $remainingAmount +=$result->amount_available;
+                $chargeArrWithAmountAvailable[$row->chargeId] = $result->getAvailableAmt();
+                $remainingAmount +=$result->getAvailableAmt();
             }
         }
         array_multisort($chargeArrWithAmountAvailable, SORT_DESC);
@@ -420,8 +422,9 @@ class PaymentController extends StorefrontController
 				foreach ($chargeArrWithAmountAvailable as $key => $value) {
 					$criteria = new Criteria();
 					$criteria->addFilter(new EqualsFilter('charge_id', $key));
+                    /** @var NetsPaymentEntity|null $resultCharge */
 					$resultCharge = $this->netsApiRepository->search($criteria, $context)->first();
-					if($resultCharge->amount_available > 0 ) {
+					if($resultCharge->getAvailableAmt() > 0 ) {
 						if ($amountToRefund <= $value) {
 							$refundChargeIdArray[$key] = $amountToRefund;
 							break;
@@ -448,9 +451,10 @@ class PaymentController extends StorefrontController
 							// get amount available based on charge id
 							$criteria = new Criteria();
 							$criteria->addFilter(new EqualsFilter('charge_id', $key));
+                            /** @var NetsPaymentEntity|null $result */
 							$result = $this->netsApiRepository->search($criteria, $context)->first();
 							if ($result) {
-								$availableAmount = $result->amount_available - $value;
+								$availableAmount = $result->getAvailableAmt() - $value;
 								$update = [
 									'id' => $result->id,
 									'amount_available' => $availableAmount

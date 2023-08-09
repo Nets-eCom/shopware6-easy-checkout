@@ -1,6 +1,7 @@
 <?php
 namespace Nets\Checkout\Service\Easy;
 
+use Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
@@ -565,10 +566,11 @@ class CheckoutService
             // select query based on charge to get amount available
             $criteria = new Criteria();
             $criteria->addFilter(new EqualsFilter('charge_id', $row->chargeId));
+            /** @var NetsPaymentEntity|null $result */
             $result = $this->netsApiRepository->search($criteria, $context)->first();
 
             if ($result) {
-                $chargeArrWithAmountAvailable[$row->chargeId] = $result->amount_available;
+                $chargeArrWithAmountAvailable[$row->chargeId] = $result->getAvailableAmt();
             }
         }
         array_multisort($chargeArrWithAmountAvailable, SORT_DESC);
@@ -609,10 +611,11 @@ class CheckoutService
 
                     $criteria = new Criteria();
                     $criteria->addFilter(new EqualsFilter('charge_id', $key));
+                    /** @var NetsPaymentEntity|null $result */
                     $result = $this->netsApiRepository->search($criteria, $context)->first();
 
                     if ($result) {
-                        $availableAmount = $result->amount_available - $value;
+                        $availableAmount = $result->getAvailableAmt() - $value;
 
                         $update = [
                             'id' => $result->id,
