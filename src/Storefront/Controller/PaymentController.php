@@ -456,7 +456,7 @@ class PaymentController extends StorefrontController
 							if ($result) {
 								$availableAmount = $result->getAvailableAmt() - $value;
 								$update = [
-									'id' => $result->id,
+									'id' => $result->getId(),
 									'amount_available' => $availableAmount
 								];
 								$this->netsApiRepository->update([

@@ -172,6 +172,7 @@ class CheckoutService
             ->getCountry()
             ->getIso3();
 
+        $prefix = '';
         if ($countryIso == "DNK") {
             $prefix = "+45";
         } elseif ($countryIso == "SWE") {
@@ -618,7 +619,7 @@ class CheckoutService
                         $availableAmount = $result->getAvailableAmt() - $value;
 
                         $update = [
-                            'id' => $result->id,
+                            'id' => $result->getId(),
                             'amount_available' => $availableAmount
                         ];
 
