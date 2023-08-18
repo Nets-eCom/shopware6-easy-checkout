@@ -6,12 +6,12 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4+`
-|Version | `1.3.9`
+|Version | `1.4.0`
 |Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 
-### Note: This version 1.3.9 of Nets Easy Module is supported for shopware 6.4+ version, if you want to get this module installed for other shopware version i.e. 6.3 or lower, please go for Nets Checkout Module released version 1.1.4
+### Note: This version 1.4.0 of Nets Easy Module is supported for shopware 6.4+ version, if you want to get this module installed for other shopware version i.e. 6.3 or lower, please go for Nets Checkout Module released version 1.1.4
 
 
 ## INSTALLATION
@@ -33,7 +33,7 @@ bin/console cache:clear
 
 * Settings Description
 1. Login to your Nets Easy account (https://portal.dibspayment.eu/). Test and Live Keys can be found in Company > Integration.
-2. Payment Environment. Select between Test/Live transactions. Live mode requires an approved account. Testcard information can be found here: https://tech.dibspayment.com/easy/test-information 
+2. Payment Environment. Select between Test/Live transactions. Live mode requires an approved account. Testcard information can be found here: https://tech.dibspayment.com/easy/test-information
 3. Checkout Flow. Redirect / Embedded. Select between 2 checkout types. Redirect - Nets Hosted loads a new payment page. Embedded checkout inserts the payment window directly on the checkout page.
 4. Enable auto-capture. This function allows you to instantly charge a payment straight after the order is placed.
    NOTE. Capturing a payment before shipment of the order might be lia ble to restrictions based upon legislations set in your country. Misuse can result in your Easy account bei ng forfeit.
