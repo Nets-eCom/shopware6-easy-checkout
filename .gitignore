@@ -1,9 +1,3 @@
-/.idea
-/.php-cs-fixer.cache
-/coverage/
-/vendor/
-/.phpunit.result.cache
-/phpmd_result.xml
 /src/Resources/public/administration/*.hot-update.js
 /src/Resources/public/administration/css/
 /src/Resources/public/administration/js/
