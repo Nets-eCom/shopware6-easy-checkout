@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Nets\Checkout\Core\Content\NetsPaymentApi;
 
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
@@ -9,31 +12,26 @@ class NetsPaymentEntity extends Entity
     use EntityIdTrait;
 
     /**
-     *
-     * @var string|null
+     * @var null|string
      */
     protected $order_id;
 
     /**
-     *
-     * @var string|null
+     * @var null|string
      */
     protected $charge_id;
 
     /**
-     *
      * @var string
      */
     protected $operation_type;
 
     /**
-     *
      * @var null|float
      */
     protected $operation_amount;
 
     /**
-     *
      * @var null|float
      */
     protected $amount_available;

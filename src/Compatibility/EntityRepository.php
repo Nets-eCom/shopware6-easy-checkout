@@ -10,6 +10,5 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 if (!class_exists('Shopware\Core\Framework\DataAbstractionLayer\EntityRepository')) {
     class EntityRepository implements EntityRepositoryInterface
     {
-
     }
 }

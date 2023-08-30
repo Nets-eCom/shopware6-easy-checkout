@@ -10,26 +10,21 @@ use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
  */
 class EasyApiService
 {
+    public const ENDPOINT_TEST = 'https://test.api.dibspayment.eu/v1/payments/';
 
-    const ENDPOINT_TEST = 'https://test.api.dibspayment.eu/v1/payments/';
+    public const ENDPOINT_LIVE = 'https://api.dibspayment.eu/v1/payments/';
 
-    const ENDPOINT_LIVE = 'https://api.dibspayment.eu/v1/payments/';
+    public const ENDPOINT_TEST_CHARGES = 'https://test.api.dibspayment.eu/v1/charges/';
 
-    const ENDPOINT_TEST_CHARGES = 'https://test.api.dibspayment.eu/v1/charges/';
+    public const ENDPOINT_LIVE_CHARGES = 'https://api.dibspayment.eu/v1/charges/';
 
-    const ENDPOINT_LIVE_CHARGES = 'https://api.dibspayment.eu/v1/charges/';
+    public const ENV_LIVE = 'live';
 
-    const ENV_LIVE = 'live';
+    public const ENV_TEST = 'test';
 
-    const ENV_TEST = 'test';
-	
-	const CUSTOM_API = "https://reporting.sokoni.it/enquiry";
+    public const CUSTOM_API = 'https://reporting.sokoni.it/enquiry';
 
-    /**
-     *
-     * @var Client
-     */
-    private $client;
+    private Client $client;
 
     private string $env;
 
@@ -39,7 +34,7 @@ class EasyApiService
         $this->setEnv(self::ENV_LIVE);
     }
 
-    public function setEnv(string $env = self::ENV_LIVE)
+    public function setEnv(string $env = self::ENV_LIVE): void
     {
         $this->env = $env;
     }
@@ -49,87 +44,69 @@ class EasyApiService
         return $this->env;
     }
 
-    public function setAuthorizationKey($key)
+    public function setAuthorizationKey($key): void
     {
         $this->client->setHeader('Authorization', str_replace('-', '', trim($key)));
     }
 
     /**
-     *
-     * @param string $data
-     * @return string
      * @throws EasyApiException
      */
     public function createPayment(string $data)
     {
         $this->client->setHeader('commercePlatformTag', 'Shopware6');
         $url = $this->getCreatePaymentUrl();
-		try {
-        return $this->handleResponse($this->client->post($url, $data));
-		} Catch (EasyApiException $e){
-			return;
-		}
+
+        try {
+            return $this->handleResponse($this->client->post($url, $data));
+        } catch (EasyApiException $e) {
+            return;
+        }
     }
 
     /**
-     *
-     * @param string $paymentId
-     * @return Payment
      * @throws EasyApiException
      */
-    public function getPayment(string $paymentId)
+    public function getPayment(string $paymentId): Payment
     {
         $url = $this->getGetPaymentUrl($paymentId);
+
         return new Payment($this->handleResponse($this->client->get($url)));
     }
 
     public function updateReference(string $paymentId, string $data)
     {
         $url = $this->getUpdateReferenceUrl($paymentId);
+
         return $this->handleResponse($this->client->put($url, $data, true));
     }
 
     public function chargePayment(string $paymentId, string $data)
     {
         $url = $this->getChargePaymentUrl($paymentId);
+
         return $this->handleResponse($this->client->post($url, $data));
     }
 
     public function refundPayment(string $chargeId, string $data)
     {
         $url = $this->getRefundPaymentUrl($chargeId);
+
         return $this->handleResponse($this->client->post($url, $data));
     }
 
-    public function voidPayment(string $paymentId, string $data = NULL)
+    public function voidPayment(string $paymentId, string $data = null): void
     {
         $url = $this->getVoidPaymentUrl($paymentId);
-        $this->handleResponse($this->client->post($url,$data));
+        $this->handleResponse($this->client->post($url, $data));
     }
 
-    protected function handleResponse($response)
+    public function getPluginVersion($data)
     {
-        $statusCode = $response->getStatusCode();
-        if (200 == $statusCode || 201 == $statusCode) {
-            return (string) $response->getBody();
-        }
-    }
+        $this->client->setHeader('Content-Type', 'application/json');
+        $this->client->setHeader('Accept', 'application/json');
 
-	public function getPluginVersion($data){
-		$this->client->setHeader('Content-Type', "application/json");
-		$this->client->setHeader('Accept', "application/json");
         return $this->handleResponse($this->client->post(self::CUSTOM_API, $data));
-    }
-	
-	
-    protected function getCreatePaymentUrl()
-    {
-        return ($this->getEnv() == self::ENV_LIVE) ? self::ENDPOINT_LIVE : self::ENDPOINT_TEST;
-    }
-
-    protected function getGetPaymentUrl(string $paymentId)
-    {
-        return ($this->getEnv() == self::ENV_LIVE) ? self::ENDPOINT_LIVE . $paymentId : self::ENDPOINT_TEST . $paymentId;
     }
 
     public function getUpdateReferenceUrl(string $paymentId)
@@ -150,5 +127,24 @@ class EasyApiService
     public function getRefundPaymentUrl(string $chargeId)
     {
         return ($this->getEnv() == self::ENV_LIVE) ? self::ENDPOINT_LIVE_CHARGES . $chargeId . '/refunds' : self::ENDPOINT_TEST_CHARGES . $chargeId . '/refunds';
+    }
+
+    protected function handleResponse($response)
+    {
+        $statusCode = $response->getStatusCode();
+
+        if ($statusCode == 200 || $statusCode == 201) {
+            return (string) $response->getBody();
+        }
+    }
+
+    protected function getCreatePaymentUrl()
+    {
+        return ($this->getEnv() == self::ENV_LIVE) ? self::ENDPOINT_LIVE : self::ENDPOINT_TEST;
+    }
+
+    protected function getGetPaymentUrl(string $paymentId)
+    {
+        return ($this->getEnv() == self::ENV_LIVE) ? self::ENDPOINT_LIVE . $paymentId : self::ENDPOINT_TEST . $paymentId;
     }
 }

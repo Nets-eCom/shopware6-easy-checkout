@@ -7,69 +7,66 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ConfigService
 {
+    public const CONFIG_PREFIX = 'NetsCheckout.config.';
 
-    const CONFIG_PREFIX = 'NetsCheckout.config.';
+    public const ENVIRONMENT = 'enviromnent';
 
-    const ENVIRONMENT = 'enviromnent';
+    public const LANGUAGE = 'language';
 
-    const LANGUAGE = 'language';
+    public const CHECKOUT_TYPE = 'checkoutType';
 
-    const CHECKOUT_TYPE = 'checkoutType';
+    public const TERMS_URL = 'termsUrl';
 
-    const TERMS_URL = 'termsUrl';
+    public const MERCHANT_TERMS_URL = 'merchantTermsUrl';
 
-    const MERCHANT_TERMS_URL = 'merchantTermsUrl';
-
-    const CHARGE_NOW = 'autoCharge';
+    public const CHARGE_NOW = 'autoCharge';
 
     private SystemConfigService $systemConfigService;
 
-    /**
-     *
-     * @var
-     */
     private string $prefix;
 
     /**
      * ConfigService constructor.
-     *
-     * @param SystemConfigService $systemConfigService
      */
     public function __construct(SystemConfigService $systemConfigService)
     {
         $this->systemConfigService = $systemConfigService;
-        $this->prefix = self::CONFIG_PREFIX;
+        $this->prefix              = self::CONFIG_PREFIX;
     }
 
     /**
-     *
      * @param
      *            $salesChannelContextId
-     * @return array|mixed|null|string
+     *
+     * @return null|array|mixed|string
      */
     public function getSecretKey($salesChannelContextId)
     {
         $env = 'testSecretKey';
-        if ('live' == $this->getEnvironment($salesChannelContextId)) {
+
+        if ($this->getEnvironment($salesChannelContextId) == 'live') {
             $env = 'liveSecretKey';
         }
+
         return $this->systemConfigService->get(self::CONFIG_PREFIX . $env, $salesChannelContextId);
     }
 
     public function getCheckoutKey($salesChannelContextId)
     {
         $env = 'testCheckoutKey';
-        if ('live' == $this->getEnvironment($salesChannelContextId)) {
+
+        if ($this->getEnvironment($salesChannelContextId) == 'live') {
             $env = 'liveCheckoutKey';
         }
+
         return $this->systemConfigService->get(self::CONFIG_PREFIX . $env, $salesChannelContextId);
     }
 
     /**
-     *
      * @param
      *            $salesChannelContextId
-     * @return array|mixed|null|string
+     *
+     * @return null|array|mixed|string
      */
     public function getEnvironment($salesChannelContextId)
     {
@@ -77,10 +74,10 @@ class ConfigService
     }
 
     /**
-     *
      * @param
      *            $salesChannelContextId
-     * @return array|mixed|null|string
+     *
+     * @return null|array|mixed|string
      */
     public function getLanguage($salesChannelContextId)
     {
@@ -90,15 +87,15 @@ class ConfigService
     public function getLang($context, $languageRepo)
     {
         $languages = $context->getLanguageId();
-        $criteria = new Criteria([
-            $languages
+        $criteria  = new Criteria([
+            $languages,
         ]);
         $criteria->addAssociation('locale');
 
         /** @var null|LanguageEntity $language */
         $language = $languageRepo->search($criteria, $context)->first();
 
-        if (null === $language || null === $language->getLocale()) {
+        if ($language === null || $language->getLocale() === null) {
             return 'en';
         }
 
@@ -106,10 +103,10 @@ class ConfigService
     }
 
     /**
-     *
      * @param
      *            $salesChannelContextId
-     * @return array|mixed|null
+     *
+     * @return null|array|mixed
      */
     public function getCheckoutType($salesChannelContextId)
     {
@@ -117,10 +114,10 @@ class ConfigService
     }
 
     /**
-     *
      * @param
      *            $salesChannelContextId
-     * @return array|mixed|null
+     *
+     * @return null|array|mixed
      */
     public function getTermsAndConditionsUrl($salesChannelContextId)
     {
