@@ -5,7 +5,7 @@
 |------|----------
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
-|Shop Version | `6.4+`
+|Shop Version | `6.4.x`, `6.5.x`
 |Version | `1.4.0`
 |Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout

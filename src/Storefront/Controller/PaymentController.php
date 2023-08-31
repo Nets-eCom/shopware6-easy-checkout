@@ -38,9 +38,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @RouteScope(scopes={"storefront"})
- */
 class PaymentController extends StorefrontController
 {
     public SystemConfigService $systemConfigService;
@@ -90,6 +87,8 @@ class PaymentController extends StorefrontController
     }
 
     /**
+     * @RouteScope(scopes={"storefront"})
+     *
      * @Route("/nets/order/finish", name="nets.finish.order.controller", options={"seo": "false"}, methods={"GET"}, defaults={"_routeScope": {"storefront"}})
      *
      * @throws EasyApiException
@@ -172,6 +171,8 @@ class PaymentController extends StorefrontController
     }
 
     /**
+     * @RouteScope(scopes={"storefront"})
+     *
      * @Route("/nets/caheckout/validate", name="nets.test.controller.validate", options={"seo": "false"}, methods={"GET"}, defaults={"_routeScope": {"storefront"}})
      */
     public function validate(SalesChannelContext $ctx)
@@ -488,6 +489,8 @@ class PaymentController extends StorefrontController
     }
 
     /**
+     * @RouteScope(scopes={"storefront"})
+     *
      * @Route("/nets/order/cancel", name="nets.cancel.order.controller", options={"seo": "false"}, methods={"GET"}, defaults={"_routeScope": {"storefront"}})
      *
      * @throws EasyApiException
