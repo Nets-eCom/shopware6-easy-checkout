@@ -10,29 +10,29 @@
     {% endblock %}
 
     {% block sw_order_detail_base_secondary_info_transaction_id %}
-       <div v-if="getTransactionId(currentOrder) != null">
+       <div v-if="getTransactionId(currentOrder.transactions.first()) != null">
             <dt>{{ $tc('nets-checkout.payment-id') }}</dt>
-            <dd>{{ getTransactionId(currentOrder) }}</dd>
+            <dd>{{ getTransactionId(currentOrder.transactions.first()) }}</dd>
         </div>
     {% endblock %}
 
-    <template v-if="getTransactionId(currentOrder) != null">
-        <div v-if="canCapture()">
+    <template v-if="getTransactionId(currentOrder.transactions.first()) != null">
+        <div v-if="canCapture(this.orderState)">
             {{ $tc('nets-checkout.api-actions') }}
         </div>
 
-        <div class="capture-controls" v-if="canCapture()">
+        <div class="capture-controls" v-if="canCapture(orderState)">
             <sw-number-field numberType="float" :step="null" :min="null" :max="null"  v-model="amountAvailableForCapturing" :digits="2" :allowEmpty="false">
             </sw-number-field>
-            <sw-button-process @click="capture(getTransactionId(currentOrder))" :isLoading="captureButtonLoading">
+            <sw-button-process @click="capture(getTransactionId(currentOrder.transactions.first()), currentOrder)" :isLoading="captureButtonLoading">
                 {{ $tc('nets-checkout.capture.buttonTitle') }}
             </sw-button-process>
         </div>
 
-        <div class="refund-controls" v-if="canRefund()">
+        <div class="refund-controls" v-if="canRefund(orderState)">
             <sw-number-field numberType="float" :step="null" :min="null" :max="null"  v-model="amountAvailableForRefunding" :digits="2" :allowEmpty="false">
             </sw-number-field>
-            <sw-button-process @click="refund(getTransactionId(currentOrder))" :isLoading="refundButtonLoading">
+            <sw-button-process @click="refund(getTransactionId(currentOrder.transactions.first()), currentOrder)" :isLoading="refundButtonLoading">
                 {{ $tc('nets-checkout.refund.buttonTitle') }}
             </sw-button-process>
         </div>
