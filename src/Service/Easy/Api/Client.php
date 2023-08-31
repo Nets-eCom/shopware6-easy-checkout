@@ -28,7 +28,7 @@ class Client
      *
      * @throws EasyApiException
      */
-    public function post($url, $data = []): mixed
+    public function post($url, $data = [])
     {
         try {
             $params = ['headers' => $this->headers,

@@ -665,7 +665,7 @@ class PaymentController extends StorefrontController
      *
      * @return null|mixed
      */
-    private function getOrderEntityById(Context $context, $orderId): mixed
+    private function getOrderEntityById(Context $context, $orderId)
     {
         $criteria = new Criteria([
             $orderId,
