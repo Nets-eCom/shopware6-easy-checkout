@@ -2,7 +2,7 @@
 {% block sw_order_detail_base_secondary_info_payment %}
     {% parent %}
 
-	  {% block sw_order_detail_base_secondary_info_payment_method_via %}
+	{% block sw_order_detail_base_secondary_info_payment_method_via %}
         <div v-if="paymentMethod != null">
             <dt>Payment via </dt>
             <dd>{{ paymentMethod }}</dd>
@@ -17,7 +17,7 @@
     {% endblock %}
 
     <template v-if="getTransactionId(currentOrder.transactions.first()) != null">
-        <div v-if="canCapture(this.orderState)">
+        <div v-if="canCapture(orderState)">
             {{ $tc('nets-checkout.api-actions') }}
         </div>
 
