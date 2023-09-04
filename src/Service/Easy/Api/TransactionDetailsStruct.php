@@ -6,5 +6,4 @@ use Shopware\Core\Framework\Struct\Struct;
 
 class TransactionDetailsStruct extends Struct
 {
-
 }

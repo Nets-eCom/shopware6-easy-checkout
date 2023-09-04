@@ -1,4 +1,7 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace Nets\Checkout\Core\Content\NetsPaymentApi;
 
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
@@ -9,32 +12,27 @@ class NetsPaymentEntity extends Entity
     use EntityIdTrait;
 
     /**
-     *
-     * @var string|null
+     * @var null|string
      */
     protected $order_id;
 
     /**
-     *
-     * @var string|null
+     * @var null|string
      */
     protected $charge_id;
 
     /**
-     *
      * @var string
      */
     protected $operation_type;
 
     /**
-     *
-     * @var string
+     * @var null|float
      */
     protected $operation_amount;
 
     /**
-     *
-     * @var string
+     * @var null|float
      */
     protected $amount_available;
 
@@ -68,22 +66,22 @@ class NetsPaymentEntity extends Entity
         $this->operation_type = $operationType;
     }
 
-    public function getOperationAmt(): ?string
+    public function getOperationAmt(): ?float
     {
         return $this->operation_amount;
     }
 
-    public function setOperationAmt(?string $operationAmt): void
+    public function setOperationAmt(?float $operationAmt): void
     {
         $this->operation_amount = $operationAmt;
     }
 
-    public function getAvailableAmt(): ?string
+    public function getAvailableAmt(): ?float
     {
         return $this->amount_available;
     }
 
-    public function setAvailableAmt(?string $amtAvailable): void
+    public function setAvailableAmt(?float $amtAvailable): void
     {
         $this->amount_available = $amtAvailable;
     }
