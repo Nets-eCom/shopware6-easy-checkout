@@ -10,8 +10,8 @@ Module.register('nets-checkout', {
     name: 'NetsCheckout',
     title: 'nets-checkout.general.mainMenuItemGeneral',
     description: 'nets-checkout.general.descriptionTextModule',
-    version: '1.1.1',
-    targetVersion: '1.1.1',
+    version: '1.0.0',
+    targetVersion: '1.0.0',
     icon: 'default-action-settings',
 
     snippets: {

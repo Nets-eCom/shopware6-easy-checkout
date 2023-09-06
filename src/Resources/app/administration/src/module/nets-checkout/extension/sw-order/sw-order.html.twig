@@ -1,8 +1,16 @@
+
 {% block sw_order_detail_base_secondary_info_payment %}
     {% parent %}
 
+	  {% block sw_order_detail_base_secondary_info_payment_method_via %}
+        <div v-if="paymentMethod != null">
+            <dt>Payment via </dt>
+            <dd>{{ paymentMethod }}</dd>
+        </div>
+    {% endblock %}
+	
     {% block sw_order_detail_base_secondary_info_transaction_id %}
-        <div v-if="getTransactionId(currentOrder) != null">
+       <div v-if="getTransactionId(currentOrder) != null">
             <dt>{{ $tc('nets-checkout.payment-id') }}</dt>
             <dd>{{ getTransactionId(currentOrder) }}</dd>
         </div>
