@@ -1,0 +1,11 @@
+<div>
+	<div v-if="pluginversion()">
+	</div>
+    <sw-button-process
+        :isLoading="isLoading"
+        :processSuccess="isSaveSuccessful"
+        @process-finish="saveFinish"
+        @click="check"
+    >{{ $tc('nets-api-test-button.button') }}</sw-button-process>
+</div>
+
