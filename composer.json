@@ -27,5 +27,13 @@
         "psr-4": {
             "Nets\\Checkout\\": "src/"
         }
+    },
+    "require-dev": {
+        "rector/rector": "^0.18.1"
+    },
+    "config": {
+        "allow-plugins": {
+            "symfony/runtime": true
+        }
     }
 }
