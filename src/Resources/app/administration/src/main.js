@@ -1,4 +1,5 @@
 import './init/api-service.init';
+import './mixin/nets-checkout-order.mixin';
 import './module/nets-checkout';
 import './api/nets-checkout-api-payment-service';
 import './service/netsApiTestService';

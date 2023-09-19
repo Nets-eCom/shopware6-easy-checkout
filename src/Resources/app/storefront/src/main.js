@@ -12,7 +12,8 @@ $(function() {
                 'margin-left' : '0',
                 'padding' : '0',
                 'flex' : '0 0 100%',
-                'max-width' : '100%'
+                'max-width' : '100%',
+                'width' : '100%'
             });
             $('.checkout').css({'padding' : '70px 50px'});
             $('.ttmain .btn-light').css({'width' : '100%', 'border-color' : '#bcc1c7', 'text-align' : 'center'});
@@ -23,16 +24,17 @@ $(function() {
             $('#dibs-checkout-embedded').appendTo('.ttmain');
             $('.checkout-aside').appendTo('.sstop');
             $('.confirm-address, .confirm-payment-shipping').appendTo('.ssbtm');
-            
+
             $('.col-sm-6.card-col.confirm-billing-address').removeClass('col-sm-6').addClass('col-12 col-sm-6 col-md-6 col-lg-12 col-xl-6');
             $('.col-sm-6.card-col.confirm-shipping-address').removeClass('col-sm-6').addClass('col-12 col-sm-6 col-md-6 col-lg-12 col-xl-6');
-         
+
             $('#confirmOrderForm, .confirm-tos').hide();
             $('.is-act-confirmpage .checkout .checkout-main, .is-act-confirmpage .checkout .checkout-aside').css({
                 'margin-left' : '0',
                 'padding' : '0',
                 'flex' : '0 0 100%',
-                'max-width' : '100%'
+                'max-width' : '100%',
+                'width' : '100%'
             });
             $('.checkout').css({'padding' : '70px 50px'});
             $('.ssbtm .btn-light').css({'width' : '100%', 'border-color' : '#bcc1c7', 'text-align' : 'center'});
