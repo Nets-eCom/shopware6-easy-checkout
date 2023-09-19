@@ -2,34 +2,29 @@
 
 namespace Nets\Checkout\Service\Easy\Api\Exception;
 
-use Throwable;
-
 /**
  * Description of EasyException
  *
  * @author mabe
  */
-class EasyApiException extends \Exception {
-
-    public function __construct($message = "", $code = 0, Throwable $previous = null)
+class EasyApiException extends \Exception
+{
+    public function __construct($message = '', $code = 0, \Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }
 
-    /**
-     * @return array
-     */
-    public function getResponseErrors()
+    public function getResponseErrors(): array
     {
         $errors = [];
 
         $jsonArr = json_decode($this->getMessage(), true);
 
-        if(empty($jsonArr) ) {
+        if (empty($jsonArr)) {
             $jsonArr['errors'] = ['unauthorized.access.error' => ['key' => 'Unauthorized access. Please check test/live secret keys']];
         }
 
-        if($jsonArr) {
+        if ($jsonArr) {
             foreach ($jsonArr['errors'] as $id => $description) {
                 foreach ($description as $desc) {
                     $errors[] = $desc;
@@ -38,6 +33,5 @@ class EasyApiException extends \Exception {
         }
 
         return $errors;
-
     }
 }
