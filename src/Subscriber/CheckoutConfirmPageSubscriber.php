@@ -2,88 +2,67 @@
 
 namespace Nets\Checkout\Subscriber;
 
+use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\TransactionDetailsStruct;
+use Nets\Checkout\Service\Easy\CheckoutService;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Nets\Checkout\Service\ConfigService;
-use Nets\Checkout\Service\Easy\CheckoutService;
-use Symfony\Component\HttpFoundation\Session\Session;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 {
+    private ConfigService $configService;
 
-    /**
-     * @var ConfigService
-     */
-    private $configService;
+    private CheckoutService $checkoutService;
 
-    /**
-     * @var CheckoutService
-     */
-    private $checkoutService;
+    private RequestStack $requestStack;
 
-    /**
-     * @var Session
-     */
-    private $session;
-
-    /**
-     * @var EntityRepositoryInterface
-     */
-    private $languageRepository;
+    private EntityRepository $languageRepository;
 
     /**
      * CheckoutConfirmPageSubscriber constructor.
-     * @param ConfigService $configService
-     * @param CheckoutService $checkoutService
-     * @param Session $session
-     * @param EntityRepositoryInterface $languageRepository
      */
     public function __construct(ConfigService $configService,
-                                CheckoutService $checkoutService,
-                                Session $session, EntityRepositoryInterface $languageRepository)
+        CheckoutService $checkoutService,
+        RequestStack $requestStack, EntityRepository $languageRepository)
     {
-        $this->configService = $configService;
-        $this->checkoutService = $checkoutService;
-        $this->session = $session;
+        $this->configService      = $configService;
+        $this->checkoutService    = $checkoutService;
+        $this->requestStack       = $requestStack;
         $this->languageRepository = $languageRepository;
     }
 
     /**
      * @return array|string[]
      */
-    public static function getSubscribedEvents() : array
+    public static function getSubscribedEvents(): array
     {
         return [
-            CheckoutConfirmPageLoadedEvent::class => 'onCheckoutConfirmLoaded'
+            CheckoutConfirmPageLoadedEvent::class => 'onCheckoutConfirmLoaded',
         ];
     }
 
-    /**
-     * @param CheckoutConfirmPageLoadedEvent $event
-     */
     public function onCheckoutConfirmLoaded(CheckoutConfirmPageLoadedEvent $event): void
     {
-        $salesChannelContext = $event->getSalesChannelContext();
-        $paymentMethod = $salesChannelContext->getPaymentMethod();
+        $salesChannelContext   = $event->getSalesChannelContext();
+        $paymentMethod         = $salesChannelContext->getPaymentMethod();
         $salesChannelContextId = $salesChannelContext->getSalesChannel()->getId();
-        $checkoutType = $this->configService->getCheckoutType($salesChannelContextId);
+        $checkoutType          = $this->configService->getCheckoutType($salesChannelContextId);
 
-        if ($paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout' &&
-            $checkoutType == $this->checkoutService::CHECKOUT_TYPE_EMBEDDED) {
-
+        if ($paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout'
+            && $checkoutType == $this->checkoutService::CHECKOUT_TYPE_EMBEDDED) {
             try {
                 $paymentId = json_decode($this->checkoutService->createPayment($salesChannelContext), true);
                 $paymentId = $paymentId['paymentId'];
             } catch (EasyApiException $ex) {
-                if($ex->getResponseErrors()) {
-                    foreach ($ex->getResponseErrors() as $error ) {
-                        $this->session->getFlashBag()->add('danger', $error);
+                if ($ex->getResponseErrors()) {
+                    foreach ($ex->getResponseErrors() as $error) {
+                        $this->requestStack->getCurrentRequest()->getSession()->getFlashBag()->add('danger', $error);
                     }
                 }
                 // we still want payment window to be showed
@@ -92,18 +71,22 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 
             $customerLanguage = $this->getCustomerLanguage($salesChannelContext->getContext());
 
-            switch($customerLanguage) {
+            switch ($customerLanguage) {
                 case 'de':
                     $checkoutLanguage = 'de-DE';
+
                     break;
                 case 'da':
                     $checkoutLanguage = 'da-DK';
+
                     break;
                 case 'sv':
                     $checkoutLanguage = 'sv-SE';
+
                     break;
                 case 'nb':
                     $checkoutLanguage = 'nb-NO';
+
                     break;
                 default:
                     $checkoutLanguage = 'en-GB';
@@ -115,18 +98,17 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 
             $environment = $this->configService->getEnvironment($salesChannelContextId);
 
-            $easyCheckoutJsAsset = 'test' == $environment ? $this->checkoutService::EASY_CHECKOUT_JS_ASSET_TEST :
+            $easyCheckoutJsAsset = $environment == 'test' ? $this->checkoutService::EASY_CHECKOUT_JS_ASSET_TEST :
                                              $this->checkoutService::EASY_CHECKOUT_JS_ASSET_LIVE;
 
             $templateVars = ['checkoutKey' => $this->configService->getCheckoutKey($salesChannelContextId),
-                'environment' => $environment,
-                'paymentId' => $paymentId,
-                'checkoutType' => $this->configService->getCheckoutType($salesChannelContextId),
-                'easy_checkout_is_active' => $easyCheckoutIsActive,
-                'place_order_url' => $event->getRequest()->getUriForPath('/nets/order/finish'),
-                'easy_checkout_ja_asset' => $easyCheckoutJsAsset,
-				'language' => $checkoutLanguage
-
+                'environment'              => $environment,
+                'paymentId'                => $paymentId,
+                'checkoutType'             => $this->configService->getCheckoutType($salesChannelContextId),
+                'easy_checkout_is_active'  => $easyCheckoutIsActive,
+                'place_order_url'          => $event->getRequest()->getUriForPath('/nets/order/finish'),
+                'easy_checkout_ja_asset'   => $easyCheckoutJsAsset,
+                'language'                 => $checkoutLanguage,
             ];
 
             $variablesStruct->assign($templateVars);
@@ -144,7 +126,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
         /** @var null|LanguageEntity $language */
         $language = $this->languageRepository->search($criteria, $context)->first();
 
-        if (null === $language || null === $language->getLocale()) {
+        if ($language === null || $language->getLocale() === null) {
             return 'en';
         }
 
