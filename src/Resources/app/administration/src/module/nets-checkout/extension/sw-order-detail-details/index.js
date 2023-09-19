@@ -1,10 +1,10 @@
 const { Component, Mixin } = Shopware;
-import template from './sw-order.html.twig';
+import template from './sw-order-detail-details.html.twig';
 
 /**
- * This is only used pre-6.5
+ * This is only used from 6.5 onwards
  */
-Shopware.Component.override('sw-order-user-card', {
+Shopware.Component.override('sw-order-detail-details', {
     template,
 
     inject: ['NetsCheckoutApiPaymentService'],
@@ -29,8 +29,6 @@ Shopware.Component.override('sw-order-user-card', {
     },
 
     beforeMount(){
-        this.getSummaryAmounts(this.currentOrder);
+        this.getSummaryAmounts(this.order);
     },
-
-    props: ['currentOrder'],
 });

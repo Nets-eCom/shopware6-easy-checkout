@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Nets\Checkout\Migration;
 
@@ -9,7 +11,7 @@ class Migration1629459570NetsApiOperations extends MigrationStep
 {
     public function getCreationTimestamp(): int
     {
-        return 1629459570;
+        return 1_629_459_570;
     }
 
     public function update(Connection $connection): void
