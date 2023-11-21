@@ -114,20 +114,15 @@
             <label lang="da-DK">Betalings-flow</label>
             <label lang="sv-SE">Checkout-flöde</label>
             <label lang="nb-NO">Utsjekkflyt</label>
-            <helpText>Choose whether you want the payment window to be loaded in a new page or embedded in your checkout
-                page
+            <helpText>Choose whether you want the payment window to be loaded in a new page or embedded in your checkout page
             </helpText>
-            <helpText lang="de-DE">Wählen Sie aus, ob das Zahlungsfenster auf einer neuen Seite geladen oder in Ihre
-                Kasse Seite eingebettet werden soll
+            <helpText lang="de-DE">Wählen Sie aus, ob das Zahlungsfenster auf einer neuen Seite geladen oder in Ihre Kasse Seite eingebettet werden soll
             </helpText>
-            <helpText lang="da-DK">Vælg, om betalingsvinduet skal indlæses på en ny side eller indlejres på din tjekud
-                side
+            <helpText lang="da-DK">Vælg, om betalingsvinduet skal indlæses på en ny side eller indlejres på din tjekud side
             </helpText>
-            <helpText lang="sv-SE">Välj om du vill att betalningsfönstret ska laddas på en ny sida eller inbäddas i din
-                checka ut sida
+            <helpText lang="sv-SE">Välj om du vill att betalningsfönstret ska laddas på en ny sida eller inbäddas i din checka ut sida
             </helpText>
-            <helpText lang="nb-NO">Velg om du vil at betalingsvinduet skal lastes inn på en ny side eller innebygd på
-                sjekk ut siden din
+            <helpText lang="nb-NO">Velg om du vil at betalingsvinduet skal lastes inn på en ny side eller innebygd på sjekk ut siden din
             </helpText>
             <placeholder>Select payment window checkout type</placeholder>
             <placeholder lang="de-DE">Wählen Sie die typ für das Zahlungsfenster</placeholder>
