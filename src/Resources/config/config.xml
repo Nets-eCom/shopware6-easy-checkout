@@ -13,7 +13,7 @@
             <helpText> Merchant id can be found in Nets Easy Portal on dashboard top center or Company -> Integration. For e.g. 100001234 </helpText>
 			<required>1</required>
 		</input-field>
-        <input-field>
+        <input-field type="password">
             <name>liveSecretKey</name>
             <label>Live secret key</label>
             <placeholder>live-secret-key-00000000000000000000000000000000</placeholder>
@@ -23,17 +23,17 @@
             <helpText lang="sv-SE">Alla nycklar finns i : Nets Easy Administration > Företag > Integration</helpText>
             <helpText lang="nb-NO">Alle nøkler finnes i : Nets Easy Administration > Firmaet > Integration</helpText>
         </input-field>
-        <input-field>
+        <input-field type="password">
             <name>liveCheckoutKey</name>
             <label>Live checkout key</label>
             <placeholder>live-checkout-key-00000000000000000000000000000000</placeholder>
         </input-field>
-        <input-field>
+        <input-field type="password">
             <name>testSecretKey</name>
             <label>Test secret key</label>
             <placeholder>test-secret-key-00000000000000000000000000000000</placeholder>
         </input-field>
-        <input-field>
+        <input-field type="password">
             <name>testCheckoutKey</name>
             <label>Test checkout key</label>
             <placeholder>test-checkout-key-00000000000000000000000000000000</placeholder>
