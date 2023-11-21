@@ -116,7 +116,8 @@
             <label lang="nb-NO">Utsjekkflyt</label>
             <helpText>Choose whether you want the payment window to be loaded in a new page or embedded in your checkout page
             </helpText>
-            <helpText lang="de-DE">Wählen Sie aus, ob das Zahlungsfenster auf einer neuen Seite geladen oder in Ihre Kasse Seite eingebettet werden soll
+            <helpText lang="de-DE">Wählen Sie aus, ob das Zahlungsfenster auf einer neuen Seite geladen oder in Ihre Kasse
+                Seite eingebettet werden soll
             </helpText>
             <helpText lang="da-DK">Vælg, om betalingsvinduet skal indlæses på en ny side eller indlejres på din tjekud side
             </helpText>
