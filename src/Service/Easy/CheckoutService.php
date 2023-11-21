@@ -612,27 +612,6 @@ class CheckoutService
 
     /**
      * @param
-     *            $context
-     * @param array $fields
-     */
-    private function updateTransactionCustomFields(OrderTransactionEntity $transaction, $context, $fields = []): void
-    {
-        $customFields                              = $transaction->getCustomFields();
-        $fields_arr                                = $customFields['nets_easy_payment_details'];
-        $merged                                    = array_merge($fields_arr, $fields);
-        $customFields['nets_easy_payment_details'] = $merged;
-        $update                                    = [
-            'id'           => $transaction->getId(),
-            'customFields' => $customFields,
-        ];
-        $transaction->setCustomFields($customFields);
-        $this->transactionRepository->update([
-            $update,
-        ], $context);
-    }
-
-    /**
-     * @param
      *            $amount
      */
     private function getDummyOrderItem($amount): array

@@ -23,6 +23,33 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class AsyncPaymentFinalizePay
 {
+    /**
+     * @var SystemConfigService
+     */
+    private $systemConfigService;
+
+    private $checkout;
+
+    private $easyApiExceptionHandler;
+
+    private $transactionStateHandler;
+
+    private $easyApiService;
+
+    private $orderTransactionRepo;
+
+    private $configService;
+
+    private $orderRepository;
+
+    private $router;
+
+    private $netsApiRepository;
+
+    private $languageRepo;
+
+    private $requestStack;
+
     public function __construct(CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiExceptionHandler $easyApiExceptionHandler, OrderTransactionStateHandler $transactionStateHandler, EasyApiService $easyApiService, EntityRepository $orderTransactionRepo, ConfigService $configService, EntityRepository $orderRepository, Router $router, EntityRepository $netsApiRepository, EntityRepository $languageRepo, RequestStack $requestStack)
     {
         $this->systemConfigService     = $systemConfigService;

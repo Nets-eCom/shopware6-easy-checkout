@@ -287,15 +287,13 @@ class PaymentController extends StorefrontController
 
             if ($payment->getChargedAmount() > 0 && $payment->getRefundedAmount() == 0) {
                 $amountAvailableForRefunding = $payment->getChargedAmount() / 100;
-            } else {
-                if ($payment->getChargedAmount() - $payment->getRefundedAmount() > 0) {
-                    $amountAvailableForRefunding = ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100;
-                }
+            } elseif ($payment->getChargedAmount() - $payment->getRefundedAmount() > 0) {
+                $amountAvailableForRefunding = ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100;
             }
 
             if ($payment->getChargedAmount() > 0) {
                 $response = $payment->getAllCharges();
-                foreach ($response as $value => $key) {
+                foreach ($response as $key) {
                     $criteria = new Criteria();
                     $criteria->addFilter(new EqualsFilter('charge_id', $key->chargeId));
                     $chargeId = $this->netsApiRepository->search($criteria, $context)->first();
@@ -375,7 +373,7 @@ class PaymentController extends StorefrontController
             $amountAvailableForRefunding = ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100;
 
             if ($payment->getRefundedAmount() > 0 && $remainingAmount != $amountAvailableForRefunding) {
-                foreach ($refundsArray as $vl => $ky) {
+                foreach ($refundsArray as $ky) {
                     $amountToRefund      = $ky->amount / 100;
                     $refundChargeIdArray = [];
                     foreach ($chargeArrWithAmountAvailable as $key => $value) {
@@ -613,8 +611,6 @@ class PaymentController extends StorefrontController
         $checkoutType = $this->systemConfigService->get('NetsCheckout.config.checkoutType');
         $merchantId   = $this->systemConfigService->get('NetsCheckout.config.merchantId');
 
-        $success = false;
-
         if ($environment == 'test') {
             $secretKey = $dataBag->get('NetsCheckout.config.testSecretKey');
 
@@ -631,6 +627,7 @@ class PaymentController extends StorefrontController
 
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('name', 'NetsCheckout'));
+
         $resultData = $this->pluginRepo->search($criteria, $context)->first();
 
         $dataArray = ['merchant_id' => $merchantId, // merchant Id
@@ -698,14 +695,5 @@ class PaymentController extends StorefrontController
         }
 
         return $order->getSalesChannelId();
-    }
-
-    /**
-     * @param
-     *            $amount
-     */
-    private function prepareAmount($amount = 0): int
-    {
-        return (int) round($amount * 100);
     }
 }
