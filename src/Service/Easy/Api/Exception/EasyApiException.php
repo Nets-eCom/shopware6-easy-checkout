@@ -25,7 +25,7 @@ class EasyApiException extends \Exception
         }
 
         if ($jsonArr) {
-            foreach ($jsonArr['errors'] as $id => $description) {
+            foreach ($jsonArr['errors'] as $description) {
                 foreach ($description as $desc) {
                     $errors[] = $desc;
                 }
