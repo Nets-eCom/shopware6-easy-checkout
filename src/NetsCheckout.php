@@ -16,8 +16,8 @@ use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Util\PluginIdProvider;
 
-include_once 'Compatibility/EntityRepository.php';
-include_once 'Compatibility/RouteScope.php';
+include_once __DIR__ . '/Compatibility/EntityRepository.php';
+include_once __DIR__ . '/Compatibility/RouteScope.php';
 
 class NetsCheckout extends Plugin
 {
