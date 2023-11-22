@@ -603,63 +603,6 @@ class PaymentController extends StorefrontController
     }
 
     /**
-     * @RouteScope(scopes={"api"})
-     *
-     * @Route("/api/pluginversion", name="nets.api.custom.controller", defaults={"XmlHttpRequest": true, "_routeScope": {"api"}}, options={"seo": "false"}, methods={"POST"})
-     */
-    public function customApi(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
-    {
-        $environment  = $this->systemConfigService->get('NetsCheckout.config.enviromnent');
-        $checkoutType = $this->systemConfigService->get('NetsCheckout.config.checkoutType');
-        $merchantId   = $this->systemConfigService->get('NetsCheckout.config.merchantId');
-
-        $success = false;
-
-        if ($environment == 'test') {
-            $secretKey = $dataBag->get('NetsCheckout.config.testSecretKey');
-
-            if ($checkoutType == 'embedded') {
-                $checkoutKey = $dataBag->get('NetsCheckout.config.testCheckoutKey');
-            }
-        } else {
-            $secretKey = $dataBag->get('NetsCheckout.config.liveSecretKey');
-
-            if ($checkoutType == 'embedded') {
-                $checkoutKey = $dataBag->get('NetsCheckout.config.liveCheckoutKey');
-            }
-        }
-
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('name', 'NetsCheckout'));
-        $resultData = $this->pluginRepo->search($criteria, $context)->first();
-
-        $dataArray = ['merchant_id' => $merchantId, // merchant Id
-            'merchant_email_id'     => '',
-            'plugin_name'           => 'Shopware6', // plugin Name
-            'plugin_version'        => $resultData->version, // plugin version
-            'shop_url'              => getenv('APP_URL'), // shop url
-            'integration_type'      => $checkoutType,
-            'timestamp'             => date('Y-m-d H:i:s'),
-            'env'                   => $environment,
-        ];
-        $postData = json_encode($dataArray);
-
-        $result = $this->easyApiService->getPluginVersion($postData);
-
-        if ($result) {
-            $response = json_decode($result, true);
-
-            if ($response['status'] == '00') {
-                return new JsonResponse(json_decode($response['data'], true));
-            }
-
-            return new JsonResponse(['res' => 0]);
-        }
-
-        return new JsonResponse(['res' => 0]);
-    }
-
-    /**
      * @param
      *            $orderId
      *
