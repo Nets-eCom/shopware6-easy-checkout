@@ -107,7 +107,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                 'checkoutType'             => $this->configService->getCheckoutType($salesChannelContextId),
                 'easy_checkout_is_active'  => $easyCheckoutIsActive,
                 'place_order_url'          => $event->getRequest()->getUriForPath('/nets/order/finish'),
-                'easy_checkout_ja_asset'   => $easyCheckoutJsAsset,
+                'easy_checkout_js_asset'   => $easyCheckoutJsAsset,
                 'language'                 => $checkoutLanguage,
             ];
 
