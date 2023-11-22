@@ -3,6 +3,6 @@
     {% set netsTransactionId = page.extensions.nets_transaction_id.transaction_id %}
     {{ parent() }}
     {% if netsTransactionId %}
-        <p class = "finish-ordernumber"> Nets reference Id: {{ netsTransactionId }} </p>
+        <p class = "finish-ordernumber"> {{ "nexi-nets.reference"|trans }} {{ netsTransactionId }}</p>
     {% endif %}
 {% endblock %}
