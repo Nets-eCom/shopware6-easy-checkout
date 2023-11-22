@@ -55,21 +55,6 @@ Component.register('nets-api-test-button', {
 
                 this.isLoading = false;
             });
-        },
-		
-		pluginversion() {
-		
-            this.netsApiTest.pluginversion().then((res) => {
-                if (res.plugin_version && this.isUpdate == true) {
-                    this.isSaveSuccessful = false;
-                    this.createNotificationSuccess({
-                        title: "Update Nets Easy Checkout Plugin ",
-                        message: res.notification_message +"     Please update your nets easy plugin version " + res.plugin_version +  " Github repo " + res.repo_links
-                    });
-                } 
-               
-            });
-		}
-		
+        }
     }
 })

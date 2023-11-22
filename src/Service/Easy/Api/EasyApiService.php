@@ -22,8 +22,6 @@ class EasyApiService
 
     public const ENV_TEST = 'test';
 
-    public const CUSTOM_API = 'https://reporting.sokoni.it/enquiry';
-
     private Client $client;
 
     private string $env;
@@ -95,14 +93,6 @@ class EasyApiService
     {
         $url = $this->getVoidPaymentUrl($paymentId);
         $this->handleResponse($this->client->post($url, $data));
-    }
-
-    public function getPluginVersion($data)
-    {
-        $this->client->setHeader('Content-Type', 'application/json');
-        $this->client->setHeader('Accept', 'application/json');
-
-        return $this->handleResponse($this->client->post(self::CUSTOM_API, $data));
     }
 
     public function getUpdateReferenceUrl(string $paymentId)
