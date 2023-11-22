@@ -32,7 +32,6 @@
             const checkout = new Dibs.Checkout(checkoutOptions);
 
             checkout.on('payment-completed', function(response) {
-                console.log(response);
                 window.location.href = '{{ easyPlaceOrderUrl }}' + '?paymentId=' + response.paymentId;
             });
 
