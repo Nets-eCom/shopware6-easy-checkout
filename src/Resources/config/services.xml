@@ -7,7 +7,8 @@
             <argument type="service" id="Nets\Checkout\Facade\AsyncPaymentFinalizePay"/>
             <tag name="shopware.payment.method.async" />
         </service>
-       <service id="Nets\Checkout\Facade\AsyncPaymentFinalizePay" public="true">
+       <service id="Nets\Checkout\Facade\AsyncPaymentFinalizePay" public="true" lazy="true">
+       <!-- lazy loading nedded for SW6.4 because CartService is creating dependency loop with Nets\Checkout\Service\Checkout -->
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler"/>

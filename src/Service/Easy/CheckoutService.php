@@ -58,11 +58,16 @@ class CheckoutService
 
     private EntityRepository $netsApiRepository;
 
-    /**
-     * CheckoutService constructor.
-     */
-    public function __construct(EasyApiService $easyApiService, ConfigService $configService, EntityRepository $transactionRepository, OrderTransactionStateHandler $orderTransactionStateHandler, CartService $cartService, RequestStack $requestStack, StateMachineRegistry $machineRegistry, EntityRepository $netsApiRepository)
-    {
+    public function __construct(
+        EasyApiService $easyApiService,
+        ConfigService $configService,
+        EntityRepository $transactionRepository,
+        OrderTransactionStateHandler $orderTransactionStateHandler,
+        CartService $cartService,
+        RequestStack $requestStack,
+        StateMachineRegistry $machineRegistry,
+        EntityRepository $netsApiRepository
+    ) {
         $this->easyApiService          = $easyApiService;
         $this->configService           = $configService;
         $this->transactionRepository   = $transactionRepository;
