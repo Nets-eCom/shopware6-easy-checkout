@@ -10,7 +10,6 @@ use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition;
-use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
@@ -23,7 +22,9 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions;
 use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Shopware\Core\System\StateMachine\Transition;
+use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CheckoutService
 {
@@ -46,8 +47,6 @@ class CheckoutService
 
     private ConfigService $configService;
 
-    private EntityRepository $transactionRepository;
-
     private OrderTransactionStateHandler $transactionStateHandler;
 
     private CartService $cartService;
@@ -58,24 +57,26 @@ class CheckoutService
 
     private EntityRepository $netsApiRepository;
 
+    private Router $router;
+
     public function __construct(
         EasyApiService $easyApiService,
         ConfigService $configService,
-        EntityRepository $transactionRepository,
         OrderTransactionStateHandler $orderTransactionStateHandler,
         CartService $cartService,
         RequestStack $requestStack,
         StateMachineRegistry $machineRegistry,
-        EntityRepository $netsApiRepository
+        EntityRepository $netsApiRepository,
+        Router $router
     ) {
-        $this->easyApiService          = $easyApiService;
-        $this->configService           = $configService;
-        $this->transactionRepository   = $transactionRepository;
+        $this->easyApiService = $easyApiService;
+        $this->configService = $configService;
         $this->transactionStateHandler = $orderTransactionStateHandler;
-        $this->cartService             = $cartService;
-        $this->requestStack            = $requestStack;
-        $this->stateMachineRegistry    = $machineRegistry;
-        $this->netsApiRepository       = $netsApiRepository;
+        $this->cartService = $cartService;
+        $this->requestStack = $requestStack;
+        $this->stateMachineRegistry = $machineRegistry;
+        $this->netsApiRepository = $netsApiRepository;
+        $this->router = $router;
     }
 
     /**
@@ -327,7 +328,7 @@ class CheckoutService
             $session->set('cancelOrderId', $cartOrderEntityObject->getOrderNumber());
             $session->set('sw_order_id', $cartOrderEntityObject->getId());
             $data['checkout']['returnUrl'] = $transaction->getReturnUrl();
-            $data['checkout']['cancelUrl'] = $this->requestStack->getCurrentRequest()->getUriForPath('/nets/order/cancel');
+            $data['checkout']['cancelUrl'] = $this->router->generate('nets.cancel.order.controller', [], UrlGeneratorInterface::ABSOLUTE_URL);
         }
         $data['checkout']['merchantTermsUrl'] = $this->configService->getMerchantTermsUrl($salesChannelContext->getSalesChannel()
             ->getId());
@@ -347,7 +348,7 @@ class CheckoutService
         }
 
         if ($checkoutType == self::CHECKOUT_TYPE_EMBEDDED) {
-            $data['checkout']['url'] = $this->requestStack->getCurrentRequest()->getUriForPath('/nets/order/finish');
+            $data['checkout']['url'] = $this->router->generate('nets.finish.order.controller', [], UrlGeneratorInterface::ABSOLUTE_URL);
         }
 
         $countryIso = $salesChannelContext->getCustomer()

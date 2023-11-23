@@ -10,6 +10,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\Language\LanguageEntity;
+use Shopware\Storefront\Framework\Routing\Router;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -24,17 +25,23 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 
     private EntityRepository $languageRepository;
 
+    private Router $router;
+
     /**
      * CheckoutConfirmPageSubscriber constructor.
      */
-    public function __construct(ConfigService $configService,
+    public function __construct(
+        ConfigService   $configService,
         CheckoutService $checkoutService,
-        RequestStack $requestStack, EntityRepository $languageRepository)
-    {
-        $this->configService      = $configService;
-        $this->checkoutService    = $checkoutService;
-        $this->requestStack       = $requestStack;
+        RequestStack    $requestStack,
+        EntityRepository $languageRepository,
+        Router $router
+    ) {
+        $this->configService = $configService;
+        $this->checkoutService = $checkoutService;
+        $this->requestStack = $requestStack;
         $this->languageRepository = $languageRepository;
+        $this->router = $router;
     }
 
     /**
@@ -106,7 +113,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                 'paymentId'                => $paymentId,
                 'checkoutType'             => $this->configService->getCheckoutType($salesChannelContextId),
                 'easy_checkout_is_active'  => $easyCheckoutIsActive,
-                'place_order_url'          => $event->getRequest()->getUriForPath('/nets/order/finish'),
+                'place_order_url'          => $this->router->generate('nets.finish.order.controller'),
                 'easy_checkout_js_asset'   => $easyCheckoutJsAsset,
                 'language'                 => $checkoutLanguage,
             ];
