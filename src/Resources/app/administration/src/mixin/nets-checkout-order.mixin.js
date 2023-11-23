@@ -69,6 +69,7 @@ Mixin.register('nets-checkout-order', {
                     });
                     me.isLoading = false;
                     this.getSummaryAmounts(order);
+                    window.location.reload(true);
                 })
                 .catch((errorResponse) => {
                     this.createNotificationError({
@@ -95,6 +96,7 @@ Mixin.register('nets-checkout-order', {
                     });
                     me.isLoading = false;
                     this.getSummaryAmounts(order);
+                    window.location.reload(true);
                 })
                 .catch((errorResponse) => {
                     this.createNotificationError({
