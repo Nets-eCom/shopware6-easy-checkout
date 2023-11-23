@@ -88,9 +88,13 @@ class PaymentController extends StorefrontController
      *
      * @Route("/nets/order/finish", name="nets.finish.order.controller", options={"seo": "false"}, methods={"GET"}, defaults={"_routeScope": {"storefront"}})
      *
-     * @throws EasyApiException
+     * @param Context $context
+     * @param SalesChannelContext $ctx
+     * @param Request $request
+     * @param RequestDataBag $data
      *
-     * @return null|RedirectResponse
+     * @return RedirectResponse
+     * @throws EasyApiException
      */
     public function placeOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data): RedirectResponse
     {
@@ -451,7 +455,7 @@ class PaymentController extends StorefrontController
      *
      * @Route("/api/nets/transaction/refund", name="nets.refund.payment.action", options={"seo": "false"}, methods={"POST"}, defaults={"_routeScope": {"api"}})
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function refundPayment(Context $context, Request $request): JsonResponse
     {
