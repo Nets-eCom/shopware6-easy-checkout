@@ -10,7 +10,6 @@ use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition;
-use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
@@ -48,8 +47,6 @@ class CheckoutService
 
     private ConfigService $configService;
 
-    private EntityRepository $transactionRepository;
-
     private OrderTransactionStateHandler $transactionStateHandler;
 
     private CartService $cartService;
@@ -68,7 +65,6 @@ class CheckoutService
     public function __construct(
         EasyApiService $easyApiService,
         ConfigService $configService,
-        EntityRepository $transactionRepository,
         OrderTransactionStateHandler $orderTransactionStateHandler,
         CartService $cartService,
         RequestStack $requestStack,
@@ -78,7 +74,6 @@ class CheckoutService
     ) {
         $this->easyApiService = $easyApiService;
         $this->configService = $configService;
-        $this->transactionRepository = $transactionRepository;
         $this->transactionStateHandler = $orderTransactionStateHandler;
         $this->cartService = $cartService;
         $this->requestStack = $requestStack;
