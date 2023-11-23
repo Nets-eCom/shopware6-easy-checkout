@@ -511,7 +511,7 @@ class PaymentController extends StorefrontController
 
         $this->transHandler->cancel($orderEntity->getTransactions()->first()->getId(), $context);
 
-        return new RedirectResponse($this->requestStack->getCurrentRequest()->getUriForPath('/checkout/cart'));
+        return $this->redirectToRoute('frontend.checkout.cart.page');
     }
 
     /**

@@ -86,6 +86,7 @@
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
             <argument type="service" id="request_stack"/>
             <argument type="service" id="language.repository" />
+            <argument type="service" id="router"/>
             <tag name="kernel.event_subscriber" />
         </service>
 	<service id="Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentDefinition">
