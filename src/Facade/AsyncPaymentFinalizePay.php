@@ -15,7 +15,6 @@ use Shopware\Core\Checkout\Payment\Exception\CustomerCanceledAsyncPaymentExcepti
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,8 +22,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class AsyncPaymentFinalizePay
 {
-    private SystemConfigService $systemConfigService;
-
     private CheckoutService $checkout;
 
     private EasyApiExceptionHandler $easyApiExceptionHandler;
@@ -49,7 +46,6 @@ class AsyncPaymentFinalizePay
 
     public function __construct(
         CheckoutService $checkout,
-        SystemConfigService $systemConfigService,
         EasyApiExceptionHandler $easyApiExceptionHandler,
         OrderTransactionStateHandler $transactionStateHandler,
         EasyApiService $easyApiService,
@@ -61,7 +57,6 @@ class AsyncPaymentFinalizePay
         EntityRepository $languageRepo,
         RequestStack $requestStack
     ) {
-        $this->systemConfigService     = $systemConfigService;
         $this->checkout                = $checkout;
         $this->easyApiExceptionHandler = $easyApiExceptionHandler;
         $this->transactionStateHandler = $transactionStateHandler;

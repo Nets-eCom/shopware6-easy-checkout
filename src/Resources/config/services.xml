@@ -10,7 +10,6 @@
        <service id="Nets\Checkout\Facade\AsyncPaymentFinalizePay" public="true" lazy="true">
        <!-- lazy loading nedded for SW6.4 because CartService is creating dependency loop with Nets\Checkout\Service\Checkout -->
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler"/>
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
@@ -26,7 +25,6 @@
         <service id="Nets\Checkout\Storefront\Controller\PaymentController" public="true">
             <argument type="service" id="order.repository"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
@@ -37,7 +35,6 @@
 		   <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
 			<argument type="service" id="request_stack" />
 			  <argument type="service" id="order_transaction.repository"/>
-			   <argument type="service" id="plugin.repository"/>
 
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -47,12 +44,12 @@
         <service id="Nets\Checkout\Service\Easy\CheckoutService">
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
-            <argument type="service" id="order_transaction.repository" />
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <argument type="service" id="request_stack" />
             <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
             <argument type="service" id="nets_payment_operations.repository" />
+            <argument type="service" id="router"/>
         </service>
 
         <service id="Nets\Checkout\Service\Easy\Api\Client">
@@ -87,6 +84,7 @@
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
             <argument type="service" id="request_stack"/>
             <argument type="service" id="language.repository" />
+            <argument type="service" id="router"/>
             <tag name="kernel.event_subscriber" />
         </service>
 	<service id="Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentDefinition">

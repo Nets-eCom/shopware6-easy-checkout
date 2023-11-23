@@ -66,9 +66,7 @@ class PaymentController extends StorefrontController
 
     private EntityRepository $orderTransactionRepo;
 
-    private EntityRepository $pluginRepo;
-
-    public function __construct(EntityRepository $orderRepository, CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiService $easyApiService, ConfigService $configService, CartService $cartService, PaymentService $paymentService, EntityRepository $netsApiRepository, OrderTransactionStateHandler $transHandler, StateMachineRegistry $machineRegistry, AbstractCartOrderRoute $orderRoute, RequestStack $requestStack, EntityRepository $orderTransactionRepo, EntityRepository $pluginRepo)
+    public function __construct(EntityRepository $orderRepository, CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiService $easyApiService, ConfigService $configService, CartService $cartService, PaymentService $paymentService, EntityRepository $netsApiRepository, OrderTransactionStateHandler $transHandler, StateMachineRegistry $machineRegistry, AbstractCartOrderRoute $orderRoute, RequestStack $requestStack, EntityRepository $orderTransactionRepo)
     {
         $this->orderRepository      = $orderRepository;
         $this->checkout             = $checkout;
@@ -83,7 +81,6 @@ class PaymentController extends StorefrontController
         $this->orderRoute           = $orderRoute;
         $this->requestStack         = $requestStack;
         $this->orderTransactionRepo = $orderTransactionRepo;
-        $this->pluginRepo           = $pluginRepo;
     }
 
     /**
@@ -101,7 +98,6 @@ class PaymentController extends StorefrontController
 
         try {
             $orderId = $this->orderRoute->order($cart, $ctx, $data)->getOrder()->getId();
-            // $orderId = $this->cartService->order($cart, $ctx, $data);
         } catch (\Exception $e) {
         }
 
@@ -511,7 +507,7 @@ class PaymentController extends StorefrontController
 
         $this->transHandler->cancel($orderEntity->getTransactions()->first()->getId(), $context);
 
-        return new RedirectResponse($this->requestStack->getCurrentRequest()->getUriForPath('/checkout/cart'));
+        return $this->redirectToRoute('frontend.checkout.cart.page');
     }
 
     /**
