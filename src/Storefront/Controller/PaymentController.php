@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nets\Checkout\Storefront\Controller;
 
+use Exception;
 use Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentEntity;
 use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
@@ -98,7 +99,7 @@ class PaymentController extends StorefrontController
 
         try {
             $orderId = $this->orderRoute->order($cart, $ctx, $data)->getOrder()->getId();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         if (empty($orderId)) {
@@ -451,7 +452,7 @@ class PaymentController extends StorefrontController
      *
      * @Route("/api/nets/transaction/refund", name="nets.refund.payment.action", options={"seo": "false"}, methods={"POST"}, defaults={"_routeScope": {"api"}})
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function refundPayment(Context $context, Request $request): JsonResponse
     {
