@@ -9,7 +9,6 @@
         </service>
        <service id="Nets\Checkout\Facade\AsyncPaymentFinalizePay" public="true">
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler"/>
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
