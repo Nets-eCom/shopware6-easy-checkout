@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Nets\Checkout\Storefront\Controller;
 
-use Exception;
 use Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentEntity;
 use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
@@ -99,7 +98,7 @@ class PaymentController extends StorefrontController
 
         try {
             $orderId = $this->orderRoute->order($cart, $ctx, $data)->getOrder()->getId();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
         }
 
         if (empty($orderId)) {
@@ -163,7 +162,7 @@ class PaymentController extends StorefrontController
             $result = $this->paymentService->handlePaymentByOrder($orderId, $data, $ctx, $finishUrl);
 
             return new RedirectResponse($finishUrl);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
         }
     }
 
@@ -212,7 +211,7 @@ class PaymentController extends StorefrontController
                 'message' => $ex->getMessage(),
                 'code'    => $ex->getCode(),
             ], Response::HTTP_BAD_REQUEST);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return new JsonResponse([
                 'status'  => false,
                 'message' => $ex->getMessage(),
@@ -271,7 +270,7 @@ class PaymentController extends StorefrontController
 
                     try {
                         $paymentVoid = $this->easyApiService->voidPayment($paymentId, json_encode($cancelBody));
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                     }
                 }
             }
