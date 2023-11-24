@@ -2,14 +2,13 @@
 
 namespace Nets\Checkout\Subscriber;
 
+use Nets\Checkout\Service\Checkout;
 use Nets\Checkout\Service\ConfigService;
+use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\TransactionDetailsStruct;
 use Nets\Checkout\Service\Easy\CheckoutService;
-use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\System\Language\LanguageEntity;
+use Nets\Checkout\Service\LanguageProvider;
 use Shopware\Storefront\Framework\Routing\Router;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -23,7 +22,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 
     private RequestStack $requestStack;
 
-    private EntityRepository $languageRepository;
+    private LanguageProvider $languageProvider;
 
     private Router $router;
 
@@ -34,13 +33,13 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
         ConfigService   $configService,
         CheckoutService $checkoutService,
         RequestStack    $requestStack,
-        EntityRepository $languageRepository,
+        LanguageProvider $languageProvider,
         Router $router
     ) {
         $this->configService = $configService;
         $this->checkoutService = $checkoutService;
         $this->requestStack = $requestStack;
-        $this->languageRepository = $languageRepository;
+        $this->languageProvider = $languageProvider;
         $this->router = $router;
     }
 
@@ -61,8 +60,10 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
         $salesChannelContextId = $salesChannelContext->getSalesChannel()->getId();
         $checkoutType          = $this->configService->getCheckoutType($salesChannelContextId);
 
-        if ($paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout'
-            && $checkoutType == $this->checkoutService::CHECKOUT_TYPE_EMBEDDED) {
+        // @TODO this should be merged with AsyncPaymentFinalizePay, refactor
+        // @todo early return
+        if ($paymentMethod->getHandlerIdentifier() === Checkout::class
+            && CheckoutService::CHECKOUT_TYPE_EMBEDDED === $checkoutType) {
             try {
                 $paymentId = json_decode($this->checkoutService->createPayment($salesChannelContext), true);
                 $paymentId = $paymentId['paymentId'];
@@ -76,67 +77,25 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                 $paymentId = null;
             }
 
-            $customerLanguage = $this->getCustomerLanguage($salesChannelContext->getContext());
-
-            switch ($customerLanguage) {
-                case 'de':
-                    $checkoutLanguage = 'de-DE';
-
-                    break;
-                case 'da':
-                    $checkoutLanguage = 'da-DK';
-
-                    break;
-                case 'sv':
-                    $checkoutLanguage = 'sv-SE';
-
-                    break;
-                case 'nb':
-                    $checkoutLanguage = 'nb-NO';
-
-                    break;
-                default:
-                    $checkoutLanguage = 'en-GB';
-            }
-
-            $variablesStruct = new TransactionDetailsStruct();
-
-            $easyCheckoutIsActive = $paymentMethod->getHandlerIdentifier() == 'Nets\Checkout\Service\Checkout' ? 1 : 0;
-
             $environment = $this->configService->getEnvironment($salesChannelContextId);
+            $easyCheckoutJsAsset = $environment == EasyApiService::ENV_LIVE
+                ? CheckoutService::EASY_CHECKOUT_JS_ASSET_LIVE
+                : CheckoutService::EASY_CHECKOUT_JS_ASSET_TEST;
 
-            $easyCheckoutJsAsset = $environment == 'test' ? $this->checkoutService::EASY_CHECKOUT_JS_ASSET_TEST :
-                                             $this->checkoutService::EASY_CHECKOUT_JS_ASSET_LIVE;
-
-            $templateVars = ['checkoutKey' => $this->configService->getCheckoutKey($salesChannelContextId),
-                'environment'              => $environment,
-                'paymentId'                => $paymentId,
-                'checkoutType'             => $this->configService->getCheckoutType($salesChannelContextId),
-                'easy_checkout_is_active'  => $easyCheckoutIsActive,
-                'place_order_url'          => $this->router->generate('nets.finish.order.controller'),
-                'easy_checkout_js_asset'   => $easyCheckoutJsAsset,
-                'language'                 => $checkoutLanguage,
+            $templateVars = [
+                'checkoutKey' => $this->configService->getCheckoutKey($salesChannelContextId),
+                'paymentId' => $paymentId,
+                'checkoutType' => $this->configService->getCheckoutType($salesChannelContextId),
+                'easy_checkout_is_active' => 1,
+                'place_order_url' => $this->router->generate('nets.finish.order.controller'),
+                'easy_checkout_js_asset' => $easyCheckoutJsAsset,
+                'language' => $this->languageProvider->getLanguage($salesChannelContext->getContext()),
             ];
 
+            $variablesStruct = new TransactionDetailsStruct();
             $variablesStruct->assign($templateVars);
 
             $event->getPage()->addExtension('easy_checkout_variables', $variablesStruct);
         }
-    }
-
-    private function getCustomerLanguage(Context $context): string
-    {
-        $languages = $context->getLanguageId();
-        $criteria  = new Criteria([$languages]);
-        $criteria->addAssociation('locale');
-
-        /** @var null|LanguageEntity $language */
-        $language = $this->languageRepository->search($criteria, $context)->first();
-
-        if ($language === null || $language->getLocale() === null) {
-            return 'en';
-        }
-
-        return substr($language->getLocale()->getCode(), 0, 2);
     }
 }

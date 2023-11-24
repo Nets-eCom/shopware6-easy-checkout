@@ -16,10 +16,10 @@
             <argument type="service" id="order_transaction.repository"/>
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="order.repository"/>
-			<argument type="service" id="router"/>
+            <argument type="service" id="router"/>
             <argument type="service" id="nets_payment_operations.repository" />
-             <argument type="service" id="language.repository" />
-			 <argument type="service" id="request_stack" />
+            <argument type="service" id="Nets\Checkout\Service\LanguageProvider" />
+            <argument type="service" id="request_stack" />
         </service>
 
         <service id="Nets\Checkout\Storefront\Controller\PaymentController" public="true">
@@ -30,11 +30,11 @@
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <argument type="service" id="Shopware\Core\Checkout\Payment\PaymentService" />
             <argument type="service" id="nets_payment_operations.repository" />
-			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
-			 <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
-		   <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
-			<argument type="service" id="request_stack" />
-			  <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="order_transaction.repository"/>
 
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -83,12 +83,17 @@
             <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
             <argument type="service" id="request_stack"/>
-            <argument type="service" id="language.repository" />
+            <argument type="service" id="Nets\Checkout\Service\LanguageProvider" />
             <argument type="service" id="router"/>
             <tag name="kernel.event_subscriber" />
         </service>
-	<service id="Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentDefinition">
- <tag name="shopware.entity.definition" entity="nets_payment_operations" />
- </service>
+
+        <service id="Nets\Checkout\Service\LanguageProvider">
+            <argument type="service" id="language.repository" />
+        </service>
+
+        <service id="Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentDefinition">
+            <tag name="shopware.entity.definition" entity="nets_payment_operations" />
+        </service>
     </services>
 </container>
