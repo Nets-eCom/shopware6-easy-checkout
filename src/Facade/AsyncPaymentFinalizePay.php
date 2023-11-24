@@ -9,6 +9,7 @@ use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler;
 use Nets\Checkout\Service\Easy\CheckoutService;
+use Nets\Checkout\Service\LanguageProvider;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException;
@@ -40,7 +41,7 @@ class AsyncPaymentFinalizePay
 
     private EntityRepository $netsApiRepository;
 
-    private EntityRepository $languageRepo;
+    private LanguageProvider $languageProvider;
 
     private RequestStack $requestStack;
 
@@ -54,7 +55,7 @@ class AsyncPaymentFinalizePay
         EntityRepository $orderRepository,
         Router $router,
         EntityRepository $netsApiRepository,
-        EntityRepository $languageRepo,
+        LanguageProvider $languageProvider,
         RequestStack $requestStack
     ) {
         $this->checkout                = $checkout;
@@ -66,7 +67,7 @@ class AsyncPaymentFinalizePay
         $this->orderRepository         = $orderRepository;
         $this->router                  = $router;
         $this->netsApiRepository       = $netsApiRepository;
-        $this->languageRepo            = $languageRepo;
+        $this->languageProvider        = $languageProvider;
         $this->requestStack            = $requestStack;
     }
 
@@ -133,28 +134,31 @@ class AsyncPaymentFinalizePay
                 ], $context);
             }
         } catch (EasyApiException $ex) {
+            $this->easyApiExceptionHandler->handle($ex);
+
             throw new CustomerCanceledAsyncPaymentException($transactionId, 'Exception during transaction completion');
         }
     }
 
     /**
-     * @return RedirectResponse
      * @throws \Exception
      */
-    public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext)
+    public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): string
     {
-        $checkoutType = $this->configService->getCheckoutType($salesChannelContext->getSalesChannel()
-            ->getId());
+        $checkoutType = $this->configService->getCheckoutType(
+            $salesChannelContext->getSalesChannel()->getId()
+        );
 
-        if ($this->checkout::CHECKOUT_TYPE_EMBEDDED == $checkoutType) {
-            $paymentId   = $this->extractPaymentId();
-            $redirectUrl = $transaction->getReturnUrl() . '&paymentId=' . $paymentId;
+        if (CheckoutService::CHECKOUT_TYPE_EMBEDDED === $checkoutType) {
+            $paymentId = $this->extractPaymentId();
 
-            return new RedirectResponse($redirectUrl);
+            // for embeded customer already paid in CheckoutConfirmPageSubscriber and js code
+            // redirect user to finalize
+            return $transaction->getReturnUrl() . '&paymentId=' . $paymentId;
         }
 
         try {
-            $result              = $this->checkout->createPayment($salesChannelContext, $this->checkout::CHECKOUT_TYPE_HOSTED, $transaction);
+            $result = $this->checkout->createPayment($salesChannelContext, CheckoutService::CHECKOUT_TYPE_HOSTED, $transaction);
             $PaymentCreateResult = json_decode($result, true);
             $this->requestStack->getCurrentRequest()->getSession()->set('nets_paymentId', $PaymentCreateResult['paymentId']);
         } catch (EasyApiException $ex) {
@@ -163,28 +167,7 @@ class AsyncPaymentFinalizePay
             return new RedirectResponse($this->router->generate('frontend.checkout.cart.page'));
         }
 
-        $langShort = $this->configService->getLang($salesChannelContext->getContext(), $this->languageRepo);
-
-        switch ($langShort) {
-            case 'de':
-                $language = 'de-DE';
-
-                break;
-            case 'da':
-                $language = 'da-DK';
-
-                break;
-            case 'sv':
-                $language = 'sv-SE';
-
-                break;
-            case 'nb':
-                $language = 'nb-NO';
-
-                break;
-            default:
-                $language = 'en-GB';
-        }
+        $language = $this->languageProvider->getLanguage($salesChannelContext->getContext());
 
         return $PaymentCreateResult['hostedPaymentPageUrl'] . '&language=' . $language;
     }
