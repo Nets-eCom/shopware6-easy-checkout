@@ -59,9 +59,6 @@ class CheckoutService
 
     private Router $router;
 
-    /**
-     * CheckoutService constructor.
-     */
     public function __construct(
         EasyApiService $easyApiService,
         ConfigService $configService,
