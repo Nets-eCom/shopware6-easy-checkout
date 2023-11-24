@@ -29,7 +29,6 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions;
 use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Shopware\Core\System\StateMachine\Transition;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -40,8 +39,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PaymentController extends StorefrontController
 {
-    public SystemConfigService $systemConfigService;
-
     private EntityRepository $orderRepository;
 
     private ConfigService $configService;
@@ -66,11 +63,22 @@ class PaymentController extends StorefrontController
 
     private EntityRepository $orderTransactionRepo;
 
-    public function __construct(EntityRepository $orderRepository, CheckoutService $checkout, SystemConfigService $systemConfigService, EasyApiService $easyApiService, ConfigService $configService, CartService $cartService, PaymentService $paymentService, EntityRepository $netsApiRepository, OrderTransactionStateHandler $transHandler, StateMachineRegistry $machineRegistry, AbstractCartOrderRoute $orderRoute, RequestStack $requestStack, EntityRepository $orderTransactionRepo)
-    {
+    public function __construct(
+        EntityRepository $orderRepository,
+        CheckoutService $checkout,
+        EasyApiService $easyApiService,
+        ConfigService $configService,
+        CartService $cartService,
+        PaymentService $paymentService,
+        EntityRepository $netsApiRepository,
+        OrderTransactionStateHandler $transHandler,
+        StateMachineRegistry $machineRegistry,
+        AbstractCartOrderRoute $orderRoute,
+        RequestStack $requestStack,
+        EntityRepository $orderTransactionRepo
+    ) {
         $this->orderRepository      = $orderRepository;
         $this->checkout             = $checkout;
-        $this->systemConfigService  = $systemConfigService;
         $this->easyApiService       = $easyApiService;
         $this->configService        = $configService;
         $this->cartService          = $cartService;
