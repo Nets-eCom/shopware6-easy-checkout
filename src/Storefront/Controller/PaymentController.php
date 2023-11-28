@@ -96,9 +96,13 @@ class PaymentController extends StorefrontController
      *
      * @Route("/nets/order/finish", name="nets.finish.order.controller", options={"seo": "false"}, methods={"GET"}, defaults={"_routeScope": {"storefront"}})
      *
-     * @throws EasyApiException
+     * @param Context $context
+     * @param SalesChannelContext $ctx
+     * @param Request $request
+     * @param RequestDataBag $data
      *
-     * @return null|RedirectResponse
+     * @return RedirectResponse
+     * @throws EasyApiException
      */
     public function placeOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data): RedirectResponse
     {
@@ -170,7 +174,7 @@ class PaymentController extends StorefrontController
             $result = $this->paymentService->handlePaymentByOrder($orderId, $data, $ctx, $finishUrl);
 
             return new RedirectResponse($finishUrl);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
         }
     }
 
@@ -219,7 +223,7 @@ class PaymentController extends StorefrontController
                 'message' => $ex->getMessage(),
                 'code'    => $ex->getCode(),
             ], Response::HTTP_BAD_REQUEST);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return new JsonResponse([
                 'status'  => false,
                 'message' => $ex->getMessage(),
@@ -278,7 +282,7 @@ class PaymentController extends StorefrontController
 
                     try {
                         $paymentVoid = $this->easyApiService->voidPayment($paymentId, json_encode($cancelBody));
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                     }
                 }
             }
@@ -477,7 +481,7 @@ class PaymentController extends StorefrontController
                 'message' => $ex->getMessage(),
                 'code'    => $ex->getCode(),
             ], Response::HTTP_BAD_REQUEST);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return new JsonResponse([
                 'status'  => false,
                 'message' => $ex->getMessage(),
