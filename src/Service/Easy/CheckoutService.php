@@ -1,8 +1,9 @@
 <?php
+
 namespace Nets\Checkout\Service\Easy;
 
 use Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentEntity;
-use Nets\Checkout\Service\ConfigService;
+use Nets\Checkout\Service\Easy\ConfigService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Shopware\Core\Checkout\Cart\Cart;
@@ -32,9 +33,9 @@ class CheckoutService
 
     public const CHECKOUT_TYPE_HOSTED = 'hosted';
 
-    public const EASY_CHECKOUT_JS_ASSET_TEST = 'https://test.checkout.dibspayment.eu/v1/checkout.js?v=1';
-
     public const EASY_CHECKOUT_JS_ASSET_LIVE = 'https://checkout.dibspayment.eu/v1/checkout.js?v=1';
+
+    public const EASY_CHECKOUT_JS_ASSET_TEST = 'https://test.checkout.dibspayment.eu/v1/checkout.js?v=1';
 
     public const NET_PRICE = 'net';
 
@@ -87,12 +88,6 @@ class CheckoutService
      */
     public function createPayment(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null)
     {
-        $environment = $this->configService->getEnvironment($salesChannelContext->getSalesChannel()
-            ->getId());
-        $secretKey = $this->configService->getSecretKey($salesChannelContext->getSalesChannel()
-            ->getId());
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
         $payload = json_encode($this->collectRequestParams($salesChannelContext, $checkoutType, $transaction));
 
         return $this->easyApiService->createPayment($payload);
@@ -134,19 +129,13 @@ class CheckoutService
 
     /**
      * @param
-     *            $salesChannelContextId
-     * @param
      *            $paymentId
      * @param
      *            $amount
      */
-    public function chargePayment(OrderEntity $orderEntity, $salesChannelContextId, Context $context, $paymentId, $amount): array
+    public function chargePayment(OrderEntity $orderEntity, Context $context, $paymentId, $amount): array
     {
         $transaction = $orderEntity->getTransactions()->first();
-        $environment = $this->configService->getEnvironment($salesChannelContextId);
-        $secretKey   = $this->configService->getSecretKey($salesChannelContextId);
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
 
         $payload = $this->getTransactionOrderItems($orderEntity, $amount);
 
@@ -184,21 +173,15 @@ class CheckoutService
 
     /**
      * @param
-     *            $salesChannelContextId
-     * @param
      *            $paymentId
      * @param
      *            $amount
      *
      * @throws EasyApiException
      */
-    public function refundPayment(OrderEntity $orderEntity, $salesChannelContextId, Context $context, $paymentId, $amount): array
+    public function refundPayment(OrderEntity $orderEntity, Context $context, $paymentId, $amount): array
     {
         $transaction = $orderEntity->getTransactions()->first();
-        $environment = $this->configService->getEnvironment($salesChannelContextId);
-        $secretKey   = $this->configService->getSecretKey($salesChannelContextId);
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
         $payment  = $this->easyApiService->getPayment($paymentId);
         $chargeId = $payment->getFirstChargeId();
         $payload  = false;
@@ -330,12 +313,9 @@ class CheckoutService
             $data['checkout']['returnUrl'] = $transaction->getReturnUrl();
             $data['checkout']['cancelUrl'] = $this->router->generate('nets.cancel.order.controller', [], UrlGeneratorInterface::ABSOLUTE_URL);
         }
-        $data['checkout']['merchantTermsUrl'] = $this->configService->getMerchantTermsUrl($salesChannelContext->getSalesChannel()
-            ->getId());
-        $data['checkout']['termsUrl'] = $this->configService->getTermsAndConditionsUrl($salesChannelContext->getSalesChannel()
-            ->getId());
-        $chargeNow = $this->configService->getChargeNow($salesChannelContext->getSalesChannel()
-            ->getId());
+        $data['checkout']['merchantTermsUrl'] = $this->configService->getMerchantTermsUrl();
+        $data['checkout']['termsUrl'] = $this->configService->getTermsAndConditionsUrl();
+        $chargeNow = $this->configService->getChargeNow();
 
         if ($chargeNow == 'yes') {
             $data['checkout']['charge'] = 'true';
