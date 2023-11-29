@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Nets\Checkout\Service;
+namespace Nets\Checkout\Service\Easy;
 
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;

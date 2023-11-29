@@ -3,12 +3,12 @@
 namespace Nets\Checkout\Subscriber;
 
 use Nets\Checkout\Service\Checkout;
-use Nets\Checkout\Service\ConfigService;
+use Nets\Checkout\Service\Easy\ConfigService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\TransactionDetailsStruct;
 use Nets\Checkout\Service\Easy\CheckoutService;
-use Nets\Checkout\Service\LanguageProvider;
+use Nets\Checkout\Service\Easy\LanguageProvider;
 use Shopware\Storefront\Framework\Routing\Router;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -58,7 +58,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
         $salesChannelContext   = $event->getSalesChannelContext();
         $paymentMethod         = $salesChannelContext->getPaymentMethod();
         $salesChannelContextId = $salesChannelContext->getSalesChannel()->getId();
-        $checkoutType          = $this->configService->getCheckoutType($salesChannelContextId);
+        $checkoutType          = $this->configService->getCheckoutType();
 
         // @TODO this should be merged with AsyncPaymentFinalizePay, refactor
         // @todo early return
@@ -77,15 +77,15 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                 $paymentId = null;
             }
 
-            $environment = $this->configService->getEnvironment($salesChannelContextId);
+            $environment = $this->configService->getEnvironment();
             $easyCheckoutJsAsset = $environment == EasyApiService::ENV_LIVE
                 ? CheckoutService::EASY_CHECKOUT_JS_ASSET_LIVE
                 : CheckoutService::EASY_CHECKOUT_JS_ASSET_TEST;
 
             $templateVars = [
-                'checkoutKey' => $this->configService->getCheckoutKey($salesChannelContextId),
+                'checkoutKey' => $this->configService->getCheckoutKey(),
                 'paymentId' => $paymentId,
-                'checkoutType' => $this->configService->getCheckoutType($salesChannelContextId),
+                'checkoutType' => $this->configService->getCheckoutType(),
                 'easy_checkout_is_active' => 1,
                 'place_order_url' => $this->router->generate('nets.finish.order.controller'),
                 'easy_checkout_js_asset' => $easyCheckoutJsAsset,

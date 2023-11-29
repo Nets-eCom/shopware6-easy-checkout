@@ -21,6 +21,8 @@ include_once __DIR__ . '/Compatibility/RouteScope.php';
 
 class NetsCheckout extends Plugin
 {
+    const PLUGIN_VERSION = '1.4.0';
+
     public function install(InstallContext $context): void
     {
         $this->addPaymentMethod($context->getContext());

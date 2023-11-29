@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Nets\Checkout\Facade;
 
-use Nets\Checkout\Service\ConfigService;
+use Nets\Checkout\Service\Easy\ConfigService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler;
 use Nets\Checkout\Service\Easy\CheckoutService;
-use Nets\Checkout\Service\LanguageProvider;
+use Nets\Checkout\Service\Easy\LanguageProvider;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException;
@@ -75,13 +75,7 @@ class AsyncPaymentFinalizePay
     {
         $transactionId = $transaction->getOrderTransaction()->getId();
 
-        $salesChannelContextId = $salesChannelContext->getSalesChannel()->getId();
-        $environment           = $this->configService->getEnvironment($salesChannelContextId);
-        $secretKey             = $this->configService->getSecretKey($salesChannelContextId);
-
         try {
-            $this->easyApiService->setEnv($environment);
-            $this->easyApiService->setAuthorizationKey($secretKey);
             $paymentId = $this->extractPaymentId();
 
             // it is incorrect check for captured amount
@@ -89,7 +83,7 @@ class AsyncPaymentFinalizePay
             $transactionId = $transaction->getOrderTransaction()->getId();
             $orderId       = $transaction->getOrder()->getId();
             $context       = $salesChannelContext->getContext();
-            $chargeNow     = $this->configService->getChargeNow($salesChannelContextId);
+            $chargeNow     = $this->configService->getChargeNow();
 
             if ($chargeNow == 'yes') {
                 $this->transactionStateHandler->paid($transaction->getOrderTransaction()
@@ -122,7 +116,7 @@ class AsyncPaymentFinalizePay
             ], $context);
 
             // For inserting amount available respect to charge id
-            if ($this->configService->getChargeNow($salesChannelContextId) == 'yes' || $payment->getPaymentType() == 'A2A') {
+            if ($this->configService->getChargeNow() == 'yes' || $payment->getPaymentType() == 'A2A') {
                 $this->netsApiRepository->create([
                     [
                         'order_id'         => $orderId ? $orderId : '',
@@ -145,9 +139,7 @@ class AsyncPaymentFinalizePay
      */
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): string
     {
-        $checkoutType = $this->configService->getCheckoutType(
-            $salesChannelContext->getSalesChannel()->getId()
-        );
+        $checkoutType = $this->configService->getCheckoutType();
 
         if (CheckoutService::CHECKOUT_TYPE_EMBEDDED === $checkoutType) {
             $paymentId = $this->extractPaymentId();
