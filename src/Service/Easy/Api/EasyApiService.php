@@ -182,7 +182,7 @@ class EasyApiService
 
     private function buildCommercePlatformTag(): string
     {
-        return sprintf('%s %s, %s, %s',
+        return sprintf('%s %s, %s, php%s',
             'Shopware', // @todo const
             $this->shopVersion,
             NetsCheckout::PLUGIN_VERSION,
