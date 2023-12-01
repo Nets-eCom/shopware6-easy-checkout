@@ -12,7 +12,8 @@ use Nets\Checkout\Service\Easy\CheckoutService;
 use Nets\Checkout\Service\LanguageProvider;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
-use Shopware\Core\Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException;
+use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentFinalizeException;
+use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentProcessException;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -106,7 +107,7 @@ class AsyncPaymentFinalizePay
             ], $context);
 
             if (empty($payment->getReservedAmount()) && empty($payment->getChargedAmount())) {
-                throw new CustomerCanceledAsyncPaymentException($transactionId, 'Customer canceled the payment on the Easy payment page');
+                throw new AsyncPaymentFinalizeException($transactionId, 'Customer canceled the payment on the Easy payment page');
             }
 
             $this->orderTransactionRepo->update([
@@ -136,12 +137,12 @@ class AsyncPaymentFinalizePay
         } catch (EasyApiException $ex) {
             $this->easyApiExceptionHandler->handle($ex);
 
-            throw new CustomerCanceledAsyncPaymentException($transactionId, 'Exception during transaction completion');
+            throw new AsyncPaymentFinalizeException($transactionId, 'Exception during transaction completion');
         }
     }
 
     /**
-     * @throws \Exception
+     * @throws AsyncPaymentProcessException
      */
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): string
     {
@@ -164,7 +165,7 @@ class AsyncPaymentFinalizePay
         } catch (EasyApiException $ex) {
             $this->easyApiExceptionHandler->handle($ex);
 
-            return new RedirectResponse($this->router->generate('frontend.checkout.cart.page'));
+            return new AsyncPaymentProcessException($transaction->getOrderTransaction()->getId(), $ex->getMessage());
         }
 
         $language = $this->languageProvider->getLanguage($salesChannelContext->getContext());
