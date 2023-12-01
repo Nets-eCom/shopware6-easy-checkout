@@ -35,9 +35,8 @@
         </service>
 
         <service id="Nets\Checkout\Controller\Storefront\PaymentController" public="true">
-            <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
-            <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
+            <argument type="service" id="Nets\Checkout\Service\Easy\ConfigService"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <argument type="service" id="Shopware\Core\Checkout\Payment\PaymentService" />
             <argument type="service" id="nets_payment_operations.repository" />
