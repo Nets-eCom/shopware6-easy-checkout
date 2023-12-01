@@ -2,23 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Nets\Checkout\Storefront\Controller;
+namespace Nets\Checkout\Controller\API;
 
 use Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentEntity;
-use Nets\Checkout\Service\Easy\ConfigService;
+use Nets\Checkout\Service\DataReader\OrderDataReader;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\CheckoutService;
-use Shopware\Core\Checkout\Cart\SalesChannel\AbstractCartOrderRoute;
-use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
-use Shopware\Core\Checkout\Order\OrderDefinition;
-use Shopware\Core\Checkout\Order\OrderEntity;
-use Shopware\Core\Checkout\Order\OrderException;
 use Shopware\Core\Checkout\Order\OrderStates;
-use Shopware\Core\Checkout\Payment\PaymentService;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -27,183 +21,53 @@ use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\Kernel;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions;
 use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Shopware\Core\System\StateMachine\Transition;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class PaymentController extends StorefrontController
+/**
+ * @RouteScope(scopes={"api"})
+ * @Route(defaults={"_routeScope"={"api"}})
+ */
+class APIController extends StorefrontController
 {
-    private EntityRepository $orderRepository;
-
-    private ConfigService $configService;
-
     private CheckoutService $checkout;
-
     private EasyApiService $easyApiService;
-
-    private CartService $cartService;
-
-    private PaymentService $paymentService;
-
     private EntityRepository $netsApiRepository;
-
     private OrderTransactionStateHandler $transHandler;
-
     private StateMachineRegistry $stateMachineRegistry;
-
-    private AbstractCartOrderRoute $orderRoute;
-
-    private RequestStack $requestStack;
-
-    private EntityRepository $orderTransactionRepo;
+    private OrderDataReader $orderDataReader;
 
     public function __construct(
-        EntityRepository $orderRepository,
         CheckoutService $checkout,
         EasyApiService $easyApiService,
-        ConfigService $configService,
-        CartService $cartService,
-        PaymentService $paymentService,
         EntityRepository $netsApiRepository,
         OrderTransactionStateHandler $transHandler,
         StateMachineRegistry $machineRegistry,
-        AbstractCartOrderRoute $orderRoute,
-        RequestStack $requestStack,
-        EntityRepository $orderTransactionRepo
+        OrderDataReader $orderDataReader
     ) {
-        $this->orderRepository      = $orderRepository;
         $this->checkout             = $checkout;
         $this->easyApiService       = $easyApiService;
-        $this->configService        = $configService;
-        $this->cartService          = $cartService;
-        $this->paymentService       = $paymentService;
         $this->netsApiRepository    = $netsApiRepository;
         $this->transHandler         = $transHandler;
         $this->stateMachineRegistry = $machineRegistry;
-        $this->orderRoute           = $orderRoute;
-        $this->requestStack         = $requestStack;
-        $this->orderTransactionRepo = $orderTransactionRepo;
+        $this->orderDataReader      = $orderDataReader;
     }
 
     /**
-     * @RouteScope(scopes={"storefront"})
-     *
-     * @Route("/nets/order/finish", name="nets.finish.order.controller", options={"seo": "false"}, methods={"GET"}, defaults={"_routeScope": {"storefront"}})
-     *
-     * @param Context $context
-     * @param SalesChannelContext $ctx
-     * @param Request $request
-     * @param RequestDataBag $data
-     *
-     * @return RedirectResponse
-     * @throws EasyApiException
-     */
-    public function placeOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data): RedirectResponse
-    {
-        $cart = $this->cartService->getCart($ctx->getToken(), $ctx);
-
-        try {
-            $orderId = $this->orderRoute->order($cart, $ctx, $data)->getOrder()->getId();
-        } catch (\Exception $e) {
-        }
-
-        if (empty($orderId)) {
-            $orderId = $request->getSession()->get('orderId');
-        }
-
-        $orderEntity    = $this->getOrderEntityById($context, $orderId);
-        $transaction    = $orderEntity->getTransactions()->first();
-        $payment     = $this->easyApiService->getPayment($this->requestStack->getCurrentRequest()->get('paymentId'));
-        $checkoutUrl = $payment->getCheckoutUrl();
-        $refUpdate   = [
-            'reference'   => $orderEntity->getOrderNumber(),
-            'checkoutUrl' => $checkoutUrl,
-        ];
-        $this->easyApiService->updateReference($this->requestStack->getCurrentRequest()->get('paymentId'), json_encode($refUpdate));
-
-        // For inserting amount available respect to charge id
-        if ($this->configService->getChargeNow() == 'yes' || $payment->getPaymentType() == 'A2A') {
-            $this->netsApiRepository->create([
-            [
-            'order_id'         => $orderId ? $orderId : '',
-            'charge_id'        => $payment->getFirstChargeId() ? $payment->getFirstChargeId() : '',
-            'operation_type'   => 'capture',
-            'operation_amount' => $payment->getChargedAmount() ? $payment->getChargedAmount() / 100 : '',
-            'amount_available' => $payment->getChargedAmount() ? $payment->getChargedAmount() / 100 : '',
-            ],
-            ], $context);
-
-            $this->stateMachineRegistry->transition(new Transition(
-                OrderTransactionDefinition::ENTITY_NAME,
-                $orderEntity->getTransactions()->first()
-                ->getId(),
-                StateMachineTransitionActions::ACTION_PAID,
-                'stateId'
-            ), $context);
-        }
-
-        $this->orderTransactionRepo->update([
-               [
-                   'id'           => $transaction->getId(),
-                   'customFields' => [
-                       'nets_easy_payment_details' => [
-                           'transaction_id' => $this->requestStack->getCurrentRequest()->get('paymentId'),
-                           'can_capture'    => true,
-                       ],
-                   ],
-               ],
-           ], $context);
-
-        $finishUrl = $this->generateUrl('frontend.checkout.finish.page',
-            [
-                'orderId' => $orderId,
-            ]);
-
-        try {
-            $result = $this->paymentService->handlePaymentByOrder($orderId, $data, $ctx, $finishUrl);
-
-            return new RedirectResponse($finishUrl);
-        } catch (\Exception $e) {
-        }
-    }
-
-    /**
-     * @RouteScope(scopes={"storefront"})
-     *
-     * @Route("/nets/caheckout/validate", name="nets.test.controller.validate", options={"seo": "false"}, methods={"GET"}, defaults={"_routeScope": {"storefront"}})
-     */
-    public function validate()
-    {
-        try {
-            $payment = $this->easyApiService->getPayment($this->requestStack->getCurrentRequest()->get('paymentid'));
-
-            if (empty($payment->getReservedAmount())) {
-                return $this->redirectToRoute('frontend.checkout.cart.page');
-            }
-        } catch (EasyApiException $ex) {
-            return $this->redirectToRoute('frontend.checkout.cart.page');
-        }
-    }
-
-    /**
-     * @RouteScope(scopes={"api"})
-     *
-     * @Route("/api/nets/transaction/charge", name="nets.charge.payment.action", options={"seo": "false"}, methods={"POST"}, defaults={"_routeScope": {"api"}})
+     * @Route("/api/nets/transaction/charge", name="nets.charge.payment.action", options={"seo": "false"}, methods={"POST"})
      */
     public function chargePayment(Context $context, Request $request): JsonResponse
     {
-        $orderId        = $request->get('params')['orderId'];
-        $paymentId      = $request->get('params')['paymentId'];
-        $amount         = $request->get('params')['amount'];
-        $orderEntity    = $this->getOrderEntityById($context, $orderId);
+        $orderId = $request->get('params')['orderId'];
+        $paymentId = $request->get('params')['paymentId'];
+        $amount = $request->get('params')['amount'];
+        $orderEntity = $this->orderDataReader->getOrderEntityById($context, $orderId);
 
         try {
             $this->checkout->chargePayment($orderEntity, $context, $paymentId, $amount);
@@ -227,17 +91,15 @@ class PaymentController extends StorefrontController
     }
 
     /**
-     * @RouteScope(scopes={"api"})
-     *
-     * @Route("/api/nets/transaction/summary", name="nets.summary.payment.action", options={"seo": "false"}, methods={"POST"}, defaults={"_routeScope": {"api"}})
+     * @Route("/api/nets/transaction/summary", name="nets.summary.payment.action", options={"seo": "false"}, methods={"POST"})
      *
      * @return JsonResponse
      * @throws EasyApiException
      */
     public function getSummaryAmounts(Context $context, Request $request)
     {
-        $orderId        = $request->get('params')['transaction']['orderId'];
-        $orderEntity = $this->getOrderEntityById($context, $orderId);
+        $orderId     = $request->get('params')['transaction']['orderId'];
+        $orderEntity = $this->orderDataReader->getOrderEntityById($context, $orderId);
         $transaction = $orderEntity->getTransactions()->first();
         $paymentId   = $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
         $payment     = $this->easyApiService->getPayment($paymentId);
@@ -289,13 +151,13 @@ class PaymentController extends StorefrontController
 
                     if (empty($chargeId)) {
                         $this->netsApiRepository->create([
-                        [
-                        'order_id'         => $orderId ? $orderId : '',
-                        'charge_id'        => $key->chargeId,
-                        'operation_type'   => 'capture',
-                        'operation_amount' => $key->amount / 100,
-                        'amount_available' => $key->amount / 100,
-                        ],
+                            [
+                                'order_id'         => $orderId ? $orderId : '',
+                                'charge_id'        => $key->chargeId,
+                                'operation_type'   => 'capture',
+                                'operation_amount' => $key->amount / 100,
+                                'amount_available' => $key->amount / 100,
+                            ],
                         ], $context);
                     }
                 }
@@ -305,12 +167,12 @@ class PaymentController extends StorefrontController
                 if ($payment->getReservedAmount() == $payment->getChargedAmount()) {
                     if ($transaction->getStateMachineState()->getTechnicalName() == OrderTransactionStates::STATE_PARTIALLY_PAID) {
                         $this->transHandler->reopen($orderEntity->getTransactions()->first()
-                           ->getId(), $context);
+                            ->getId(), $context);
 
                         $this->stateMachineRegistry->transition(new Transition(
                             OrderTransactionDefinition::ENTITY_NAME,
                             $orderEntity->getTransactions()->first()
-                            ->getId(),
+                                ->getId(),
                             StateMachineTransitionActions::ACTION_PAID,
                             'stateId'
                         ), $context);
@@ -319,17 +181,17 @@ class PaymentController extends StorefrontController
                     }
                 } elseif ($payment->getChargedAmount() < $payment->getReservedAmount() && $payment->getChargedAmount() > 0 && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PARTIALLY_PAID) {
                     $this->transHandler->payPartially($orderEntity->getTransactions()->first()
-                            ->getId(), $context);
+                        ->getId(), $context);
                 }
             }
 
             if ($payment->getRefundedAmount() > 0) {
                 if ($payment->getChargedAmount() == $payment->getRefundedAmount() && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_REFUNDED) {
                     $this->transHandler->refund($orderEntity->getTransactions()->first()
-                            ->getId(), $context);
+                        ->getId(), $context);
                 } elseif ($payment->getRefundedAmount() < $payment->getChargedAmount() && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PARTIALLY_REFUNDED) {
                     $this->transHandler->refundPartially($orderEntity->getTransactions()->first()
-                            ->getId(), $context);
+                        ->getId(), $context);
                 }
             }
 
@@ -440,16 +302,16 @@ class PaymentController extends StorefrontController
     }
 
     /**
-     * @RouteScope(scopes={"api"})
+     * @Route("/api/nets/transaction/refund", name="nets.refund.payment.action", options={"seo": "false"}, methods={"POST"})
      *
-     * @Route("/api/nets/transaction/refund", name="nets.refund.payment.action", options={"seo": "false"}, methods={"POST"}, defaults={"_routeScope": {"api"}})
+     * @throws \Exception
      */
     public function refundPayment(Context $context, Request $request): JsonResponse
     {
         $orderId        = $request->get('params')['orderId'];
         $paymentId      = $request->get('params')['paymentId'];
         $amount         = $request->get('params')['amount'];
-        $orderEntity    = $this->getOrderEntityById($context, $orderId);
+        $orderEntity    = $this->orderDataReader->getOrderEntityById($context, $orderId);
 
         try {
             $this->checkout->refundPayment($orderEntity, $context, $paymentId, $amount);
@@ -473,37 +335,7 @@ class PaymentController extends StorefrontController
     }
 
     /**
-     * @RouteScope(scopes={"storefront"})
-     *
-     * @Route("/nets/order/cancel", name="nets.cancel.order.controller", options={"seo": "false"}, methods={"GET"}, defaults={"_routeScope": {"storefront"}})
-     *
-     * @throws EasyApiException
-     */
-    public function cancelOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data): RedirectResponse
-    {
-        $session        = $request->getSession();
-        $orderId        = $session->get('sw_order_id');
-        $orderNo        = $session->get('cancelOrderId');
-        $salesChannelId = $this->getSalesChannelIdByOrderId($orderId, $context);
-        $orderEntity    = $this->getOrderEntityById($context, $orderId);
-        $transaction    = $orderEntity->getTransactions()->first();
-
-        $this->stateMachineRegistry->transition(new Transition(
-            OrderDefinition::ENTITY_NAME,
-            $orderId,
-            StateMachineTransitionActions::ACTION_CANCEL,
-            'stateId'
-        ), $context);
-
-        $this->transHandler->cancel($orderEntity->getTransactions()->first()->getId(), $context);
-
-        return $this->redirectToRoute('frontend.checkout.cart.page');
-    }
-
-    /**
-     * @RouteScope(scopes={"api"})
-     *
-     * @Route("/api/test/verify", name="nets.api.test.controller", defaults={"XmlHttpRequest": true, "_routeScope": {"api"}}, options={"seo": "false"}, methods={"POST"})
+     * @Route("/api/test/verify", name="nets.api.test.controller", options={"seo": "false"}, methods={"POST"})
      */
     public function check(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
     {
@@ -571,49 +403,5 @@ class PaymentController extends StorefrontController
         $success = $this->easyApiService->verifyConnection($environment, $secretKey, $payload);
 
         return new JsonResponse(['success' => $success]);
-    }
-
-    /**
-     * @param $orderId
-     *
-     * @return null|mixed
-     */
-    private function getOrderEntityById(Context $context, $orderId)
-    {
-        $criteria = new Criteria([
-            $orderId,
-        ]);
-        $criteria->addAssociation('lineItems.payload')
-            ->addAssociation('deliveries.shippingCosts')
-            ->addAssociation('deliveries.shippingMethod')
-            ->addAssociation('deliveries.shippingOrderAddress.country')
-            ->addAssociation('cartPrice.calculatedTaxes')
-            ->addAssociation('transactions.paymentMethod')
-            ->addAssociation('currency')
-            ->addAssociation('addresses.country')
-            ->addAssociation('transactions.stateMachineState');
-
-        return $this->orderRepository->search($criteria, $context)->first();
-    }
-
-    /**
-     * @param string $orderId
-     * @param Context $context
-     * @return string
-     * @throw OrderException
-     */
-
-    private function getSalesChannelIdByOrderId(string $orderId, Context $context): string
-    {
-        /** @var null|OrderEntity $order */
-        $order = $this->orderRepository->search(new Criteria([
-            $orderId,
-        ]), $context)->first();
-
-        if ($order === null) {
-            throw OrderException::orderNotFound($orderId);
-        }
-
-        return $order->getSalesChannelId();
     }
 }
