@@ -349,7 +349,6 @@ class APIController extends StorefrontController
         if (empty($secretKey)
             || !in_array($checkoutType, [CheckoutService::CHECKOUT_TYPE_HOSTED, CheckoutService::CHECKOUT_TYPE_EMBEDDED])
         ) {
-            var_dump('secret', $secretKey, $checkoutType);
             return new JsonResponse(['success' => false]);
         }
 
@@ -361,7 +360,6 @@ class APIController extends StorefrontController
                 : $dataBag->get('NetsCheckout.config.testCheckoutKey');
 
             if (empty($checkoutKey)) {
-                var_dump('checkoutKey', $checkoutKey, $checkoutType);
                 return new JsonResponse(['success' => false]);
             }
 
