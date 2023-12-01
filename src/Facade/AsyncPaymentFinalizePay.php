@@ -9,7 +9,7 @@ use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler;
 use Nets\Checkout\Service\Easy\CheckoutService;
-use Nets\Checkout\Service\LanguageProvider;
+use Nets\Checkout\Service\Easy\LanguageProvider;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentFinalizeException;
@@ -17,8 +17,6 @@ use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentProcessException;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Storefront\Framework\Routing\Router;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -38,8 +36,6 @@ class AsyncPaymentFinalizePay
 
     private EntityRepository $orderRepository;
 
-    private Router $router;
-
     private EntityRepository $netsApiRepository;
 
     private LanguageProvider $languageProvider;
@@ -54,7 +50,6 @@ class AsyncPaymentFinalizePay
         EntityRepository $orderTransactionRepo,
         ConfigService $configService,
         EntityRepository $orderRepository,
-        Router $router,
         EntityRepository $netsApiRepository,
         LanguageProvider $languageProvider,
         RequestStack $requestStack
@@ -66,7 +61,6 @@ class AsyncPaymentFinalizePay
         $this->orderTransactionRepo    = $orderTransactionRepo;
         $this->configService           = $configService;
         $this->orderRepository         = $orderRepository;
-        $this->router                  = $router;
         $this->netsApiRepository       = $netsApiRepository;
         $this->languageProvider        = $languageProvider;
         $this->requestStack            = $requestStack;

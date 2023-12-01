@@ -8,7 +8,7 @@ use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\TransactionDetailsStruct;
 use Nets\Checkout\Service\Easy\CheckoutService;
-use Nets\Checkout\Service\LanguageProvider;
+use Nets\Checkout\Service\Easy\LanguageProvider;
 use Shopware\Storefront\Framework\Routing\Router;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
