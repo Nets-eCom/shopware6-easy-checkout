@@ -16,7 +16,6 @@
             <argument type="service" id="order_transaction.repository"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\ConfigService"/>
             <argument type="service" id="order.repository"/>
-            <argument type="service" id="router"/>
             <argument type="service" id="nets_payment_operations.repository" />
             <argument type="service" id="Nets\Checkout\Service\Easy\LanguageProvider" />
             <argument type="service" id="request_stack" />
