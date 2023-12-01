@@ -86,6 +86,33 @@ class EasyApiService
         $this->handleResponse($this->client->post($url, $data));
     }
 
+    /**
+     * @todo call termiante after verify
+     * @throws EasyApiException
+     */
+    public function verifyConnection(string $env, string $secretKey, string $data): bool
+    {
+        $this->setAuthorizationHeader($secretKey);
+        $url = $env === self::ENV_LIVE ? self::ENDPOINT_LIVE_PAYMENTS : self::ENDPOINT_TEST_PAYMENTS;
+
+        try {
+            $result = $this->handleResponse($this->client->post($url, $data));
+        } catch (EasyApiException $e) {
+            return false;
+        }
+
+        if (empty($result)) {
+            return false;
+        }
+
+        $response = json_decode($result, true);
+        if (empty($response['paymentId'])) {
+            return false;
+        }
+
+        return true;
+    }
+
     private function getUpdateReferenceUrl(string $paymentId): string
     {
         return $this->isLiveEnv()
@@ -124,9 +151,13 @@ class EasyApiService
         }
     }
 
-    private function setAuthorizationHeader(): void
+    private function setAuthorizationHeader(string $authorizationKey = null): void
     {
-        $this->client->setHeader('Authorization', str_replace('-', '', trim($this->getAuthorizationKey())));
+        if (null === $authorizationKey) {
+            $authorizationKey = $this->getAuthorizationKey();
+        }
+
+        $this->client->setHeader('Authorization', str_replace('-', '', trim($authorizationKey)));
     }
 
     private function getCreatePaymentUrl(): string

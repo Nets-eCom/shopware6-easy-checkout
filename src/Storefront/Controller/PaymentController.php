@@ -507,36 +507,34 @@ class PaymentController extends StorefrontController
      */
     public function check(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
     {
-        $environment  = $dataBag->get('NetsCheckout.config.enviromnent');
+        $environment = $dataBag->get('NetsCheckout.config.enviromnent');
         $checkoutType = $dataBag->get('NetsCheckout.config.checkoutType');
-        $success      = false;
 
-        if ($environment == 'test') {
-            $secretKey = $dataBag->get('NetsCheckout.config.testSecretKey');
+        $secretKey = $environment === EasyApiService::ENV_LIVE
+            ? $dataBag->get('NetsCheckout.config.liveSecretKey')
+            : $dataBag->get('NetsCheckout.config.testSecretKey');
 
-            if ($checkoutType == 'embedded') {
-                $checkoutKey = $dataBag->get('NetsCheckout.config.testCheckoutKey');
-            }
-        } else {
-            $secretKey = $dataBag->get('NetsCheckout.config.liveSecretKey');
-
-            if ($checkoutType == 'embedded') {
-                $checkoutKey = $dataBag->get('NetsCheckout.config.liveCheckoutKey');
-            }
+        if (empty($secretKey)
+            || !in_array($checkoutType, [CheckoutService::CHECKOUT_TYPE_HOSTED, CheckoutService::CHECKOUT_TYPE_EMBEDDED])
+        ) {
+            var_dump('secret', $secretKey, $checkoutType);
+            return new JsonResponse(['success' => false]);
         }
 
-        if ($checkoutType == 'hosted') {
-            if (empty($secretKey)) {
-                return new JsonResponse(['success' => $success]);
+        $integrationType = 'HostedPaymentPage';
+        $urls = '"returnUrl": "https://localhost","cancelUrl": "https://localhost"';
+        if ($checkoutType === CheckoutService::CHECKOUT_TYPE_EMBEDDED) {
+            $checkoutKey = $environment === EasyApiService::ENV_LIVE
+                ? $dataBag->get('NetsCheckout.config.liveCheckoutKey')
+                : $dataBag->get('NetsCheckout.config.testCheckoutKey');
+
+            if (empty($checkoutKey)) {
+                var_dump('checkoutKey', $checkoutKey, $checkoutType);
+                return new JsonResponse(['success' => false]);
             }
-            $integrationType = 'HostedPaymentPage';
-            $url             = '"returnUrl": "https://localhost","cancelUrl": "https://localhost"';
-        } else {
-            if (empty($secretKey) or empty($checkoutKey)) {
-                return new JsonResponse(['success' => $success]);
-            }
+
             $integrationType = 'EmbeddedCheckout';
-            $url             = '"url": "https://localhost"';
+            $urls = '"url": "https://localhost"';
         }
 
         $connection       = Kernel::getConnection();
@@ -550,7 +548,7 @@ class PaymentController extends StorefrontController
 					"integrationType": "' . $integrationType . '",
 					"termsUrl": "' . $dataBag->get('NetsCheckout.config.termsUrl') . '",
 					"merchantHandlesConsumerData":true,' .
-                     $url . '
+                    $urls . '
 				  },
 				  "order": {
 					"items": [
@@ -570,19 +568,7 @@ class PaymentController extends StorefrontController
 				  }
 				}';
 
-        // @todo handle it properly
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
-
-        $result = $this->easyApiService->createPayment($payload);
-
-        if ($result) {
-            $response = json_decode($result, true);
-
-            if (!empty($response['paymentId'])) {
-                $success = true;
-            }
-        }
+        $success = $this->easyApiService->verifyConnection($environment, $secretKey, $payload);
 
         return new JsonResponse(['success' => $success]);
     }
