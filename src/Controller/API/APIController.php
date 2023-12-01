@@ -374,29 +374,29 @@ class APIController extends StorefrontController
         );
 
         $payload = '{
-				  "checkout": {
-					"integrationType": "' . $integrationType . '",
-					"termsUrl": "' . $dataBag->get('NetsCheckout.config.termsUrl') . '",
-					"merchantHandlesConsumerData":true,' .
+                  "checkout": {
+                    "integrationType": "' . $integrationType . '",
+                    "termsUrl": "' . $dataBag->get('NetsCheckout.config.termsUrl') . '",
+                    "merchantHandlesConsumerData":true,' .
                     $urls . '
-				  },
-				  "order": {
-					"items": [
-					  {
-						"reference": "Test001",
-						"name": "Demo product",
-						"quantity": 1,
-						"unit": "pcs",
-						"unitPrice": 1000,
-						"grossTotalAmount": 1000,
-						"netTotalAmount": 1000
-					  }
-					],
-					"amount": 1000,
-					"currency": "' . (empty($currencyiso_code) ? 'EUR' : $currencyiso_code) . '",
-					"reference": "Demo Test Order"
-				  }
-				}';
+                  },
+                  "order": {
+                    "items": [
+                      {
+                        "reference": "Test001",
+                        "name": "Demo product",
+                        "quantity": 1,
+                        "unit": "pcs",
+                        "unitPrice": 1000,
+                        "grossTotalAmount": 1000,
+                        "netTotalAmount": 1000
+                      }
+                    ],
+                    "amount": 1000,
+                    "currency": "' . (empty($currencyiso_code) ? 'EUR' : $currencyiso_code) . '",
+                    "reference": "Demo Test Order"
+                  }
+                }';
 
         $success = $this->easyApiService->verifyConnection($environment, $secretKey, $payload);
 
