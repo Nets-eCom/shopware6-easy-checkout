@@ -21,23 +21,40 @@
             <argument type="service" id="request_stack" />
         </service>
 
-        <service id="Nets\Checkout\Storefront\Controller\PaymentController" public="true">
-            <argument type="service" id="order.repository"/>
+        <service id="Nets\Checkout\Controller\API\APIController" public="true">
             <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
-            <argument type="service" id="Nets\Checkout\Service\Easy\ConfigService"/>
-            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
-            <argument type="service" id="Shopware\Core\Checkout\Payment\PaymentService" />
             <argument type="service" id="nets_payment_operations.repository" />
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
-            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
-            <argument type="service" id="request_stack" />
-            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Nets\Checkout\Service\DataReader\OrderDataReader"/>
 
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
+        </service>
+
+        <service id="Nets\Checkout\Controller\Storefront\PaymentController" public="true">
+            <argument type="service" id="Nets\Checkout\Service\Easy\CheckoutService"/>
+            <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
+            <argument type="service" id="Nets\Checkout\Service\ConfigService"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
+            <argument type="service" id="Shopware\Core\Checkout\Payment\PaymentService" />
+            <argument type="service" id="nets_payment_operations.repository" />
+			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
+		    <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
+			<argument type="service" id="request_stack" />
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Nets\Checkout\Service\DataReader\OrderDataReader"/>
+
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="Nets\Checkout\Service\DataReader\OrderDataReader" public="true">
+            <argument type="service" id="order.repository"/>
         </service>
 
         <service id="Nets\Checkout\Service\Easy\CheckoutService">
