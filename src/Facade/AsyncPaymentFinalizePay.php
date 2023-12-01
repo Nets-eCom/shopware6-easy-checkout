@@ -165,7 +165,7 @@ class AsyncPaymentFinalizePay
         } catch (EasyApiException $ex) {
             $this->easyApiExceptionHandler->handle($ex);
 
-            return new AsyncPaymentProcessException($transaction->getOrderTransaction()->getId(), $ex->getMessage());
+            throw new AsyncPaymentProcessException($transaction->getOrderTransaction()->getId(), $ex->getMessage());
         }
 
         $language = $this->languageProvider->getLanguage($salesChannelContext->getContext());
