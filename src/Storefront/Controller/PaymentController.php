@@ -15,6 +15,8 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefi
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
 use Shopware\Core\Checkout\Order\OrderDefinition;
+use Shopware\Core\Checkout\Order\OrderEntity;
+use Shopware\Core\Checkout\Order\OrderException;
 use Shopware\Core\Checkout\Order\OrderStates;
 use Shopware\Core\Checkout\Payment\PaymentService;
 use Shopware\Core\Framework\Context;
@@ -609,8 +611,12 @@ class PaymentController extends StorefrontController
     }
 
     /**
-     * @throws OrderNotFoundException
+     * @param string $orderId
+     * @param Context $context
+     * @return string
+     * @throw OrderException
      */
+
     private function getSalesChannelIdByOrderId(string $orderId, Context $context): string
     {
         /** @var null|OrderEntity $order */
@@ -619,7 +625,7 @@ class PaymentController extends StorefrontController
         ]), $context)->first();
 
         if ($order === null) {
-            throw new OrderNotFoundException($orderId);
+            throw OrderException::orderNotFound($orderId);
         }
 
         return $order->getSalesChannelId();
