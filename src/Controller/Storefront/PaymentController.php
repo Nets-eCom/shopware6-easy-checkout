@@ -6,12 +6,9 @@ namespace Nets\Checkout\Controller\Storefront;
 
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
-use Nets\Checkout\Service\Easy\CheckoutService;
 use Shopware\Core\Checkout\Cart\SalesChannel\AbstractCartOrderRoute;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition;
-use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
-use Shopware\Core\Checkout\Order\OrderDefinition;
 use Shopware\Core\Checkout\Payment\PaymentService;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -35,12 +32,11 @@ use Nets\Checkout\Service\Easy\ConfigService;
  */
 class PaymentController extends StorefrontController
 {
-    private ConfigService $configService;
     private EasyApiService $easyApiService;
+    private ConfigService $configService;
     private CartService $cartService;
     private PaymentService $paymentService;
     private EntityRepository $netsApiRepository;
-    private OrderTransactionStateHandler $transHandler;
     private StateMachineRegistry $stateMachineRegistry;
     private AbstractCartOrderRoute $orderRoute;
     private RequestStack $requestStack;
@@ -53,7 +49,6 @@ class PaymentController extends StorefrontController
         CartService $cartService,
         PaymentService $paymentService,
         EntityRepository $netsApiRepository,
-        OrderTransactionStateHandler $transHandler,
         StateMachineRegistry $machineRegistry,
         AbstractCartOrderRoute $orderRoute,
         RequestStack $requestStack,
@@ -65,7 +60,6 @@ class PaymentController extends StorefrontController
         $this->cartService          = $cartService;
         $this->paymentService       = $paymentService;
         $this->netsApiRepository    = $netsApiRepository;
-        $this->transHandler         = $transHandler;
         $this->stateMachineRegistry = $machineRegistry;
         $this->orderRoute           = $orderRoute;
         $this->requestStack         = $requestStack;
@@ -145,50 +139,5 @@ class PaymentController extends StorefrontController
             return new RedirectResponse($finishUrl);
         } catch (\Exception $e) {
         }
-    }
-
-    /**
-     * @Route("/nets/caheckout/validate", name="nets.test.controller.validate", options={"seo": "false"}, methods={"GET"})
-     */
-    public function validate(SalesChannelContext $ctx)
-    {
-        try {
-            $secretKey = $this->configService->getSecretKey($ctx->getSalesChannel()
-                ->getId());
-            $environment = $this->configService->getSecretKey($ctx->getSalesChannel()
-                ->getId());
-            $this->easyApiService->setEnv($environment);
-            $this->easyApiService->setAuthorizationKey($secretKey);
-            $payment = $this->easyApiService->getPayment($this->requestStack->getCurrentRequest()->get('paymentid'));
-
-            if (empty($payment->getReservedAmount())) {
-                return $this->redirectToRoute('frontend.checkout.cart.page');
-            }
-        } catch (EasyApiException $ex) {
-            return $this->redirectToRoute('frontend.checkout.cart.page');
-        }
-    }
-
-    /**
-     * @Route("/nets/order/cancel", name="nets.cancel.order.controller", options={"seo": "false"}, methods={"GET"})
-     *
-     * @throws EasyApiException
-     */
-    public function cancelOrder(Context $context, Request $request): RedirectResponse
-    {
-        $session        = $request->getSession();
-        $orderId        = $session->get('sw_order_id');
-        $orderEntity    = $this->orderDataReader->getOrderEntityById($context, $orderId);
-
-        $this->stateMachineRegistry->transition(new Transition(
-            OrderDefinition::ENTITY_NAME,
-            $orderId,
-            StateMachineTransitionActions::ACTION_CANCEL,
-            'stateId'
-        ), $context);
-
-        $this->transHandler->cancel($orderEntity->getTransactions()->first()->getId(), $context);
-
-        return $this->redirectToRoute('frontend.checkout.cart.page');
     }
 }
