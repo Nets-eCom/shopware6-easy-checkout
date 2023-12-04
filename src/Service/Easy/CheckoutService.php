@@ -328,7 +328,7 @@ class CheckoutService
             $session->set('cancelOrderId', $cartOrderEntityObject->getOrderNumber());
             $session->set('sw_order_id', $cartOrderEntityObject->getId());
             $data['checkout']['returnUrl'] = $transaction->getReturnUrl();
-            $data['checkout']['cancelUrl'] = $this->router->generate('nets.cancel.order.controller', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $data['checkout']['cancelUrl'] = $this->generateCancelUrl();
         }
         $data['checkout']['merchantTermsUrl'] = $this->configService->getMerchantTermsUrl($salesChannelContext->getSalesChannel()
             ->getId());
@@ -643,5 +643,10 @@ class CheckoutService
     private function payPartially(string $transactionId, Context $context): void
     {
         $this->stateMachineRegistry->transition(new Transition(OrderTransactionDefinition::ENTITY_NAME, $transactionId, StateMachineTransitionActions::ACTION_PAID_PARTIALLY, 'stateId'), $context);
+    }
+
+    public function generateCancelUrl(): string
+    {
+        return $this->router->generate('frontend.account.order.page', [], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 }

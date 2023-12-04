@@ -10,13 +10,10 @@ use Nets\Checkout\Service\DataReader\OrderDataReader;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\CheckoutService;
-use Shopware\Core\Checkout\Cart\SalesChannel\AbstractCartOrderRoute;
-use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
 use Shopware\Core\Checkout\Order\OrderStates;
-use Shopware\Core\Checkout\Payment\PaymentService;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -31,7 +28,6 @@ use Shopware\Core\System\StateMachine\Transition;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -47,19 +43,12 @@ class APIController extends StorefrontController
 
     private EasyApiService $easyApiService;
 
-    private CartService $cartService;
-
-    private PaymentService $paymentService;
-
     private EntityRepository $netsApiRepository;
 
     private OrderTransactionStateHandler $transHandler;
 
     private StateMachineRegistry $stateMachineRegistry;
 
-    private AbstractCartOrderRoute $orderRoute;
-
-    private RequestStack $requestStack;
 
     private OrderDataReader $orderDataReader;
 
@@ -67,25 +56,17 @@ class APIController extends StorefrontController
         CheckoutService $checkout,
         EasyApiService $easyApiService,
         ConfigService $configService,
-        CartService $cartService,
-        PaymentService $paymentService,
         EntityRepository $netsApiRepository,
         OrderTransactionStateHandler $transHandler,
         StateMachineRegistry $machineRegistry,
-        AbstractCartOrderRoute $orderRoute,
-        RequestStack $requestStack,
         OrderDataReader $orderDataReader
     ) {
         $this->checkout             = $checkout;
         $this->easyApiService       = $easyApiService;
         $this->configService        = $configService;
-        $this->cartService          = $cartService;
-        $this->paymentService       = $paymentService;
         $this->netsApiRepository    = $netsApiRepository;
         $this->transHandler         = $transHandler;
         $this->stateMachineRegistry = $machineRegistry;
-        $this->orderRoute           = $orderRoute;
-        $this->requestStack         = $requestStack;
         $this->orderDataReader      = $orderDataReader;
     }
 
@@ -216,7 +197,7 @@ class APIController extends StorefrontController
                             StateMachineTransitionActions::ACTION_PAID,
                             'stateId'
                         ), $context);
-                    } elseif ($transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PAID) {
+                    } elseif ($transaction->getStateMachineState()->getTechnicalName() !== OrderTransactionStates::STATE_CANCELLED) {
                         $this->transHandler->paid($orderEntity->getTransactions()->first()->getId(), $context);
                     }
                 } elseif ($payment->getChargedAmount() < $payment->getReservedAmount() && $payment->getChargedAmount() > 0 && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PARTIALLY_PAID) {
