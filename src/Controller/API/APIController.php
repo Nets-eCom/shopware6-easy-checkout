@@ -376,7 +376,7 @@ class APIController extends StorefrontController
     }
 
     /**
-     * @Route("/api/test/verify", name="nets.api.test.controller", options={"seo": "false"}, methods={"POST"})
+     * @Route("/api/nets/test/verify", name="nets.api.test.controller", options={"seo": "false"}, methods={"POST"})
      */
     public function check(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
     {
