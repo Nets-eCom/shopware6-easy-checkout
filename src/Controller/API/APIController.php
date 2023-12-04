@@ -176,7 +176,7 @@ class APIController extends StorefrontController
                             StateMachineTransitionActions::ACTION_PAID,
                             'stateId'
                         ), $context);
-                    } elseif ($transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PAID) {
+                    } elseif ($transaction->getStateMachineState()->getTechnicalName() !== OrderTransactionStates::STATE_CANCELLED) {
                         $this->transHandler->paid($orderEntity->getTransactions()->first()->getId(), $context);
                     }
                 } elseif ($payment->getChargedAmount() < $payment->getReservedAmount() && $payment->getChargedAmount() > 0 && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PARTIALLY_PAID) {
@@ -335,7 +335,7 @@ class APIController extends StorefrontController
     }
 
     /**
-     * @Route("/api/test/verify", name="nets.api.test.controller", options={"seo": "false"}, methods={"POST"})
+     * @Route("/api/nets/test/verify", name="nets.api.test.controller", options={"seo": "false"}, methods={"POST"})
      */
     public function check(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
     {
