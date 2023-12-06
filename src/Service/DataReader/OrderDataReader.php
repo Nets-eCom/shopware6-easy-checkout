@@ -41,28 +41,4 @@ class OrderDataReader
 
         return $this->orderRepository->search($criteria, $context)->first();
     }
-
-    /**
-     * @param string $orderId
-     * @param Context $context
-     *
-     * @return string
-     * @throws OrderException
-     */
-    public function getSalesChannelIdByOrderId(string $orderId, Context $context): string
-    {
-        /** @var null|OrderEntity $order */
-        $order = $this->orderRepository->search(
-            new Criteria([
-                $orderId,
-            ]),
-            $context
-        )->first();
-
-        if ($order === null) {
-            throw OrderException::orderNotFound($orderId);
-        }
-
-        return $order->getSalesChannelId();
-    }
 }
