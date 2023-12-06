@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Nets\Checkout\Controller\Storefront;
 
-use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Shopware\Core\Checkout\Cart\SalesChannel\AbstractCartOrderRoute;
@@ -25,6 +24,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
 use Nets\Checkout\Service\DataReader\OrderDataReader;
+use Nets\Checkout\Service\Easy\ConfigService;
 
 /**
  * @RouteScope(scopes={"storefront"})
@@ -32,24 +32,15 @@ use Nets\Checkout\Service\DataReader\OrderDataReader;
  */
 class PaymentController extends StorefrontController
 {
-    private ConfigService $configService;
-
     private EasyApiService $easyApiService;
-
+    private ConfigService $configService;
     private CartService $cartService;
-
     private PaymentService $paymentService;
-
     private EntityRepository $netsApiRepository;
-
     private StateMachineRegistry $stateMachineRegistry;
-
     private AbstractCartOrderRoute $orderRoute;
-
     private RequestStack $requestStack;
-
     private EntityRepository $orderTransactionRepo;
-
     private OrderDataReader $orderDataReader;
 
     public function __construct(
@@ -79,12 +70,6 @@ class PaymentController extends StorefrontController
     /**
      * @Route("/nets/order/finish", name="nets.finish.order.controller", options={"seo": "false"}, methods={"GET"})
      *
-     * @param Context $context
-     * @param SalesChannelContext $ctx
-     * @param Request $request
-     * @param RequestDataBag $data
-     *
-     * @return RedirectResponse
      * @throws EasyApiException
      */
     public function placeOrder(Context $context, SalesChannelContext $ctx, Request $request, RequestDataBag $data): RedirectResponse
@@ -102,11 +87,6 @@ class PaymentController extends StorefrontController
 
         $orderEntity    = $this->orderDataReader->getOrderEntityById($context, $orderId);
         $transaction    = $orderEntity->getTransactions()->first();
-        $salesChannelId = $ctx->getSalesChannel()->getId();
-        $secretKey      = $this->configService->getSecretKey($salesChannelId);
-        $environment    = $this->configService->getEnvironment($salesChannelId);
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
         $payment     = $this->easyApiService->getPayment($this->requestStack->getCurrentRequest()->get('paymentId'));
         $checkoutUrl = $payment->getCheckoutUrl();
         $refUpdate   = [
@@ -154,10 +134,10 @@ class PaymentController extends StorefrontController
             ]);
 
         try {
-            $result = $this->paymentService->handlePaymentByOrder($orderId, $data, $ctx, $finishUrl);
+            $this->paymentService->handlePaymentByOrder($orderId, $data, $ctx, $finishUrl);
 
             return new RedirectResponse($finishUrl);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
         }
     }
 }

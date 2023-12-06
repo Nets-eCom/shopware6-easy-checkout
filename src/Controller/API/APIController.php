@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Nets\Checkout\Controller\API;
 
 use Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentEntity;
-use Nets\Checkout\Service\ConfigService;
 use Nets\Checkout\Service\DataReader\OrderDataReader;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
@@ -37,25 +36,16 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class APIController extends StorefrontController
 {
-    private ConfigService $configService;
-
     private CheckoutService $checkout;
-
     private EasyApiService $easyApiService;
-
     private EntityRepository $netsApiRepository;
-
     private OrderTransactionStateHandler $transHandler;
-
     private StateMachineRegistry $stateMachineRegistry;
-
-
     private OrderDataReader $orderDataReader;
 
     public function __construct(
         CheckoutService $checkout,
         EasyApiService $easyApiService,
-        ConfigService $configService,
         EntityRepository $netsApiRepository,
         OrderTransactionStateHandler $transHandler,
         StateMachineRegistry $machineRegistry,
@@ -63,7 +53,6 @@ class APIController extends StorefrontController
     ) {
         $this->checkout             = $checkout;
         $this->easyApiService       = $easyApiService;
-        $this->configService        = $configService;
         $this->netsApiRepository    = $netsApiRepository;
         $this->transHandler         = $transHandler;
         $this->stateMachineRegistry = $machineRegistry;
@@ -75,14 +64,13 @@ class APIController extends StorefrontController
      */
     public function chargePayment(Context $context, Request $request): JsonResponse
     {
-        $orderId        = $request->get('params')['orderId'];
-        $paymentId      = $request->get('params')['paymentId'];
-        $amount         = $request->get('params')['amount'];
-        $orderEntity    = $this->orderDataReader->getOrderEntityById($context, $orderId);
-        $salesChannelId = $this->orderDataReader->getSalesChannelIdByOrderId($orderId, $context);
+        $orderId = $request->get('params')['orderId'];
+        $paymentId = $request->get('params')['paymentId'];
+        $amount = $request->get('params')['amount'];
+        $orderEntity = $this->orderDataReader->getOrderEntityById($context, $orderId);
 
         try {
-            $this->checkout->chargePayment($orderEntity, $salesChannelId, $context, $paymentId, $amount);
+            $this->checkout->chargePayment($orderEntity, $context, $paymentId, $amount);
         } catch (EasyApiException $ex) {
             return new JsonResponse([
                 'status'  => false,
@@ -110,12 +98,7 @@ class APIController extends StorefrontController
      */
     public function getSummaryAmounts(Context $context, Request $request)
     {
-        $orderId        = $request->get('params')['transaction']['orderId'];
-        $salesChannelId = $this->orderDataReader->getSalesChannelIdByOrderId($orderId, $context);
-        $environment    = $this->configService->getEnvironment($salesChannelId);
-        $secretKey      = $this->configService->getSecretKey($salesChannelId);
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
+        $orderId     = $request->get('params')['transaction']['orderId'];
         $orderEntity = $this->orderDataReader->getOrderEntityById($context, $orderId);
         $transaction = $orderEntity->getTransactions()->first();
         $paymentId   = $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
@@ -127,10 +110,6 @@ class APIController extends StorefrontController
         $refundPendingStatus         = false;
 
         if ($orderStatus == OrderStates::STATE_CANCELLED) {
-            $secretKey   = $this->configService->getSecretKey($salesChannelId);
-            $environment = $this->configService->getEnvironment($salesChannelId);
-            $this->easyApiService->setEnv($environment);
-            $this->easyApiService->setAuthorizationKey($secretKey);
 
             if ($transaction->getStateMachineState()->getTechnicalName() != OrderStates::STATE_CANCELLED) {
                 $this->transHandler->cancel($orderEntity->getTransactions()->first()->getId(), $context);
@@ -145,7 +124,7 @@ class APIController extends StorefrontController
                     ];
 
                     try {
-                        $paymentVoid = $this->easyApiService->voidPayment($paymentId, json_encode($cancelBody));
+                        $this->easyApiService->voidPayment($paymentId, json_encode($cancelBody));
                     } catch (\Exception $e) {
                     }
                 }
@@ -333,10 +312,9 @@ class APIController extends StorefrontController
         $paymentId      = $request->get('params')['paymentId'];
         $amount         = $request->get('params')['amount'];
         $orderEntity    = $this->orderDataReader->getOrderEntityById($context, $orderId);
-        $salesChannelId = $this->orderDataReader->getSalesChannelIdByOrderId($orderId, $context);
 
         try {
-            $this->checkout->refundPayment($orderEntity, $salesChannelId, $context, $paymentId, $amount);
+            $this->checkout->refundPayment($orderEntity, $context, $paymentId, $amount);
         } catch (EasyApiException $ex) {
             return new JsonResponse([
                 'status'  => false,
@@ -361,36 +339,32 @@ class APIController extends StorefrontController
      */
     public function check(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
     {
-        $environment  = $dataBag->get('NetsCheckout.config.enviromnent');
+        $environment = $dataBag->get('NetsCheckout.config.enviromnent');
         $checkoutType = $dataBag->get('NetsCheckout.config.checkoutType');
-        $success      = false;
 
-        if ($environment == 'test') {
-            $secretKey = $dataBag->get('NetsCheckout.config.testSecretKey');
+        $secretKey = $environment === EasyApiService::ENV_LIVE
+            ? $dataBag->get('NetsCheckout.config.liveSecretKey')
+            : $dataBag->get('NetsCheckout.config.testSecretKey');
 
-            if ($checkoutType == 'embedded') {
-                $checkoutKey = $dataBag->get('NetsCheckout.config.testCheckoutKey');
-            }
-        } else {
-            $secretKey = $dataBag->get('NetsCheckout.config.liveSecretKey');
-
-            if ($checkoutType == 'embedded') {
-                $checkoutKey = $dataBag->get('NetsCheckout.config.liveCheckoutKey');
-            }
+        if (empty($secretKey)
+            || !in_array($checkoutType, [CheckoutService::CHECKOUT_TYPE_HOSTED, CheckoutService::CHECKOUT_TYPE_EMBEDDED])
+        ) {
+            return new JsonResponse(['success' => false]);
         }
 
-        if ($checkoutType == 'hosted') {
-            if (empty($secretKey)) {
-                return new JsonResponse(['success' => $success]);
+        $integrationType = 'HostedPaymentPage';
+        $urls = '"returnUrl": "https://localhost","cancelUrl": "https://localhost"';
+        if ($checkoutType === CheckoutService::CHECKOUT_TYPE_EMBEDDED) {
+            $checkoutKey = $environment === EasyApiService::ENV_LIVE
+                ? $dataBag->get('NetsCheckout.config.liveCheckoutKey')
+                : $dataBag->get('NetsCheckout.config.testCheckoutKey');
+
+            if (empty($checkoutKey)) {
+                return new JsonResponse(['success' => false]);
             }
-            $integrationType = 'HostedPaymentPage';
-            $url             = '"returnUrl": "https://localhost","cancelUrl": "https://localhost"';
-        } else {
-            if (empty($secretKey) or empty($checkoutKey)) {
-                return new JsonResponse(['success' => $success]);
-            }
+
             $integrationType = 'EmbeddedCheckout';
-            $url             = '"url": "https://localhost"';
+            $urls = '"url": "https://localhost"';
         }
 
         $connection       = Kernel::getConnection();
@@ -400,42 +374,31 @@ class APIController extends StorefrontController
         );
 
         $payload = '{
-				  "checkout": {
-					"integrationType": "' . $integrationType . '",
-					"termsUrl": "' . $dataBag->get('NetsCheckout.config.termsUrl') . '",
-					"merchantHandlesConsumerData":true,' .
-            $url . '
-				  },
-				  "order": {
-					"items": [
-					  {
-						"reference": "Test001",
-						"name": "Demo product",
-						"quantity": 1,
-						"unit": "pcs",
-						"unitPrice": 1000,
-						"grossTotalAmount": 1000,
-						"netTotalAmount": 1000
-					  }
-					],
-					"amount": 1000,
-					"currency": "' . (empty($currencyiso_code) ? 'EUR' : $currencyiso_code) . '",
-					"reference": "Demo Test Order"
-				  }
-				}';
+                  "checkout": {
+                    "integrationType": "' . $integrationType . '",
+                    "termsUrl": "' . $dataBag->get('NetsCheckout.config.termsUrl') . '",
+                    "merchantHandlesConsumerData":true,' .
+                    $urls . '
+                  },
+                  "order": {
+                    "items": [
+                      {
+                        "reference": "Test001",
+                        "name": "Demo product",
+                        "quantity": 1,
+                        "unit": "pcs",
+                        "unitPrice": 1000,
+                        "grossTotalAmount": 1000,
+                        "netTotalAmount": 1000
+                      }
+                    ],
+                    "amount": 1000,
+                    "currency": "' . (empty($currencyiso_code) ? 'EUR' : $currencyiso_code) . '",
+                    "reference": "Demo Test Order"
+                  }
+                }';
 
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
-
-        $result = $this->easyApiService->createPayment($payload);
-
-        if ($result) {
-            $response = json_decode($result, true);
-
-            if (!empty($response['paymentId'])) {
-                $success = true;
-            }
-        }
+        $success = $this->easyApiService->verifyConnection($environment, $secretKey, $payload);
 
         return new JsonResponse(['success' => $success]);
     }
