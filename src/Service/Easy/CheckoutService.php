@@ -144,10 +144,6 @@ class CheckoutService
         $chargeIdArr = json_decode($chargeId);
         $payment     = $this->easyApiService->getPayment($paymentId);
 
-        if ($transaction->getStateMachineState()->getTechnicalName() != 'open') {
-            $this->transactionStateHandler->reopen($transaction->getId(), $context);
-        }
-
         $allChargeAmount = $payment->getChargedAmount();
 
         if ($this->prepareAmount($amount) == $payment->getOrderAmount() || $allChargeAmount == $payment->getOrderAmount()) {
