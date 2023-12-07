@@ -53,7 +53,7 @@ class AsyncPaymentFinalizePay
         EntityRepository             $netsApiRepository,
         LanguageProvider             $languageProvider,
         RequestStack                 $requestStack
-    ){
+    ) {
         $this->checkout = $checkout;
         $this->easyApiExceptionHandler = $easyApiExceptionHandler;
         $this->transactionStateHandler = $transactionStateHandler;
