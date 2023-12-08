@@ -43,16 +43,16 @@ class AsyncPaymentFinalizePay
     private RequestStack $requestStack;
 
     public function __construct(
-        CheckoutService              $checkout,
-        EasyApiExceptionHandler      $easyApiExceptionHandler,
+        CheckoutService $checkout,
+        EasyApiExceptionHandler $easyApiExceptionHandler,
         OrderTransactionStateHandler $transactionStateHandler,
-        EasyApiService               $easyApiService,
-        EntityRepository             $orderTransactionRepo,
-        ConfigService                $configService,
-        EntityRepository             $orderRepository,
-        EntityRepository             $netsApiRepository,
-        LanguageProvider             $languageProvider,
-        RequestStack                 $requestStack
+        EasyApiService $easyApiService,
+        EntityRepository $orderTransactionRepo,
+        ConfigService $configService,
+        EntityRepository $orderRepository,
+        EntityRepository $netsApiRepository,
+        LanguageProvider $languageProvider,
+        RequestStack $requestStack
     ) {
         $this->checkout = $checkout;
         $this->easyApiExceptionHandler = $easyApiExceptionHandler;
