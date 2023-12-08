@@ -80,6 +80,15 @@ class AsyncPaymentFinalizePay
             $context = $salesChannelContext->getContext();
             $chargeNow = $this->configService->getChargeNow();
 
+            $this->orderRepository->update([
+                [
+                    'id' => $orderId,
+                    'customFields' => [
+                        'paymentId' => $paymentId,
+                    ],
+                ],
+            ], $context);
+
             if (empty($payment->getReservedAmount()) && empty($payment->getChargedAmount())) {
                 throw new AsyncPaymentFinalizeException($transactionId, 'Customer canceled the payment on the Easy payment page');
             }
@@ -95,17 +104,7 @@ class AsyncPaymentFinalizePay
                     $context
                 );
             }
-
-            $this->orderRepository->update([
-                [
-                    'id' => $orderId,
-                    'customFields' => [
-                        'paymentId' => $paymentId,
-                    ],
-                ],
-            ], $context);
-
-
+            
             $this->orderTransactionRepo->update([
                 [
                     'id' => $transactionId,
