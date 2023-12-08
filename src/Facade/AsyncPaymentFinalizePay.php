@@ -54,16 +54,16 @@ class AsyncPaymentFinalizePay
         LanguageProvider $languageProvider,
         RequestStack $requestStack
     ) {
-        $this->checkout                = $checkout;
+        $this->checkout = $checkout;
         $this->easyApiExceptionHandler = $easyApiExceptionHandler;
         $this->transactionStateHandler = $transactionStateHandler;
-        $this->easyApiService          = $easyApiService;
-        $this->orderTransactionRepo    = $orderTransactionRepo;
-        $this->configService           = $configService;
-        $this->orderRepository         = $orderRepository;
-        $this->netsApiRepository       = $netsApiRepository;
-        $this->languageProvider        = $languageProvider;
-        $this->requestStack            = $requestStack;
+        $this->easyApiService = $easyApiService;
+        $this->orderTransactionRepo = $orderTransactionRepo;
+        $this->configService = $configService;
+        $this->orderRepository = $orderRepository;
+        $this->netsApiRepository = $netsApiRepository;
+        $this->languageProvider = $languageProvider;
+        $this->requestStack = $requestStack;
     }
 
     public function finalize(AsyncPaymentTransactionStruct $transaction, Request $request, SalesChannelContext $salesChannelContext): void
@@ -74,20 +74,15 @@ class AsyncPaymentFinalizePay
             $paymentId = $this->extractPaymentId();
 
             // it is incorrect check for captured amount
-            $payment       = $this->easyApiService->getPayment($paymentId);
+            $payment = $this->easyApiService->getPayment($paymentId);
             $transactionId = $transaction->getOrderTransaction()->getId();
-            $orderId       = $transaction->getOrder()->getId();
-            $context       = $salesChannelContext->getContext();
-            $chargeNow     = $this->configService->getChargeNow();
-
-            if ($chargeNow == 'yes') {
-                $this->transactionStateHandler->paid($transaction->getOrderTransaction()
-                    ->getId(), $context);
-            }
+            $orderId = $transaction->getOrder()->getId();
+            $context = $salesChannelContext->getContext();
+            $chargeNow = $this->configService->getChargeNow();
 
             $this->orderRepository->update([
                 [
-                    'id'           => $orderId,
+                    'id' => $orderId,
                     'customFields' => [
                         'paymentId' => $paymentId,
                     ],
@@ -98,13 +93,25 @@ class AsyncPaymentFinalizePay
                 throw new AsyncPaymentFinalizeException($transactionId, 'Customer canceled the payment on the Easy payment page');
             }
 
+            $this->transactionStateHandler->authorize(
+                $transaction->getOrderTransaction()->getId(),
+                $context
+            );
+
+            if ($chargeNow == 'yes') {
+                $this->transactionStateHandler->paid(
+                    $transaction->getOrderTransaction()->getId(),
+                    $context
+                );
+            }
+            
             $this->orderTransactionRepo->update([
                 [
-                    'id'           => $transactionId,
+                    'id' => $transactionId,
                     'customFields' => [
                         'nets_easy_payment_details' => [
                             'transaction_id' => $paymentId,
-                            'can_capture'    => true,
+                            'can_capture' => true,
                         ],
                     ],
                 ],
@@ -114,9 +121,9 @@ class AsyncPaymentFinalizePay
             if ($this->configService->getChargeNow() == 'yes' || $payment->getPaymentType() == 'A2A') {
                 $this->netsApiRepository->create([
                     [
-                        'order_id'         => $orderId ? $orderId : '',
-                        'charge_id'        => $payment->getFirstChargeId() ? $payment->getFirstChargeId() : '',
-                        'operation_type'   => 'capture',
+                        'order_id' => $orderId ? $orderId : '',
+                        'charge_id' => $payment->getFirstChargeId() ? $payment->getFirstChargeId() : '',
+                        'operation_type' => 'capture',
                         'operation_amount' => $payment->getChargedAmount() ? $payment->getChargedAmount() / 100 : '',
                         'amount_available' => $payment->getChargedAmount() ? $payment->getChargedAmount() / 100 : '',
                     ],
