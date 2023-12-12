@@ -18,10 +18,10 @@
 
     <template v-if="getTransactionId(currentOrder.transactions.first()) != null">
         <div class="capture-controls" v-if="canCapture(orderState)">
-            <div style="font-weight: 600; margin: 20px 0 10px 5px">
+            <div style="font-weight: 600; margin: 20px 0 8px 5px">
                 {{ $tc('nets-checkout.api-actions-capture') }}
             </div>
-            <sw-number-field numberType="float" :step="null" :min="null" :max="null"  v-model="amountAvailableForCapturing" :digits="2" :allowEmpty="false">
+            <sw-number-field numberType="float" :step="null" :min="null" :max="null"  v-model="amountAvailableForCapturing" :digits="2" :allowEmpty="false" style="margin-bottom: 4px">
             </sw-number-field>
             <sw-button-process @click="capture(getTransactionId(currentOrder.transactions.first()), currentOrder)" :isLoading="captureButtonLoading">
                 {{ $tc('nets-checkout.capture.buttonTitle') }}
@@ -29,10 +29,10 @@
         </div>
 
         <div class="refund-controls" v-if="canRefund(orderState)">
-            <div style="font-weight: 600; margin: 20px 0 10px 5px">
+            <div style="font-weight: 600; margin: 20px 0 8px 5px">
                 {{ $tc('nets-checkout.api-actions-refund') }}
             </div>
-            <sw-number-field numberType="float" :step="null" :min="0" :max="null"  v-model="amountAvailableForRefunding" :digits="2" :allowEmpty="false">
+            <sw-number-field numberType="float" :step="null" :min="0" :max="null"  v-model="amountAvailableForRefunding" :digits="2" :allowEmpty="false" style="margin-bottom: 4px">>
             </sw-number-field>
             <sw-button-process @click="refund(getTransactionId(currentOrder.transactions.first()), currentOrder)" :isLoading="refundButtonLoading">
                 {{ $tc('nets-checkout.refund.buttonTitle') }}
