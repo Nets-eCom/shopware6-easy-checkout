@@ -13,12 +13,19 @@ Mixin.register('nets-checkout-order', {
             return result;
         },
 
+        // canCapture(orderStateTechnicalName) {
+        //     const isCapturingEnabled = this.amountAvailableForCapturing > 0;
+        //
+        //     if(this.amountAvailableForCapturing > 0 && orderStateTechnicalName != "cancelled") {
+        //         return true;
+        //     }
+        //     return false;
+        // },
+
         canCapture(orderStateTechnicalName) {
-            if(this.amountAvailableForCapturing > 0 && orderStateTechnicalName != "cancelled") {
-                return true;
-            }
-            return false;
+            return orderStateTechnicalName === "authorized" || orderStateTechnicalName === "paid_partially";
         },
+
 
         getSummaryAmounts(order) {
             let me;
@@ -45,15 +52,23 @@ Mixin.register('nets-checkout-order', {
             }
         },
 
+        // canRefund(orderStateTechnicalName) {
+        //     if(this.refundPendingStatus){
+        //         return false;
+        //     }
+        //     if(this.amountAvailableForRefunding > 0 && this.amountAvailableForCapturing == 0 && orderStateTechnicalName != "cancelled") {
+        //         return true;
+        //     }
+        //
+        //     return false;
+        // },
+
         canRefund(orderStateTechnicalName) {
+            console.log(orderStateTechnicalName)
             if(this.refundPendingStatus){
                 return false;
             }
-            if(this.amountAvailableForRefunding > 0 && this.amountAvailableForCapturing == 0 && orderStateTechnicalName != "cancelled") {
-                return true;
-            }
-
-            return false;
+            return orderStateTechnicalName === "paid" || orderStateTechnicalName === "paid_partially";
         },
 
         capture(paymentId, order) {
@@ -61,6 +76,7 @@ Mixin.register('nets-checkout-order', {
             const orderId = order.id;
             const amount = this.amountAvailableForCapturing;
             me.isLoading = true;
+
             this.NetsCheckoutApiPaymentService.captureTransaction(orderId, paymentId, amount)
                 .then((result) => {
                     this.createNotificationSuccess({
@@ -69,7 +85,6 @@ Mixin.register('nets-checkout-order', {
                     });
                     me.isLoading = false;
                     this.getSummaryAmounts(order);
-                    window.location.reload(true);
                 })
                 .catch((errorResponse) => {
                     this.createNotificationError({
@@ -96,7 +111,6 @@ Mixin.register('nets-checkout-order', {
                     });
                     me.isLoading = false;
                     this.getSummaryAmounts(order);
-                    window.location.reload(true);
                 })
                 .catch((errorResponse) => {
                     this.createNotificationError({
