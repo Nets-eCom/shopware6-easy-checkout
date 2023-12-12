@@ -1,7 +1,8 @@
 {
     "nets-checkout": {
         "title": "Nets",
-        "api-actions": "Nets API actions",
+        "api-actions-capture": "Nets capture",
+        "api-actions-refund": "Nets refund",
         "payment-id": "Nets paymentId",
         "general": {
             "mainMenuItemGeneral": "Nets",
