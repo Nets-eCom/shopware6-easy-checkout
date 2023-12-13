@@ -4,18 +4,12 @@ Mixin.register("nets-checkout-order", {
   methods: {
     getTransactionId(transaction) {
       let result = null;
-      if (
-        transaction.hasOwnProperty("customFields") &&
-        transaction["customFields"]
-      ) {
+      if (transaction.hasOwnProperty("customFields") && transaction["customFields"]) {
         if (
-          transaction.customFields.hasOwnProperty(
-            "nets_easy_payment_details",
-          ) &&
+          transaction.customFields.hasOwnProperty("nets_easy_payment_details") &&
           transaction.customFields["nets_easy_payment_details"]
         ) {
-          result =
-            transaction.customFields.nets_easy_payment_details.transaction_id;
+          result = transaction.customFields.nets_easy_payment_details.transaction_id;
         }
       }
       return result;
@@ -32,8 +26,7 @@ Mixin.register("nets-checkout-order", {
 
     canCapture(orderStateTechnicalName) {
       return (
-        orderStateTechnicalName === "authorized" ||
-        orderStateTechnicalName === "paid_partially"
+        orderStateTechnicalName === "authorized" || orderStateTechnicalName === "paid_partially"
       );
     },
 
@@ -46,10 +39,8 @@ Mixin.register("nets-checkout-order", {
         this.NetsCheckoutApiPaymentService.getSummaryAmounts(order)
           .then((response) => {
             //
-            me.amountAvailableForCapturing =
-              response.amountAvailableForCapturing;
-            me.amountAvailableForRefunding =
-              response.amountAvailableForRefunding;
+            me.amountAvailableForCapturing = response.amountAvailableForCapturing;
+            me.amountAvailableForRefunding = response.amountAvailableForRefunding;
             me.isLoading = false;
             me.orderState = response.orderState;
             me.refundPendingStatus = response.refundPendingStatus;
@@ -80,10 +71,7 @@ Mixin.register("nets-checkout-order", {
       if (this.refundPendingStatus) {
         return false;
       }
-      return (
-        orderStateTechnicalName === "paid" ||
-        orderStateTechnicalName === "paid_partially"
-      );
+      return orderStateTechnicalName === "paid" || orderStateTechnicalName === "paid_partially";
     },
 
     capture(paymentId, order) {
@@ -92,11 +80,7 @@ Mixin.register("nets-checkout-order", {
       const amount = this.amountAvailableForCapturing;
       me.isLoading = true;
 
-      this.NetsCheckoutApiPaymentService.captureTransaction(
-        orderId,
-        paymentId,
-        amount,
-      )
+      this.NetsCheckoutApiPaymentService.captureTransaction(orderId, paymentId, amount)
         .then((result) => {
           this.createNotificationSuccess({
             title: this.$tc("Nets"),
@@ -122,11 +106,7 @@ Mixin.register("nets-checkout-order", {
       const orderId = order.id;
       const amount = this.amountAvailableForRefunding;
 
-      this.NetsCheckoutApiPaymentService.refundTransaction(
-        orderId,
-        paymentId,
-        amount,
-      )
+      this.NetsCheckoutApiPaymentService.refundTransaction(orderId, paymentId, amount)
         .then(() => {
           this.createNotificationSuccess({
             title: this.$tc("Nets"),
