@@ -1,5 +1,13 @@
 const { Mixin } = Shopware;
 
+const PaymentStates = {
+  AUTHORIZED: "authorized",
+  PAID_PARTIALLY: "paid_partially",
+  PAID: "paid",
+  REFUNDED_PARTIALLY: "refunded_partially",
+  CANCELLED: "cancelled",
+};
+
 Mixin.register("nets-checkout-order", {
   methods: {
     getTransactionId(transaction) {
@@ -17,7 +25,8 @@ Mixin.register("nets-checkout-order", {
 
     canCapture(orderStateTechnicalName) {
       return (
-        orderStateTechnicalName === "authorized" || orderStateTechnicalName === "paid_partially"
+        orderStateTechnicalName === PaymentStates.AUTHORIZED ||
+        orderStateTechnicalName === PaymentStates.PAID_PARTIALLY
       );
     },
 
@@ -51,9 +60,9 @@ Mixin.register("nets-checkout-order", {
         return false;
       }
       return (
-        orderStateTechnicalName === "paid" ||
-        orderStateTechnicalName === "paid_partially" ||
-        orderStateTechnicalName === "refunded_partially"
+        orderStateTechnicalName === PaymentStates.PAID ||
+        orderStateTechnicalName === PaymentStates.PAID_PARTIALLY ||
+        orderStateTechnicalName === PaymentStates.REFUNDED_PARTIALLY
       );
     },
 
