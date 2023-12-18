@@ -50,7 +50,11 @@ Mixin.register("nets-checkout-order", {
       if (this.refundPendingStatus) {
         return false;
       }
-      return orderStateTechnicalName === "paid" || orderStateTechnicalName === "paid_partially";
+      return (
+        orderStateTechnicalName === "paid" ||
+        orderStateTechnicalName === "paid_partially" ||
+        orderStateTechnicalName === "refunded_partially"
+      );
     },
 
     capture(paymentId, order) {
