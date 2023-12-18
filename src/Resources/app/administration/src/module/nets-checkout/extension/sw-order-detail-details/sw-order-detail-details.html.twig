@@ -28,12 +28,14 @@
                 <div>
                     {{ $tc('nets-checkout.api-actions-capture') }}
                 </div>
-                <sw-number-field style="margin: 8px 0 4px 0" numberType="float" :step="null" :min="null" :max="null"
-                                 v-model="amountAvailableForCapturing" :digits="2" :allowEmpty="false">
+                <sw-number-field
+                    style="margin: 8px 0 4px 0" numberType="float" :step="null" :min="null" :max="null"
+                    v-model="amountAvailableForCapturing" :digits="2" :allowEmpty="false">
                 </sw-number-field>
-                <sw-button-process @click="capture(getTransactionId(transaction), order)"
-                                   :isLoading="captureButtonLoading"
-                                   style="margin: 0 0 8px 0">
+                <sw-button-process
+                    @click="capture(getTransactionId(transaction), order)"
+                    :isLoading="captureButtonLoading"
+                    style="margin: 0 0 8px 0">
                     {{ $tc('nets-checkout.capture.buttonTitle') }}
                 </sw-button-process>
             </div>
@@ -42,12 +44,14 @@
                 <div>
                     {{ $tc('nets-checkout.api-actions-refund') }}
                 </div>
-                <sw-number-field style="margin: 8px 0 4px 0" numberType="float" :step="null" :min="null" :max="null"
-                                 v-model="amountAvailableForRefunding" :digits="2" :allowEmpty="false">
+                <sw-number-field
+                    style="margin: 8px 0 4px 0" numberType="float" :step="null" :min="null" :max="null"
+                    v-model="amountAvailableForRefunding" :digits="2" :allowEmpty="false">
                 </sw-number-field>
-                <sw-button-process @click="refund(getTransactionId(transaction), order)"
-                                   :isLoading="refundButtonLoading"
-                                   style="margin: 0 0 8px 0">
+                <sw-button-process
+                    @click="refund(getTransactionId(transaction), order)"
+                    :isLoading="refundButtonLoading"
+                    style="margin: 0 0 8px 0">
                     {{ $tc('nets-checkout.refund.buttonTitle') }}
 
                 </sw-button-process>
