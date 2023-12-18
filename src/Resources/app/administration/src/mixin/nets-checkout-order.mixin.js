@@ -12,13 +12,13 @@ Mixin.register("nets-checkout-order", {
   methods: {
     getTransactionId(transaction) {
       let result = null;
-      if (transaction.hasOwnProperty("customFields") && transaction["customFields"]) {
-        if (
-          transaction.customFields.hasOwnProperty("nets_easy_payment_details") &&
-          transaction.customFields["nets_easy_payment_details"]
-        ) {
-          result = transaction.customFields.nets_easy_payment_details.transaction_id;
-        }
+      if (
+        transaction.hasOwnProperty("customFields") &&
+        transaction["customFields"] &&
+        transaction.customFields.hasOwnProperty("nets_easy_payment_details") &&
+        transaction.customFields["nets_easy_payment_details"]
+      ) {
+        result = transaction.customFields.nets_easy_payment_details.transaction_id;
       }
       return result;
     },
