@@ -40,7 +40,6 @@
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <argument type="service" id="Shopware\Core\Checkout\Payment\PaymentService" />
             <argument type="service" id="nets_payment_operations.repository" />
-			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
 		    <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
 			<argument type="service" id="request_stack" />
