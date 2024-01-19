@@ -137,7 +137,7 @@ class AsyncPaymentFinalizePay
     }
 
     /**
-     * @throws AsyncPaymentProcessException
+     * @throws AsyncPaymentProcessException|\Exception
      */
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): string
     {
@@ -146,7 +146,7 @@ class AsyncPaymentFinalizePay
         if (CheckoutService::CHECKOUT_TYPE_EMBEDDED === $checkoutType) {
             $paymentId = $this->extractPaymentId();
 
-            // for embeded customer already paid in CheckoutConfirmPageSubscriber and js code
+            // for embedded customer already paid in CheckoutConfirmPageSubscriber and js code
             // redirect user to finalize
             return $transaction->getReturnUrl() . '&paymentId=' . $paymentId;
         }
@@ -166,7 +166,7 @@ class AsyncPaymentFinalizePay
         return $PaymentCreateResult['hostedPaymentPageUrl'] . '&language=' . $language;
     }
 
-    private function extractPaymentId()
+    private function extractPaymentId(): ?string
     {
         if (!empty($this->requestStack->getCurrentRequest()->get('paymentId'))) {
             return $this->requestStack->getCurrentRequest()->get('paymentId');
@@ -175,5 +175,7 @@ class AsyncPaymentFinalizePay
         if (!empty($this->requestStack->getCurrentRequest()->get('paymentid'))) {
             return $this->requestStack->getCurrentRequest()->get('paymentid');
         }
+
+        return null;
     }
 }
