@@ -93,10 +93,13 @@ class APIController extends StorefrontController
     /**
      * @Route("/api/nets/transaction/summary", name="nets.summary.payment.action", options={"seo": "false"}, methods={"POST"})
      *
-     * @return JsonResponse
+     * @param Context $context
+     * @param Request $request
+     *
+     * @return JsonResponse|null
      * @throws EasyApiException
      */
-    public function getSummaryAmounts(Context $context, Request $request)
+    public function getSummaryAmounts(Context $context, Request $request): ?JsonResponse
     {
         $orderId     = $request->get('params')['transaction']['orderId'];
         $orderEntity = $this->orderDataReader->getOrderEntityById($context, $orderId);
@@ -105,8 +108,6 @@ class APIController extends StorefrontController
         $payment     = $this->easyApiService->getPayment($paymentId);
 
         $orderStatus                 = $orderEntity->getStateMachineState()->getTechnicalName();
-        $amountAvailableForCapturing = 0;
-        $amountAvailableForRefunding = 0;
         $refundPendingStatus         = false;
 
         if ($orderStatus == OrderStates::STATE_CANCELLED) {
@@ -134,12 +135,6 @@ class APIController extends StorefrontController
                 $amountAvailableForCapturing = $payment->getOrderAmount() / 100;
             } else {
                 $amountAvailableForCapturing = ($payment->getReservedAmount() - $payment->getChargedAmount()) / 100;
-            }
-
-            if ($payment->getChargedAmount() > 0 && $payment->getRefundedAmount() == 0) {
-                $amountAvailableForRefunding = $payment->getChargedAmount() / 100;
-            } elseif ($payment->getChargedAmount() - $payment->getRefundedAmount() > 0) {
-                $amountAvailableForRefunding = ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100;
             }
 
             if ($payment->getChargedAmount() > 0) {
@@ -197,9 +192,7 @@ class APIController extends StorefrontController
 
             // Refund functionality
             $chargeArrWithAmountAvailable = [];
-            $chargeIdArr                  = [];
             $chargeIdArr                  = $payment->getAllCharges();
-            $refundResult                 = false;
             $remainingAmount              = null;
 
             if (!empty($chargeIdArr)) {
@@ -255,27 +248,23 @@ class APIController extends StorefrontController
 
                     // third block
                     if ($amountToRefund <= array_sum($refundChargeIdArray)) {
-                        $refundResult = true;
-                        $count        = 0;
                         foreach ($refundChargeIdArray as $key => $value) {
                             // update table for amount available
-                            if ($refundResult) {
-                                // get amount available based on charge id
-                                $criteria = new Criteria();
-                                $criteria->addFilter(new EqualsFilter('charge_id', $key));
-                                /** @var null|NetsPaymentEntity $result */
-                                $result = $this->netsApiRepository->search($criteria, $context)->first();
+                            // get amount available based on charge id
+                            $criteria = new Criteria();
+                            $criteria->addFilter(new EqualsFilter('charge_id', $key));
+                            /** @var null|NetsPaymentEntity $result */
+                            $result = $this->netsApiRepository->search($criteria, $context)->first();
 
-                                if ($result) {
-                                    $availableAmount = $result->getAvailableAmt() - $value;
-                                    $update          = [
-                                        'id'               => $result->getId(),
-                                        'amount_available' => $availableAmount,
-                                    ];
-                                    $this->netsApiRepository->update([
-                                        $update,
-                                    ], $context);
-                                }
+                            if ($result) {
+                                $availableAmount = $result->getAvailableAmt() - $value;
+                                $update          = [
+                                    'id'               => $result->getId(),
+                                    'amount_available' => $availableAmount,
+                                ];
+                                $this->netsApiRepository->update([
+                                    $update,
+                                ], $context);
                             }
                         }
                     }
@@ -299,6 +288,7 @@ class APIController extends StorefrontController
                 'refunded'                    => $payment->getRefundedAmount(),
             ]);
         }
+        return null;
     }
 
     /**
@@ -321,12 +311,6 @@ class APIController extends StorefrontController
                 'message' => $ex->getMessage(),
                 'code'    => $ex->getCode(),
             ], Response::HTTP_BAD_REQUEST);
-        } catch (\Exception $ex) {
-            return new JsonResponse([
-                'status'  => false,
-                'message' => $ex->getMessage(),
-                'code'    => 0,
-            ], Response::HTTP_BAD_REQUEST);
         }
 
         return new JsonResponse([
@@ -336,6 +320,8 @@ class APIController extends StorefrontController
 
     /**
      * @Route("/api/nets/test/verify", name="nets.api.test.controller", options={"seo": "false"}, methods={"POST"})
+     * @throws \Exception
+     * @throws EasyApiException
      */
     public function check(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
     {
@@ -368,7 +354,7 @@ class APIController extends StorefrontController
         }
 
         $connection       = Kernel::getConnection();
-        $currencyiso_code = $connection->fetchOne(
+        $currency_iso_code = $connection->fetchOne(
             'SELECT `iso_code` FROM `currency` WHERE `id` = :currencyId',
             ['currencyId' => Uuid::fromHexToBytes($context->getCurrencyId())]
         );
@@ -393,7 +379,7 @@ class APIController extends StorefrontController
                       }
                     ],
                     "amount": 1000,
-                    "currency": "' . (empty($currencyiso_code) ? 'EUR' : $currencyiso_code) . '",
+                    "currency": "' . (empty($currency_iso_code) ? 'EUR' : $currency_iso_code) . '",
                     "reference": "Demo Test Order"
                   }
                 }';
