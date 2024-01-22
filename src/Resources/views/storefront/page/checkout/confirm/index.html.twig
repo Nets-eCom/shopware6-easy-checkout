@@ -1,67 +1,38 @@
 {% sw_extends '@Storefront/storefront/page/checkout/confirm/index.html.twig' %}
 
-{% block page_checkout_aside %}
+{% set easyCheckoutVariables = page.extensions.easyCheckoutVariables %}
+{% set isEmbeddedCheckout = easyCheckoutVariables.isEmbeddedCheckout %}
 
-    {% set easyCheckoutVariables = page.extensions.easy_checkout_variables %}
-    {% set easyCheckoutType = easyCheckoutVariables.checkoutType %}
-    {% set easy_checkout_is_active = easyCheckoutVariables.easy_checkout_is_active %}
-    {% if easyCheckoutType == 'embedded' and easy_checkout_is_active == 1 %}
+{% block page_checkout_aside %}
+    {{ parent() }}
+
+    {% if isEmbeddedCheckout %}
+        {% set options = {
+            checkoutKey: easyCheckoutVariables.checkoutKey,
+            paymentId: easyCheckoutVariables.paymentId,
+            containerId: 'dibs-complete-checkout',
+            language: easyCheckoutVariables.language,
+            csrfToken: sw_csrf('frontend.checkout.finish.order', {"mode": "token"}),
+            placeOrderUrl: easyCheckoutVariables.placeOrderUrl
+        } %}
+
+        {% set confirmSubmitOptions = {
+            blockedOrder: page.cart.errors.blockOrder,
+            isEmbdeddedCheckout: isEmbeddedCheckout
+        } %}
+
+        <script src='{{ easyCheckoutVariables.easyCheckoutJs }}' defer></script>
+
+        <template
+            data-embedded-plugin
+            data-embedded-plugin-options='{{ options|json_encode }}'
+            data-confirm-form-plugin
+            data-confirm-form-plugin-options='{{ confirmSubmitOptions|json_encode }}'
+        >
+        </template>
 
         <div id="dibs-checkout-embedded">
             <div id="dibs-complete-checkout"></div>
         </div>
-
-        {% set easyCheckoutKey = easyCheckoutVariables.checkoutKey %}
-        {% set easyPaymentId = easyCheckoutVariables.paymentId %}
-        {% set easyPlaceOrderUrl = easyCheckoutVariables.place_order_url %}
-        {% set easyCheckoutJsAsset = easyCheckoutVariables.easy_checkout_js_asset %}
-        {% set language = easyCheckoutVariables.language %}
-
-        <script type="text/javascript" src="{{ easyCheckoutJsAsset }}"></script>
-
-        <script>
-            //<![CDATA[
-            const checkoutOptions = {
-                checkoutKey: '{{ easyCheckoutKey }}',
-                paymentId: '{{ easyPaymentId }}',
-                containerId: 'dibs-complete-checkout',
-                language: '{{ language }}'
-            };
-
-            const checkout = new Dibs.Checkout(checkoutOptions);
-
-            checkout.on('payment-completed', function(response) {
-                window.location.href = '{{ easyPlaceOrderUrl }}' + '?paymentId=' + response.paymentId;
-            });
-
-            {% if page.cart.errors|length > 0 %}
-                checkout.freezeCheckout();
-            {% endif %}
-            //]]>
-        </script>
-
-    {% else %}
-       <div id="dibs-checkout-embedded">
-       </div>
     {% endif %}
-    {{ parent() }}
-
-{% endblock %}
-
-{% block page_checkout_aside_container %}
-    <div class="checkout-summary">
-        {{ parent() }}
-    </div>
-{% endblock %}
-
-{% block page_checkout_confirm_form_submit %}
-        <button id="confirmFormSubmit"
-                class="btn btn-primary btn-block btn-lg"
-                form="confirmOrderForm"
-            {% if page.cart.errors|length > 0 or easyCheckoutType == 'embedded' and easy_checkout_is_active == 1 %}
-                disabled="disabled"
-            {% endif %}
-                type="submit">
-            {{ "checkout.confirmSubmit"|trans|sw_sanitize }}
-        </button>
 {% endblock %}
