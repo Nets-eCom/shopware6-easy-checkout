@@ -34,20 +34,6 @@
             </call>
         </service>
 
-        <service id="Nets\Checkout\Controller\Storefront\PaymentController" public="true">
-            <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
-            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
-		    <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
-			<argument type="service" id="request_stack" />
-            <argument type="service" id="order_transaction.repository"/>
-            <argument type="service" id="Nets\Checkout\Service\DataReader\OrderDataReader"/>
-            <argument type="service" id="Shopware\Core\Checkout\Payment\Cart\Token\JWTFactoryV2"/>
-
-            <call method="setContainer">
-                <argument type="service" id="service_container"/>
-            </call>
-        </service>
-
         <service id="Nets\Checkout\Service\DataReader\OrderDataReader" public="true">
             <argument type="service" id="order.repository"/>
         </service>
@@ -89,6 +75,7 @@
 
         <service id="Nets\Checkout\Subscriber\OrderPlacedEventSubscriber" public="true">
             <argument type="service" id="request_stack" />
+            <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
             <tag name="kernel.event_subscriber" />
         </service>
 

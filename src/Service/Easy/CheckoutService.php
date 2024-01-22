@@ -324,7 +324,7 @@ class CheckoutService
         }
 
         if ($checkoutType == self::CHECKOUT_TYPE_EMBEDDED) {
-            $data['checkout']['url'] = $this->router->generate('nets.finish.order.controller', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $data['checkout']['url'] = $this->router->generate('frontend.checkout.finish.order', [], UrlGeneratorInterface::ABSOLUTE_URL);
         }
 
         $countryIso = $salesChannelContext->getCustomer()
