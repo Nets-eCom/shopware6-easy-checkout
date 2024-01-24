@@ -109,7 +109,7 @@ class PaymentController extends StorefrontController
             'payment.finalize.transaction',
             [
                 '_sw_payment_token' => $this->tokenFactory->generateToken($tokenStruct),
-                'paymentid' => $this->requestStack->getCurrentRequest()->get('paymentId')
+                'paymentid' => $this->requestStack->getCurrentRequest()->query->get('paymentId')
             ]
         );
     }

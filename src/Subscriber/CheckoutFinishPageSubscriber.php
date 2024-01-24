@@ -40,7 +40,7 @@ class CheckoutFinishPageSubscriber implements EventSubscriberInterface
         $paymentStruct = new TransactionDetailsStruct();
         $page          = $event->getPage();
         $context       = Context::createDefaultContext();
-        $criteria      = new Criteria([$this->requestStack->getCurrentRequest()->get('orderId')]);
+        $criteria      = new Criteria([$this->requestStack->getCurrentRequest()->query->get('orderId')]);
         $criteria->addAssociation('transactions');
         $order                 = $this->orderRepository->search($criteria, $context)->first();
         $transactionCollection = $order->getTransactions();
