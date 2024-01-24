@@ -57,7 +57,6 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
     {
         $salesChannelContext   = $event->getSalesChannelContext();
         $paymentMethod         = $salesChannelContext->getPaymentMethod();
-        $salesChannelContextId = $salesChannelContext->getSalesChannel()->getId();
         $checkoutType          = $this->configService->getCheckoutType();
 
         // @TODO this should be merged with AsyncPaymentFinalizePay, refactor
@@ -85,17 +84,16 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
             $templateVars = [
                 'checkoutKey' => $this->configService->getCheckoutKey(),
                 'paymentId' => $paymentId,
-                'checkoutType' => $this->configService->getCheckoutType(),
-                'easy_checkout_is_active' => 1,
-                'place_order_url' => $this->router->generate('nets.finish.order.controller'),
-                'easy_checkout_js_asset' => $easyCheckoutJsAsset,
+                'placeOrderUrl' => $this->router->generate('frontend.checkout.finish.order'),
+                'easyCheckoutJs' => $easyCheckoutJsAsset,
                 'language' => $this->languageProvider->getLanguage($salesChannelContext->getContext()),
+                'isEmbeddedCheckout' => $this->configService->getCheckoutType() === 'embedded'
             ];
 
             $variablesStruct = new TransactionDetailsStruct();
             $variablesStruct->assign($templateVars);
 
-            $event->getPage()->addExtension('easy_checkout_variables', $variablesStruct);
+            $event->getPage()->addExtension('easyCheckoutVariables', $variablesStruct);
         }
     }
 }

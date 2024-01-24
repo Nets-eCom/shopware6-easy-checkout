@@ -1,3 +1,11 @@
+import EmbeddedPlugin from './checkout/embedded-plugin';
+import ConfirmFormPlugin from "./checkout/confirm-form-plugin";
+
+const PluginManager = window.PluginManager;
+PluginManager.register('EmbeddedPlugin', EmbeddedPlugin, '[data-embedded-plugin]');
+PluginManager.register('ConfirmFormPlugin', ConfirmFormPlugin, '[data-confirm-form-plugin]');
+
+// @todo remove self-invoking function
 $(function() {
     if($('#dibs-complete-checkout').length !== 0) {
         if($('.flashbags .alert.alert-danger').length !== 0) {
@@ -7,7 +15,6 @@ $(function() {
             $('.checkout-aside').appendTo('.sstop');
             $('.confirm-address, .confirm-payment-shipping').appendTo('.ttmain');
 
-            $('#confirmOrderForm, .confirm-tos').hide();
             $('.is-act-confirmpage .checkout .checkout-main, .is-act-confirmpage .checkout .checkout-aside').css({
                 'margin-left' : '0',
                 'padding' : '0',
@@ -28,7 +35,6 @@ $(function() {
             $('.col-sm-6.card-col.confirm-billing-address').removeClass('col-sm-6').addClass('col-12 col-sm-6 col-md-6 col-lg-12 col-xl-6');
             $('.col-sm-6.card-col.confirm-shipping-address').removeClass('col-sm-6').addClass('col-12 col-sm-6 col-md-6 col-lg-12 col-xl-6');
 
-            $('#confirmOrderForm, .confirm-tos').hide();
             $('.is-act-confirmpage .checkout .checkout-main, .is-act-confirmpage .checkout .checkout-aside').css({
                 'margin-left' : '0',
                 'padding' : '0',

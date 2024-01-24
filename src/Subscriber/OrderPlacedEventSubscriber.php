@@ -2,6 +2,7 @@
 
 namespace Nets\Checkout\Subscriber;
 
+use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Shopware\Core\Checkout\Cart\Event\CheckoutOrderPlacedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -9,10 +10,13 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class OrderPlacedEventSubscriber implements EventSubscriberInterface
 {
     private RequestStack $request;
+    private EasyApiService $api;
 
-    public function __construct(RequestStack $request)
+
+    public function __construct(RequestStack $request, EasyApiService $api)
     {
         $this->request = $request;
+        $this->api = $api;
     }
 
     public static function getSubscribedEvents(): array
@@ -24,10 +28,11 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
 
     public function orderPlaced(CheckoutOrderPlacedEvent $event): void
     {
-        $paymentId      = null;
-        $orderId        = $event->getOrder()->getId();
+        $paymentId = null;
+        $order = $event->getOrder();
+        $orderId = $order->getId();
         $currentRequest = $this->request->getCurrentRequest();
-        $session        = $currentRequest->getSession();
+        $session = $currentRequest->getSession();
         $session->set('orderId', $orderId);
 
         if (!empty($currentRequest->query->get('paymentId'))) {
@@ -38,8 +43,16 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
             $paymentId = $session->get('nets_paymentId');
         }
 
-        if ($paymentId) {
-            $event->getOrder()->setCustomFields(['nets_payment_id' => $paymentId]);
+        if ($paymentId !== null) {
+            $payment = $this->api->getPayment($paymentId);
+
+            $this->api->updateReference(
+                $paymentId,
+                json_encode([
+                    'reference' => $order->getOrderNumber(),
+                    'checkoutUrl' => $payment->getCheckoutUrl(),
+                ])
+            );
         }
     }
 }
