@@ -77,6 +77,12 @@ class APIController extends StorefrontController
                 'message' => $ex->getMessage(),
                 'code'    => $ex->getCode(),
             ], Response::HTTP_BAD_REQUEST);
+        } catch (\Exception $ex) {
+            return new JsonResponse([
+                'status'  => false,
+                'message' => $ex->getMessage(),
+                'code'    => 0,
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         return new JsonResponse([
@@ -304,6 +310,12 @@ class APIController extends StorefrontController
                 'status'  => false,
                 'message' => $ex->getMessage(),
                 'code'    => $ex->getCode(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Exception $ex) {
+            return new JsonResponse([
+                'status'  => false,
+                'message' => $ex->getMessage(),
+                'code'    => 0,
             ], Response::HTTP_BAD_REQUEST);
         }
 
