@@ -3,7 +3,7 @@
 namespace Nets\Checkout\Service\Easy;
 
 use Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentEntity;
-use Nets\Checkout\Service\Easy\ConfigService;
+use Nets\Checkout\Dictionary\CountryPhonePrefixDictionary;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Shopware\Core\Checkout\Cart\Cart;
@@ -332,32 +332,6 @@ class CheckoutService
             ->getCountry()
             ->getIso3();
 
-        $prefix = '';
-
-        if ($countryIso == 'DNK') {
-            $prefix = '+45';
-        } elseif ($countryIso == 'SWE') {
-            $prefix = '+46';
-        } elseif ($countryIso == 'USA') {
-            $prefix = '+1';
-        } elseif ($countryIso == 'NOR') {
-            $prefix = '+47';
-        } elseif ($countryIso == 'DEU') {
-            $prefix = '+49';
-        } elseif ($countryIso == 'FIN') {
-            $prefix = '+358';
-        } elseif ($countryIso == 'GBR') {
-            $prefix = '+44';
-        } elseif ($countryIso == 'FRA') {
-            $prefix = '+33';
-        } elseif ($countryIso == 'AUT') {
-            $prefix = '+43';
-        } elseif ($countryIso == 'NLD') {
-            $prefix = '+31';
-        } elseif ($countryIso == 'CHE') {
-            $prefix = '+41';
-        }
-
         $data['checkout']['consumer'] = [
             'email'           => $salesChannelContext->getCustomer()->getEmail(),
             'shippingAddress' => [
@@ -384,11 +358,14 @@ class CheckoutService
             ->getActiveShippingAddress()
             ->getPhoneNumber();
 
-        if ($phoneNumber) {
-            $replace_array                               = ['/', '-', ' ', $prefix];
+        if ($phoneNumber !== null) {
+            $prefix = $this->getCountryPrefixByIso(
+                $salesChannelContext->getCustomer()->getActiveShippingAddress()->getCountry()->getIso3()
+            );
+
             $data['checkout']['consumer']['phoneNumber'] = [
                 'prefix' => $prefix,
-                'number' => str_replace($replace_array, '', $phoneNumber),
+                'number' => str_replace(['/', '-', ' ', $prefix], '', $phoneNumber),
             ];
         }
 
@@ -535,6 +512,11 @@ class CheckoutService
         }
 
         return $items;
+    }
+
+    private function getCountryPrefixByIso(string $iso): string
+    {
+        return CountryPhonePrefixDictionary::getPrefix($iso);
     }
 
     private function getRowTaxes(CalculatedTaxCollection $calculatedTaxCollection): array
