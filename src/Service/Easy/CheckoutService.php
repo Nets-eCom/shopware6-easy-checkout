@@ -3,7 +3,6 @@
 namespace Nets\Checkout\Service\Easy;
 
 use Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentEntity;
-use Nets\Checkout\Service\Easy\ConfigService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Shopware\Core\Checkout\Cart\Cart;
@@ -42,7 +41,7 @@ class CheckoutService
     /**
      * regexp for filtering strings
      */
-    public const ALLOWED_CHARACTERS_PATTERN = '/[^\x{00A1}-\x{00AC}\x{00AE}-\x{00FF}\x{0100}-\x{017F}\x{0180}-\x{024F}\x{0250}-\x{02AF}\x{02B0}-\x{02FF}\x{0300}-\x{036F}A-Za-z0-9\!\#\$\%\(\)*\+\,\-\.\/\:\;\\=\?\@\[\]\\^\_\`\{\}\~ ]+/u';
+    public const ALLOWED_CHARACTERS_PATTERN = '/[^\x{00A1}-\x{00AC}\x{00AE}-\x{00FF}\x{0100}-\x{02AF}\x{02B0}-\x{02FF}\x{0300}-\x{036F}A-Za-z0-9!#$%()*+,\-.\/:;=?@\[\]^_`{}~ ]+/u';
 
     private EasyApiService $easyApiService;
 
@@ -81,22 +80,15 @@ class CheckoutService
     }
 
     /**
-     * @param string $checkoutType
-     *
-     * @return string
      * @throws EasyApiException
      */
-    public function createPayment(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null)
+    public function createPayment(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null): ?string
     {
         $payload = json_encode($this->collectRequestParams($salesChannelContext, $checkoutType, $transaction));
 
         return $this->easyApiService->createPayment($payload);
     }
 
-    /**
-     * @param
-     *            $amount
-     */
     public function getTransactionOrderItems(OrderEntity $orderEntity, $amount): array
     {
         if ($amount == $orderEntity->getAmountTotal()) {
@@ -128,10 +120,7 @@ class CheckoutService
     }
 
     /**
-     * @param
-     *            $paymentId
-     * @param
-     *            $amount
+     * @throws EasyApiException
      */
     public function chargePayment(OrderEntity $orderEntity, Context $context, $paymentId, $amount): array
     {
@@ -156,8 +145,8 @@ class CheckoutService
 
         $this->netsApiRepository->create([
             [
-                'order_id'         => $payment->getOrderId() ? $payment->getOrderId() : '',
-                'charge_id'        => $chargeIdArr->chargeId ? $chargeIdArr->chargeId : '',
+                'order_id'         => $payment->getOrderId() ?: '',
+                'charge_id'        => $chargeIdArr->chargeId ?: '',
                 'operation_type'   => 'capture',
                 'operation_amount' => $amount,
                 'amount_available' => $amount,
@@ -168,18 +157,12 @@ class CheckoutService
     }
 
     /**
-     * @param
-     *            $paymentId
-     * @param
-     *            $amount
-     *
      * @throws EasyApiException
      */
     public function refundPayment(OrderEntity $orderEntity, Context $context, $paymentId, $amount): array
     {
         $transaction = $orderEntity->getTransactions()->first();
         $payment  = $this->easyApiService->getPayment($paymentId);
-        $chargeId = $payment->getFirstChargeId();
         $payload  = false;
 
         // Refund functionality
@@ -222,7 +205,6 @@ class CheckoutService
 
         // third block
         if ($amountToRefund <= array_sum($refundChargeIdArray)) {
-            $count = 0;
             foreach ($refundChargeIdArray as $key => $value) {
                 // refund method
                 $payload = $this->getTransactionOrderItems($orderEntity, $value);
@@ -273,19 +255,14 @@ class CheckoutService
         return $payload;
     }
 
-    /**
-     * @param string $checkoutType
-     */
-    private function collectRequestParams(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null): array
+    private function collectRequestParams(SalesChannelContext $salesChannelContext, string $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null): array
     {
         if (is_object($transaction)) {
             $cartOrderEntityObject = $transaction->getOrder();
             $reference             = $cartOrderEntityObject->getOrderNumber();
-            $amount                = $cartOrderEntityObject->getAmountTotal();
         } else {
             $cart                  = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);
             $cartOrderEntityObject = $cart;
-            $amount                = $cart->getPrice()->getTotalPrice();
             $reference             = $salesChannelContext->getToken();
         }
 
@@ -436,7 +413,6 @@ class CheckoutService
             $taxes = $this->getRowTaxes($item->getPrice()
                 ->getCalculatedTaxes());
 
-            $taxPrice = 0;
             $quantity = $item->getQuantity();
 
             if ($cartOrderEntityObject instanceof Cart) {
@@ -520,8 +496,6 @@ class CheckoutService
             }
         }
         $shippingCost = $cartOrderEntityObject->getShippingCosts();
-
-        $taxes = $this->getRowTaxes($shippingCost->getCalculatedTaxes());
 
         $shipItems = $this->shippingCostLine($shippingCost, $display_gross);
 
