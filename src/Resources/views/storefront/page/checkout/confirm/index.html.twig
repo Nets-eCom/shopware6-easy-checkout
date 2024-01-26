@@ -12,8 +12,7 @@
             paymentId: easyCheckoutVariables.paymentId,
             containerId: 'dibs-complete-checkout',
             language: easyCheckoutVariables.language,
-            csrfToken: sw_csrf('frontend.checkout.finish.order', {"mode": "token"}),
-            placeOrderUrl: easyCheckoutVariables.placeOrderUrl
+            handlePaymentUrl: easyCheckoutVariables.handlePaymentUrl
         } %}
 
         {% set confirmSubmitOptions = {

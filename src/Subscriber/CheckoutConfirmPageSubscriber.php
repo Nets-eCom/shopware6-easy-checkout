@@ -84,7 +84,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
             $templateVars = [
                 'checkoutKey' => $this->configService->getCheckoutKey(),
                 'paymentId' => $paymentId,
-                'placeOrderUrl' => $this->router->generate('frontend.checkout.finish.order'),
+                'handlePaymentUrl' => $this->router->generate('frontend.nets.handle_payment'),
                 'easyCheckoutJs' => $easyCheckoutJsAsset,
                 'language' => $this->languageProvider->getLanguage($salesChannelContext->getContext()),
                 'isEmbeddedCheckout' => $this->configService->getCheckoutType() === 'embedded'
