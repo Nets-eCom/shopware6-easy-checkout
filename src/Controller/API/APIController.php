@@ -93,13 +93,9 @@ class APIController extends StorefrontController
     /**
      * @Route("/api/nets/transaction/summary", name="nets.summary.payment.action", options={"seo": "false"}, methods={"POST"})
      *
-     * @param Context $context
-     * @param Request $request
-     *
-     * @return JsonResponse|null
      * @throws EasyApiException
      */
-    public function getSummaryAmounts(Context $context, Request $request): ?JsonResponse
+    public function getSummaryAmounts(Context $context, Request $request): JsonResponse
     {
         $orderId     = $request->get('params')['transaction']['orderId'];
         $orderEntity = $this->orderDataReader->getOrderEntityById($context, $orderId);
@@ -130,6 +126,7 @@ class APIController extends StorefrontController
                     }
                 }
             }
+            return new JsonResponse();
         } else {
             if ($payment->getChargedAmount() == 0) {
                 $amountAvailableForCapturing = $payment->getOrderAmount() / 100;
@@ -288,7 +285,6 @@ class APIController extends StorefrontController
                 'refunded'                    => $payment->getRefundedAmount(),
             ]);
         }
-        return null;
     }
 
     /**
@@ -326,8 +322,7 @@ class APIController extends StorefrontController
 
     /**
      * @Route("/api/nets/test/verify", name="nets.api.test.controller", options={"seo": "false"}, methods={"POST"})
-     * @throws \Exception
-     * @throws EasyApiException
+     * @throws EasyApiException|\Exception
      */
     public function check(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
     {

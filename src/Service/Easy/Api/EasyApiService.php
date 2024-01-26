@@ -35,7 +35,7 @@ class EasyApiService
     /**
      * @throws EasyApiException
      */
-    public function createPayment(string $data)
+    public function createPayment(string $data): ?string
     {
         $this->setAuthorizationHeader();
         $this->client->setHeader('commercePlatformTag', $this->buildCommercePlatformTag());
