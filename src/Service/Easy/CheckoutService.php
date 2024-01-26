@@ -327,11 +327,6 @@ class CheckoutService
             $data['checkout']['url'] = $this->router->generate('frontend.checkout.finish.order', [], UrlGeneratorInterface::ABSOLUTE_URL);
         }
 
-        $countryIso = $salesChannelContext->getCustomer()
-            ->getActiveShippingAddress()
-            ->getCountry()
-            ->getIso3();
-
         $data['checkout']['consumer'] = [
             'email'           => $salesChannelContext->getCustomer()->getEmail(),
             'shippingAddress' => [
