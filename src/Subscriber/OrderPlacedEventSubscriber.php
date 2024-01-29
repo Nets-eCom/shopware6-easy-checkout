@@ -35,7 +35,11 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
         $session = $currentRequest->getSession();
         $session->set('orderId', $orderId);
 
-        if ($currentRequest->query->get('paymentId') !== null) {
+        if ($currentRequest->request->get('paymentId') !== null) {
+            $paymentId = $currentRequest->request->get('paymentId');
+        } elseif ($currentRequest->request->get('paymentid') !== null) {
+            $paymentId = $currentRequest->request->get('paymentid');
+        } elseif ($currentRequest->query->get('paymentId') !== null) {
             $paymentId = $currentRequest->query->get('paymentId');
         } elseif ($currentRequest->query->get('paymentid') !== null) {
             $paymentId = $currentRequest->query->get('paymentid');
