@@ -81,22 +81,15 @@ class CheckoutService
     }
 
     /**
-     * @param string $checkoutType
-     *
-     * @return string
      * @throws EasyApiException
      */
-    public function createPayment(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null)
+    public function createPayment(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null): ?string
     {
         $payload = json_encode($this->collectRequestParams($salesChannelContext, $checkoutType, $transaction));
 
         return $this->easyApiService->createPayment($payload);
     }
 
-    /**
-     * @param
-     *            $amount
-     */
     public function getTransactionOrderItems(OrderEntity $orderEntity, $amount): array
     {
         if ($amount == $orderEntity->getAmountTotal()) {
@@ -111,10 +104,6 @@ class CheckoutService
         ];
     }
 
-    /**
-     * @param
-     *            $string
-     */
     public function stringFilter($string = ''): string
     {
         $string = substr($string, 0, 128);
@@ -128,10 +117,7 @@ class CheckoutService
     }
 
     /**
-     * @param
-     *            $paymentId
-     * @param
-     *            $amount
+     * @throws EasyApiException
      */
     public function chargePayment(OrderEntity $orderEntity, Context $context, $paymentId, $amount): array
     {
@@ -156,8 +142,8 @@ class CheckoutService
 
         $this->netsApiRepository->create([
             [
-                'order_id'         => $payment->getOrderId() ? $payment->getOrderId() : '',
-                'charge_id'        => $chargeIdArr->chargeId ? $chargeIdArr->chargeId : '',
+                'order_id'         => $payment->getOrderId() ?: '',
+                'charge_id'        => $chargeIdArr->chargeId ?: '',
                 'operation_type'   => 'capture',
                 'operation_amount' => $amount,
                 'amount_available' => $amount,
@@ -168,18 +154,12 @@ class CheckoutService
     }
 
     /**
-     * @param
-     *            $paymentId
-     * @param
-     *            $amount
-     *
      * @throws EasyApiException
      */
     public function refundPayment(OrderEntity $orderEntity, Context $context, $paymentId, $amount): array
     {
         $transaction = $orderEntity->getTransactions()->first();
         $payment  = $this->easyApiService->getPayment($paymentId);
-        $chargeId = $payment->getFirstChargeId();
         $payload  = false;
 
         // Refund functionality
@@ -222,7 +202,6 @@ class CheckoutService
 
         // third block
         if ($amountToRefund <= array_sum($refundChargeIdArray)) {
-            $count = 0;
             foreach ($refundChargeIdArray as $key => $value) {
                 // refund method
                 $payload = $this->getTransactionOrderItems($orderEntity, $value);
@@ -273,19 +252,14 @@ class CheckoutService
         return $payload;
     }
 
-    /**
-     * @param string $checkoutType
-     */
-    private function collectRequestParams(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null): array
+    private function collectRequestParams(SalesChannelContext $salesChannelContext, string $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null): array
     {
         if (is_object($transaction)) {
             $cartOrderEntityObject = $transaction->getOrder();
             $reference             = $cartOrderEntityObject->getOrderNumber();
-            $amount                = $cartOrderEntityObject->getAmountTotal();
         } else {
             $cart                  = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);
             $cartOrderEntityObject = $cart;
-            $amount                = $cart->getPrice()->getTotalPrice();
             $reference             = $salesChannelContext->getToken();
         }
 
@@ -408,7 +382,6 @@ class CheckoutService
             $taxes = $this->getRowTaxes($item->getPrice()
                 ->getCalculatedTaxes());
 
-            $taxPrice = 0;
             $quantity = $item->getQuantity();
 
             if ($cartOrderEntityObject instanceof Cart) {
@@ -492,8 +465,6 @@ class CheckoutService
             }
         }
         $shippingCost = $cartOrderEntityObject->getShippingCosts();
-
-        $taxes = $this->getRowTaxes($shippingCost->getCalculatedTaxes());
 
         $shipItems = $this->shippingCostLine($shippingCost, $display_gross);
 
