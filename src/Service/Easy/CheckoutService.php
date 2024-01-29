@@ -1,8 +1,9 @@
 <?php
+
 namespace Nets\Checkout\Service\Easy;
 
 use Nets\Checkout\Core\Content\NetsPaymentApi\NetsPaymentEntity;
-use Nets\Checkout\Service\ConfigService;
+use Nets\Checkout\Dictionary\CountryPhonePrefixDictionary;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Shopware\Core\Checkout\Cart\Cart;
@@ -10,7 +11,6 @@ use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition;
-use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
@@ -23,7 +23,9 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions;
 use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Shopware\Core\System\StateMachine\Transition;
+use Shopware\Storefront\Framework\Routing\Router;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CheckoutService
 {
@@ -31,9 +33,9 @@ class CheckoutService
 
     public const CHECKOUT_TYPE_HOSTED = 'hosted';
 
-    public const EASY_CHECKOUT_JS_ASSET_TEST = 'https://test.checkout.dibspayment.eu/v1/checkout.js?v=1';
-
     public const EASY_CHECKOUT_JS_ASSET_LIVE = 'https://checkout.dibspayment.eu/v1/checkout.js?v=1';
+
+    public const EASY_CHECKOUT_JS_ASSET_TEST = 'https://test.checkout.dibspayment.eu/v1/checkout.js?v=1';
 
     public const NET_PRICE = 'net';
 
@@ -46,8 +48,6 @@ class CheckoutService
 
     private ConfigService $configService;
 
-    private EntityRepository $transactionRepository;
-
     private OrderTransactionStateHandler $transactionStateHandler;
 
     private CartService $cartService;
@@ -58,44 +58,38 @@ class CheckoutService
 
     private EntityRepository $netsApiRepository;
 
-    /**
-     * CheckoutService constructor.
-     */
-    public function __construct(EasyApiService $easyApiService, ConfigService $configService, EntityRepository $transactionRepository, OrderTransactionStateHandler $orderTransactionStateHandler, CartService $cartService, RequestStack $requestStack, StateMachineRegistry $machineRegistry, EntityRepository $netsApiRepository)
-    {
-        $this->easyApiService          = $easyApiService;
-        $this->configService           = $configService;
-        $this->transactionRepository   = $transactionRepository;
+    private Router $router;
+
+    public function __construct(
+        EasyApiService $easyApiService,
+        ConfigService $configService,
+        OrderTransactionStateHandler $orderTransactionStateHandler,
+        CartService $cartService,
+        RequestStack $requestStack,
+        StateMachineRegistry $machineRegistry,
+        EntityRepository $netsApiRepository,
+        Router $router
+    ) {
+        $this->easyApiService = $easyApiService;
+        $this->configService = $configService;
         $this->transactionStateHandler = $orderTransactionStateHandler;
-        $this->cartService             = $cartService;
-        $this->requestStack            = $requestStack;
-        $this->stateMachineRegistry    = $machineRegistry;
-        $this->netsApiRepository       = $netsApiRepository;
+        $this->cartService = $cartService;
+        $this->requestStack = $requestStack;
+        $this->stateMachineRegistry = $machineRegistry;
+        $this->netsApiRepository = $netsApiRepository;
+        $this->router = $router;
     }
 
     /**
-     * @param string $checkoutType
-     *
-     * @return string
      * @throws EasyApiException
      */
-    public function createPayment(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null)
+    public function createPayment(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null): ?string
     {
-        $environment = $this->configService->getEnvironment($salesChannelContext->getSalesChannel()
-            ->getId());
-        $secretKey = $this->configService->getSecretKey($salesChannelContext->getSalesChannel()
-            ->getId());
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
         $payload = json_encode($this->collectRequestParams($salesChannelContext, $checkoutType, $transaction));
 
         return $this->easyApiService->createPayment($payload);
     }
 
-    /**
-     * @param
-     *            $amount
-     */
     public function getTransactionOrderItems(OrderEntity $orderEntity, $amount): array
     {
         if ($amount == $orderEntity->getAmountTotal()) {
@@ -110,10 +104,6 @@ class CheckoutService
         ];
     }
 
-    /**
-     * @param
-     *            $string
-     */
     public function stringFilter($string = ''): string
     {
         $string = substr($string, 0, 128);
@@ -127,20 +117,11 @@ class CheckoutService
     }
 
     /**
-     * @param
-     *            $salesChannelContextId
-     * @param
-     *            $paymentId
-     * @param
-     *            $amount
+     * @throws EasyApiException
      */
-    public function chargePayment(OrderEntity $orderEntity, $salesChannelContextId, Context $context, $paymentId, $amount): array
+    public function chargePayment(OrderEntity $orderEntity, Context $context, $paymentId, $amount): array
     {
         $transaction = $orderEntity->getTransactions()->first();
-        $environment = $this->configService->getEnvironment($salesChannelContextId);
-        $secretKey   = $this->configService->getSecretKey($salesChannelContextId);
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
 
         $payload = $this->getTransactionOrderItems($orderEntity, $amount);
 
@@ -148,10 +129,6 @@ class CheckoutService
 
         $chargeIdArr = json_decode($chargeId);
         $payment     = $this->easyApiService->getPayment($paymentId);
-
-        if ($transaction->getStateMachineState()->getTechnicalName() != 'open') {
-            $this->transactionStateHandler->reopen($transaction->getId(), $context);
-        }
 
         $allChargeAmount = $payment->getChargedAmount();
 
@@ -165,8 +142,8 @@ class CheckoutService
 
         $this->netsApiRepository->create([
             [
-                'order_id'         => $payment->getOrderId() ? $payment->getOrderId() : '',
-                'charge_id'        => $chargeIdArr->chargeId ? $chargeIdArr->chargeId : '',
+                'order_id'         => $payment->getOrderId() ?: '',
+                'charge_id'        => $chargeIdArr->chargeId ?: '',
                 'operation_type'   => 'capture',
                 'operation_amount' => $amount,
                 'amount_available' => $amount,
@@ -177,24 +154,12 @@ class CheckoutService
     }
 
     /**
-     * @param
-     *            $salesChannelContextId
-     * @param
-     *            $paymentId
-     * @param
-     *            $amount
-     *
      * @throws EasyApiException
      */
-    public function refundPayment(OrderEntity $orderEntity, $salesChannelContextId, Context $context, $paymentId, $amount): array
+    public function refundPayment(OrderEntity $orderEntity, Context $context, $paymentId, $amount): array
     {
         $transaction = $orderEntity->getTransactions()->first();
-        $environment = $this->configService->getEnvironment($salesChannelContextId);
-        $secretKey   = $this->configService->getSecretKey($salesChannelContextId);
-        $this->easyApiService->setEnv($environment);
-        $this->easyApiService->setAuthorizationKey($secretKey);
         $payment  = $this->easyApiService->getPayment($paymentId);
-        $chargeId = $payment->getFirstChargeId();
         $payload  = false;
 
         // Refund functionality
@@ -237,7 +202,6 @@ class CheckoutService
 
         // third block
         if ($amountToRefund <= array_sum($refundChargeIdArray)) {
-            $count = 0;
             foreach ($refundChargeIdArray as $key => $value) {
                 // refund method
                 $payload = $this->getTransactionOrderItems($orderEntity, $value);
@@ -288,19 +252,14 @@ class CheckoutService
         return $payload;
     }
 
-    /**
-     * @param string $checkoutType
-     */
-    private function collectRequestParams(SalesChannelContext $salesChannelContext, $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null): array
+    private function collectRequestParams(SalesChannelContext $salesChannelContext, string $checkoutType = self::CHECKOUT_TYPE_EMBEDDED, AsyncPaymentTransactionStruct $transaction = null): array
     {
         if (is_object($transaction)) {
             $cartOrderEntityObject = $transaction->getOrder();
             $reference             = $cartOrderEntityObject->getOrderNumber();
-            $amount                = $cartOrderEntityObject->getAmountTotal();
         } else {
             $cart                  = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);
             $cartOrderEntityObject = $cart;
-            $amount                = $cart->getPrice()->getTotalPrice();
             $reference             = $salesChannelContext->getToken();
         }
 
@@ -322,14 +281,11 @@ class CheckoutService
             $session->set('cancelOrderId', $cartOrderEntityObject->getOrderNumber());
             $session->set('sw_order_id', $cartOrderEntityObject->getId());
             $data['checkout']['returnUrl'] = $transaction->getReturnUrl();
-            $data['checkout']['cancelUrl'] = $this->requestStack->getCurrentRequest()->getUriForPath('/nets/order/cancel');
+            $data['checkout']['cancelUrl'] = $this->generateCancelUrl();
         }
-        $data['checkout']['merchantTermsUrl'] = $this->configService->getMerchantTermsUrl($salesChannelContext->getSalesChannel()
-            ->getId());
-        $data['checkout']['termsUrl'] = $this->configService->getTermsAndConditionsUrl($salesChannelContext->getSalesChannel()
-            ->getId());
-        $chargeNow = $this->configService->getChargeNow($salesChannelContext->getSalesChannel()
-            ->getId());
+        $data['checkout']['merchantTermsUrl'] = $this->configService->getMerchantTermsUrl();
+        $data['checkout']['termsUrl'] = $this->configService->getTermsAndConditionsUrl();
+        $chargeNow = $this->configService->getChargeNow();
 
         if ($chargeNow == 'yes') {
             $data['checkout']['charge'] = 'true';
@@ -342,38 +298,7 @@ class CheckoutService
         }
 
         if ($checkoutType == self::CHECKOUT_TYPE_EMBEDDED) {
-            $data['checkout']['url'] = $this->requestStack->getCurrentRequest()->getUriForPath('/nets/order/finish');
-        }
-
-        $countryIso = $salesChannelContext->getCustomer()
-            ->getActiveShippingAddress()
-            ->getCountry()
-            ->getIso3();
-
-        $prefix = '';
-
-        if ($countryIso == 'DNK') {
-            $prefix = '+45';
-        } elseif ($countryIso == 'SWE') {
-            $prefix = '+46';
-        } elseif ($countryIso == 'USA') {
-            $prefix = '+1';
-        } elseif ($countryIso == 'NOR') {
-            $prefix = '+47';
-        } elseif ($countryIso == 'DEU') {
-            $prefix = '+49';
-        } elseif ($countryIso == 'FIN') {
-            $prefix = '+358';
-        } elseif ($countryIso == 'GBR') {
-            $prefix = '+44';
-        } elseif ($countryIso == 'FRA') {
-            $prefix = '+33';
-        } elseif ($countryIso == 'AUT') {
-            $prefix = '+43';
-        } elseif ($countryIso == 'NLD') {
-            $prefix = '+31';
-        } elseif ($countryIso == 'CHE') {
-            $prefix = '+41';
+            $data['checkout']['url'] = $this->router->generate('frontend.checkout.finish.order', [], UrlGeneratorInterface::ABSOLUTE_URL);
         }
 
         $data['checkout']['consumer'] = [
@@ -402,11 +327,14 @@ class CheckoutService
             ->getActiveShippingAddress()
             ->getPhoneNumber();
 
-        if ($phoneNumber) {
-            $replace_array                               = ['/', '-', ' ', $prefix];
+        if ($phoneNumber !== null) {
+            $prefix = $this->getCountryPrefixByIso(
+                $salesChannelContext->getCustomer()->getActiveShippingAddress()->getCountry()->getIso3()
+            );
+
             $data['checkout']['consumer']['phoneNumber'] = [
                 'prefix' => $prefix,
-                'number' => str_replace($replace_array, '', $phoneNumber),
+                'number' => str_replace(['/', '-', ' ', $prefix], '', $phoneNumber),
             ];
         }
 
@@ -454,7 +382,6 @@ class CheckoutService
             $taxes = $this->getRowTaxes($item->getPrice()
                 ->getCalculatedTaxes());
 
-            $taxPrice = 0;
             $quantity = $item->getQuantity();
 
             if ($cartOrderEntityObject instanceof Cart) {
@@ -539,8 +466,6 @@ class CheckoutService
         }
         $shippingCost = $cartOrderEntityObject->getShippingCosts();
 
-        $taxes = $this->getRowTaxes($shippingCost->getCalculatedTaxes());
-
         $shipItems = $this->shippingCostLine($shippingCost, $display_gross);
 
         if ($shippingCost->getTotalPrice() > 0) {
@@ -553,6 +478,11 @@ class CheckoutService
         }
 
         return $items;
+    }
+
+    private function getCountryPrefixByIso(string $iso): string
+    {
+        return CountryPhonePrefixDictionary::getPrefix($iso);
     }
 
     private function getRowTaxes(CalculatedTaxCollection $calculatedTaxCollection): array
@@ -612,27 +542,6 @@ class CheckoutService
 
     /**
      * @param
-     *            $context
-     * @param array $fields
-     */
-    private function updateTransactionCustomFields(OrderTransactionEntity $transaction, $context, $fields = []): void
-    {
-        $customFields                              = $transaction->getCustomFields();
-        $fields_arr                                = $customFields['nets_easy_payment_details'];
-        $merged                                    = array_merge($fields_arr, $fields);
-        $customFields['nets_easy_payment_details'] = $merged;
-        $update                                    = [
-            'id'           => $transaction->getId(),
-            'customFields' => $customFields,
-        ];
-        $transaction->setCustomFields($customFields);
-        $this->transactionRepository->update([
-            $update,
-        ], $context);
-    }
-
-    /**
-     * @param
      *            $amount
      */
     private function getDummyOrderItem($amount): array
@@ -658,5 +567,10 @@ class CheckoutService
     private function payPartially(string $transactionId, Context $context): void
     {
         $this->stateMachineRegistry->transition(new Transition(OrderTransactionDefinition::ENTITY_NAME, $transactionId, StateMachineTransitionActions::ACTION_PAID_PARTIALLY, 'stateId'), $context);
+    }
+
+    public function generateCancelUrl(): string
+    {
+        return $this->router->generate('frontend.account.order.page', [], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 }

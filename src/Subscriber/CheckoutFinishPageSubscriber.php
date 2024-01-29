@@ -14,15 +14,12 @@ class CheckoutFinishPageSubscriber implements EventSubscriberInterface
 {
     private EntityRepository $orderRepository;
 
-    private RequestStack $requestStack;
-
     /**
      * CheckoutFinishPageSubscriber constructor.
      */
-    public function __construct(EntityRepository $orderRepository, RequestStack $requestStack)
+    public function __construct(EntityRepository $orderRepository)
     {
         $this->orderRepository = $orderRepository;
-        $this->requestStack    = $requestStack;
     }
 
     /**
@@ -40,7 +37,7 @@ class CheckoutFinishPageSubscriber implements EventSubscriberInterface
         $paymentStruct = new TransactionDetailsStruct();
         $page          = $event->getPage();
         $context       = Context::createDefaultContext();
-        $criteria      = new Criteria([$this->requestStack->getCurrentRequest()->get('orderId')]);
+        $criteria      = new Criteria([$event->getRequest()->query->get('orderId')]);
         $criteria->addAssociation('transactions');
         $order                 = $this->orderRepository->search($criteria, $context)->first();
         $transactionCollection = $order->getTransactions();

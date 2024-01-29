@@ -83,7 +83,7 @@ class EasyApiExceptionHandler
         $errorStr = '';
 
         if (isset($msgArr['errors'])) {
-            foreach ($msgArr['errors'] as $k => $v) {
+            foreach ($msgArr['errors'] as $v) {
                 foreach ($v as $error) {
                     $errorStr .= $error;
                 }
