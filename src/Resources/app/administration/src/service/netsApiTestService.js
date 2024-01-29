@@ -10,19 +10,7 @@ class ApiClient extends ApiService {
         const headers = this.getBasicHeaders({});
 
         return this.httpClient
-            .post(`/test/verify`, values,{
-                headers
-            })
-            .then((response) => {
-                return ApiService.handleResponse(response);
-            });
-    }
-	
-	pluginversion() {
-        const headers = this.getBasicHeaders({});
-
-        return this.httpClient
-            .post(`/pluginversion`,{
+            .post(`/nets/test/verify`, values,{
                 headers
             })
             .then((response) => {

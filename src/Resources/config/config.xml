@@ -7,49 +7,80 @@
         <title lang="da-DK">Nets konfiguration</title>
         <title lang="sv-SE">Nets konfigurering</title>
         <title lang="nb-NO">Nets konfigurasjon</title>
-		 <input-field>
+        <!-- Form input fields -->
+        <!-- Merchant ID -->
+        <input-field>
             <name>merchantId</name>
             <label>Merchant Id</label>
-            <helpText> Merchant id can be found in Nets Easy Portal on dashboard top center or Company -> Integration. For e.g. 100001234 </helpText>
-			<required>1</required>
-		</input-field>
-        <input-field>
+            <helpText>
+                Merchant id can be found in Nets Easy Portal on dashboard top center or Company -> Integration.
+                For e.g. 100001234
+            </helpText>
+            <required>1</required>
+        </input-field>
+        <!-- Live Key inputs -->
+        <input-field type="password">
             <name>liveSecretKey</name>
             <label>Live secret key</label>
             <placeholder>live-secret-key-00000000000000000000000000000000</placeholder>
             <helpText>All keys can be found in : Nets Easy Administration > Company > Integration</helpText>
-            <helpText lang="de-DE">Alle Schlüssel finden Sie in : Nets Easy Administration > Unternehmen > Integration</helpText>
-            <helpText lang="da-DK">Alle nøgler kan findes i : Nets Easy Administration > Firmaet > Integration</helpText>
-            <helpText lang="sv-SE">Alla nycklar finns i : Nets Easy Administration > Företag > Integration</helpText>
-            <helpText lang="nb-NO">Alle nøkler finnes i : Nets Easy Administration > Firmaet > Integration</helpText>
+            <helpText lang="de-DE">
+                Alle Schlüssel finden Sie in : Nets Easy Administration > Unternehmen > Integration
+            </helpText>
+            <helpText lang="da-DK">
+                Alle nøgler kan findes i : Nets Easy Administration > Firmaet > Integration
+            </helpText>
+            <helpText lang="sv-SE">
+                Alla nycklar finns i : Nets Easy Administration > Företag > Integration
+            </helpText>
+            <helpText lang="nb-NO">
+                Alle nøkler finnes i : Nets Easy Administration > Firmaet > Integration
+            </helpText>
         </input-field>
-        <input-field>
+        <input-field type="password">
             <name>liveCheckoutKey</name>
             <label>Live checkout key</label>
             <placeholder>live-checkout-key-00000000000000000000000000000000</placeholder>
         </input-field>
-        <input-field>
+        <!-- Test Key inputs -->
+        <input-field type="password">
             <name>testSecretKey</name>
             <label>Test secret key</label>
             <placeholder>test-secret-key-00000000000000000000000000000000</placeholder>
         </input-field>
-        <input-field>
+        <input-field type="password">
             <name>testCheckoutKey</name>
             <label>Test checkout key</label>
             <placeholder>test-checkout-key-00000000000000000000000000000000</placeholder>
         </input-field>
+        <!-- Auto-Capture -->
         <input-field type="single-select">
             <name>autoCharge</name>
             <label>Enable auto-capture</label>
-            <helpText>charge your customers immediately after payment completion. Only compliant products/services by legislation.</helpText>
+            <helpText>
+                charge your customers immediately after payment completion. Only compliant products/services by
+                legislation.
+            </helpText>
             <label lang="de-DE">Auto-Capture aktivieren</label>
-            <helpText lang="de-DE">Wenn aktiviert, belastet Nets Easy Ihren Kunden sofort nach Abschluss der Zahlung. Nur für konforme/kompatible Produkte / Dienstleistungen aktivierbar.</helpText>
+            <helpText lang="de-DE">
+                Wenn aktiviert, belastet Nets Easy Ihren Kunden sofort nach Abschluss der Zahlung.
+                Nur für konforme/kompatible Produkte / Dienstleistungen aktivierbar.
+            </helpText>
             <label lang="da-DK">Aktivér auto-capture</label>
-            <helpText lang="da-DK">charge your customer immediately after payment completion. Only compliant products/services by legislation.</helpText>
+            <helpText lang="da-DK">
+                charge your customer immediately after payment completion. Only compliant
+                products/services by legislation.
+            </helpText>
             <label lang="sv-SE">Aktivera auto-debitering</label>
-            <helpText lang="sv-SE">Om aktiverad debiterar Nets Easy kunderna direkt efter att betalningen är genomförd. Aktivera endast detta för behöriga produkter/tjänster.</helpText>
+            <helpText lang="sv-SE">
+                Om aktiverad debiterar Nets Easy kunderna direkt efter att betalningen är genomförd.
+                Aktivera endast detta för behöriga produkter/tjänster.
+            </helpText>
             <label lang="nb-NO">Tillatt Auto-capture</label>
-            <helpText lang="nb-NO">Hvis tillatt Nets Easy vil belaste sluttkunden umiddelbart etter at betalingen er utført. Bare tillatt for kompatible produkter / tjenester.</helpText>
+            <helpText lang="nb-NO">
+                Hvis tillatt Nets Easy vil belaste sluttkunden umiddelbart etter at betalingen er
+                utført. Bare tillatt for kompatible produkter / tjenester.
+            </helpText>
             <options>
                 <option>
                     <id>yes</id>
@@ -62,6 +93,7 @@
                 </option>
             </options>
         </input-field>
+        <!-- Payment Environment -->
         <input-field type="single-select">
             <name>enviromnent</name>
             <label>Payment Environment</label>
@@ -69,11 +101,21 @@
             <label lang="da-DK">Betalingsmiljø</label>
             <label lang="sv-SE">Betalmiljö</label>
             <label lang="nb-NO">Betalingsmiljø</label>
-            <helpText>Choose wether you want to charge payments in test environment or live production mode</helpText>
-            <helpText lang="de-DE">Wählen Sie, ob Sie Zahlungsumfeld im Test oder im Live berechnen möchten</helpText>
-            <helpText lang="da-DK">Vælg hvor du vil opkræve betalinger i test mode eller live-mode</helpText>
-            <helpText lang="sv-SE">Välj om du vill ta betalt i testmiljö eller live produktionsmiljö</helpText>
-            <helpText lang="nb-NO">Velg om du vil belaste betalinger i testmiljø eller live produksjonsmiljø</helpText>
+            <helpText>
+                Choose wether you want to charge payments in test environment or live production mode
+            </helpText>
+            <helpText lang="de-DE">
+                Wählen Sie, ob Sie Zahlungsumfeld im Test oder im Live berechnen möchten
+            </helpText>
+            <helpText lang="da-DK">
+                Vælg hvor du vil opkræve betalinger i test mode eller live-mode
+            </helpText>
+            <helpText lang="sv-SE">
+                Välj om du vill ta betalt i testmiljö eller live produktionsmiljö
+            </helpText>
+            <helpText lang="nb-NO">
+                Velg om du vil belaste betalinger i testmiljø eller live produksjonsmiljø
+            </helpText>
             <defaultValue>test</defaultValue>
             <options>
                 <option>
@@ -86,25 +128,41 @@
                 </option>
             </options>
         </input-field>
-       <input-field type="single-select">
-           <name>checkoutType</name>
-           <label>Checkout Flow</label>
-           <label lang="de-DE">Checkout-Ablauf</label>
-           <label lang="da-DK">Betalings-flow</label>
-           <label lang="sv-SE">Checkout-flöde</label>
-           <label lang="nb-NO">Utsjekkflyt</label>
-           <helpText>Choose whether you want the payment window to be loaded in a new page or embedded in your checkout page</helpText>
-           <helpText lang="de-DE">Wählen Sie aus, ob das Zahlungsfenster auf einer neuen Seite geladen oder in Ihre Kasse Seite eingebettet werden soll</helpText>
-           <helpText lang="da-DK">Vælg, om betalingsvinduet skal indlæses på en ny side eller indlejres på din tjekud side</helpText>
-           <helpText lang="sv-SE">Välj om du vill att betalningsfönstret ska laddas på en ny sida eller inbäddas i din checka ut sida</helpText>
-           <helpText lang="nb-NO">Velg om du vil at betalingsvinduet skal lastes inn på en ny side eller innebygd på sjekk ut siden din</helpText>
-           <placeholder>Select payment window checkout type</placeholder>
-           <placeholder lang="de-DE">Wählen Sie die typ für das Zahlungsfenster</placeholder>
-           <placeholder lang="da-DK">Vælg type for betalingsvinduet</placeholder>
-           <placeholder lang="sv-SE">Välj typ för betalningsfönster</placeholder>
-           <placeholder lang="nb-NO">Velg type for betalingsvindu</placeholder>
-           <defaultValue>hosted</defaultValue>
-           <options>
+        <!-- Checkout Flow -->
+        <input-field type="single-select">
+            <name>checkoutType</name>
+            <label>Checkout Flow</label>
+            <label lang="de-DE">Checkout-Ablauf</label>
+            <label lang="da-DK">Betalings-flow</label>
+            <label lang="sv-SE">Checkout-flöde</label>
+            <label lang="nb-NO">Utsjekkflyt</label>
+            <helpText>
+                Choose whether you want the payment window to be loaded in a new page or embedded in your checkout
+                page
+            </helpText>
+            <helpText lang="de-DE">
+                Wählen Sie aus, ob das Zahlungsfenster auf einer neuen Seite geladen oder in Ihre
+                Kasse Seite eingebettet werden soll
+            </helpText>
+            <helpText lang="da-DK">
+                Vælg, om betalingsvinduet skal indlæses på en ny side eller indlejres på din tjekud
+                side
+            </helpText>
+            <helpText lang="sv-SE">
+                Välj om du vill att betalningsfönstret ska laddas på en ny sida eller inbäddas i din
+                checka ut sida
+            </helpText>
+            <helpText lang="nb-NO">
+                Velg om du vil at betalingsvinduet skal lastes inn på en ny side eller innebygd på
+                sjekk ut siden din
+            </helpText>
+            <placeholder>Select payment window checkout type</placeholder>
+            <placeholder lang="de-DE">Wählen Sie die typ für das Zahlungsfenster</placeholder>
+            <placeholder lang="da-DK">Vælg type for betalingsvinduet</placeholder>
+            <placeholder lang="sv-SE">Välj typ för betalningsfönster</placeholder>
+            <placeholder lang="nb-NO">Velg type for betalingsvindu</placeholder>
+            <defaultValue>hosted</defaultValue>
+            <options>
                 <option>
                     <id>hosted</id>
                     <name>Hosted</name>
@@ -115,6 +173,7 @@
                 </option>
             </options>
         </input-field>
+        <!-- Terms Url -->
         <input-field>
             <name>termsUrl</name>
             <label>Terms Url</label>
@@ -134,7 +193,8 @@
             <placeholder lang="nb-NO">Sett inn vilkårens url her</placeholder>
             <defaultValue>https://yoursite.com/terms</defaultValue>
         </input-field>
-         <input-field>
+        <!-- Merchant Terms Url -->
+        <input-field>
             <name>merchantTermsUrl</name>
             <label>Merchant Terms Url</label>
             <label lang="de-DE">Geschäftsbedingungen URL</label>
@@ -153,11 +213,12 @@
             <placeholder lang="nb-NO">Sett inn vilkårens url her</placeholder>
             <defaultValue>https://cdn.dibspayment.com/terms/easy/terms_of_use.pdf</defaultValue>
         </input-field>
-		 <component name="nets-api-test-button">
+        <!-- API Test Button -->
+        <component name="nets-api-test-button">
             <name>apiTest</name>
-            <label>API Test Button </label>
+            <label>API Test Button</label>
         </component>
-		
+
     </card>
-	
+
 </config>
