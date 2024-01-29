@@ -60,6 +60,12 @@ bin/console cache:clear
 - Ensure your Live Easy account is approved for payments with selected currency.
 - Ensure payment method data is correct and supported by your Nets Easy agreement.
 
+### Running PHPStan
+When running the tool remember to select path to directories with plugin classes only. Example command:
+```
+   vendor/bin/phpstan analyse ./src
+```   
+
 ### Contact
 * Nets customer service
 - Nets Easy provides support for both test and live Easy accounts. Contact information can be found here : https://nets.eu/en/payments/customerservice/
