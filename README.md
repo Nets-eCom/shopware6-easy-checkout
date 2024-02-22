@@ -7,7 +7,7 @@
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4.x`, `6.5.x`
 |Version | `1.4.1`
-|Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
+|Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 
