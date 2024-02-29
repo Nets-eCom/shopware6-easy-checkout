@@ -57,7 +57,6 @@ stages:
           - script: |
               curl -1sLf 'https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh' | sudo -E bash
               sudo apt-get -o DPkg::Lock::Timeout=60 install shopware-cli
-
               sudo apt-get -o DPkg::Lock::Timeout=60 install jq -y
             displayName: 'Install dependencies'
           - script: |
@@ -68,21 +67,21 @@ stages:
               version: '16.x'
             displayName: 'Install Node.js 16'
           - script: |
-              cp composer.json composer-original.json
+              sed -i "s/{{ version }}/~6.4.4/g" .shopware-extension.yml
               jq '.require."shopware/core" = "~6.4.0"' composer.json > composer.tmp && mv composer.tmp composer.json
               jq '.version = .version + "64"' composer.json > composer.tmp && mv composer.tmp composer.json
               shopware-cli extension zip --disable-git . --release
               mv $(extensionName).zip $(publishDir)/$(extensionName)-64.zip
-              mv composer-original.json composer.json
             displayName: 'Build extension 6.4'
           - script: |
               shopware-cli extension validate $(publishDir)/$(extensionName)-64.zip
             displayName: 'Validate extension 6.4'
           - task: UseNode@1
             inputs:
-              version: '18.x'
+              version: '18.18'
             displayName: 'Install Node.js 18'
           - script: |
+              sed -i "s/~6.4.4/~6.5.0/g" .shopware-extension.yml
               jq '.require."shopware/core" = "~6.5.0"' composer.json > composer.tmp && mv composer.tmp composer.json
               shopware-cli extension zip --disable-git . --release
               mv $(extensionName).zip $(publishDir)/$(extensionName).zip
