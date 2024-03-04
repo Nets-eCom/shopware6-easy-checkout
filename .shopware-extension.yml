@@ -1,0 +1,13 @@
+build:
+  shopwareVersionConstraint: '{{ version }}'
+  zip:
+    pack:
+      excludes:
+        paths:
+          - .gitignore
+          - .shopware-extension.yml
+          - rector.php
+          - composer.lock
+          - azure-pipelines.yaml
+          - .prettierignore
+          - .prettierrc
