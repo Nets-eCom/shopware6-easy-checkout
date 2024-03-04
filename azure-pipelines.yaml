@@ -1,0 +1,109 @@
+trigger:
+  - main
+  - develop
+
+parameters:
+  - name: validateOnPhpVersion
+    type: string
+    default: 8.2
+  - name: ShouldBuildReleasePackage
+    type: boolean
+    default: false
+  - name: ShouldDeployApplication
+    type: boolean
+    default: false
+
+variables:
+  extensionName: NetsCheckout
+  publishDir: ./bin
+
+pool:
+  vmImage: ubuntu-latest
+
+resources:
+  repositories:
+    - repository: Infra
+      type: git
+      name: ECOM-EASY-PLUGINS/connect
+      ref: refs/heads/main
+
+stages:
+  - stage: Validate
+    displayName: Validate
+    jobs:
+      - job: Validate_Code
+        steps:
+          - template: /pipelines/steps/install-php.yaml@Infra
+            parameters:
+              phpVersion: ${{ parameters.validateOnPhpVersion }}
+          - script: |
+              find ./src -type f -name '*.php' ! -path './src/vendor/*' -print0 \
+                | xargs -0 -n 1 php -l | (! grep -Ev '^No syntax errors detected in ')
+            displayName: 'PHP Syntax Checker (lint)'
+  - stage: Build_Release_Package
+    displayName: Build_Release_Package
+    condition: |
+      and(
+        succeeded(),
+        or(
+          in(variables['Build.SourceBranch'], 'refs/heads/main'),
+          and(${{ parameters.ShouldBuildReleasePackage }}, eq(variables['Build.Reason'], 'Manual'))
+        )
+      )
+    jobs:
+      - job: Build_Release_Package
+        steps:
+          - checkout: self
+          - script: |
+              curl -1sLf 'https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh' | sudo -E bash
+              sudo apt-get -o DPkg::Lock::Timeout=60 install shopware-cli
+              sudo apt-get -o DPkg::Lock::Timeout=60 install jq -y
+            displayName: 'Install dependencies'
+          - script: |
+              mkdir $(publishDir)
+            displayName: 'Create publish dir'
+          - task: UseNode@1
+            inputs:
+              version: '16.x'
+            displayName: 'Install Node.js 16'
+          - script: |
+              sed -i "s/{{ version }}/~6.4.5/g" .shopware-extension.yml
+              jq '.require."shopware/core" = "~6.4.0"' composer.json > composer.tmp && mv composer.tmp composer.json
+              jq '.version = .version + "64"' composer.json > composer.tmp && mv composer.tmp composer.json
+              shopware-cli extension zip --disable-git . --release
+              mv $(extensionName).zip $(publishDir)/$(extensionName)-64.zip
+            displayName: 'Build extension 6.4'
+          - script: |
+              shopware-cli extension validate $(publishDir)/$(extensionName)-64.zip
+            displayName: 'Validate extension 6.4'
+          - task: UseNode@1
+            inputs:
+              version: '18.18'
+            displayName: 'Install Node.js 18'
+          - script: |
+              sed -i "s/~6.4.5/~6.5.0/g" .shopware-extension.yml
+              jq '.require."shopware/core" = "~6.5.0"' composer.json > composer.tmp && mv composer.tmp composer.json
+              shopware-cli extension zip --disable-git . --release
+              mv $(extensionName).zip $(publishDir)/$(extensionName).zip
+            displayName: 'Build extension 6.5'
+          - script: |
+              shopware-cli extension validate $(publishDir)/$(extensionName).zip
+            displayName: 'Validate extension 6.5'
+          - publish: $(publishDir)
+            artifact: $(extensionName)
+          
+  - stage: Deploy_Development # This stage success will trigger deployment of CD-Services-Magento2
+    displayName: Deploy_Development
+    condition: |
+      and(
+        succeeded(),
+        or(
+          in(variables['Build.SourceBranch'], 'refs/heads/development'),
+          and(${{ parameters.ShouldDeployApplication }}, eq(variables['Build.Reason'], 'Manual'))
+        )
+      )
+    jobs:
+      - job: Trigger_Deploy_Development
+        steps:
+          - checkout: none
+          - bash: echo "CD-Services-Magento2 runs after this completes"
