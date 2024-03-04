@@ -6,11 +6,16 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4+`
-|Version | `1.4.1`
+|Version | `1.4.2`
 |Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.4.2 - Released 2024-03-04
+
+* update package description
+* remove github workflow 
 
 ### Version 1.4.1 - Released 2024-01-29
 
