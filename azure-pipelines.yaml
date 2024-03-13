@@ -82,6 +82,7 @@ stages:
             displayName: 'Install Node.js 18'
           - script: |
               sed -i "s/~6.4.5/~6.5.0/g" .shopware-extension.yml
+              jq '.version = .version[:-2]' composer.json > composer.tmp && mv composer.tmp composer.json
               jq '.require."shopware/core" = "~6.5.0"' composer.json > composer.tmp && mv composer.tmp composer.json
               shopware-cli extension zip --disable-git . --release
               mv $(extensionName).zip $(publishDir)/$(extensionName).zip
