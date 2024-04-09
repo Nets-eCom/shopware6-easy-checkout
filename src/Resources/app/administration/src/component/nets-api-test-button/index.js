@@ -20,14 +20,17 @@ Component.register('nets-api-test-button', {
     },
 
     computed: {
-        pluginConfig() {
-            let $parent = this.$parent;
+        config() {
+            const parent = this._findParentWithConfigData(this.$parent);
 
-            while ($parent.actualConfigData === undefined) {
-                $parent = $parent.$parent;
+            if (parent === null) {
+                return {};
             }
 
-            return $parent.actualConfigData.null;
+            return {
+                ...parent.actualConfigData.null,
+                ...parent.actualConfigData[parent.currentSalesChannelId]
+            };
         }
     },
 
@@ -39,7 +42,7 @@ Component.register('nets-api-test-button', {
         check() {
             this.isLoading = true;
 			this.isUpdate = false; 
-            this.netsApiTest.check(this.pluginConfig).then((res) => {
+            this.netsApiTest.check(this.config).then((res) => {
                 if (res.success) {
                     this.isSaveSuccessful = true;
                     this.createNotificationSuccess({
@@ -55,6 +58,18 @@ Component.register('nets-api-test-button', {
 
                 this.isLoading = false;
             });
+        },
+
+        _findParentWithConfigData(parent) {
+            if (parent === null) {
+                return null;
+            }
+
+            if (parent.actualConfigData !== undefined && parent.currentSalesChannelId !== undefined) {
+                return parent;
+            }
+
+            return this._findParentWithConfigData(parent.$parent);
         }
     }
 })
