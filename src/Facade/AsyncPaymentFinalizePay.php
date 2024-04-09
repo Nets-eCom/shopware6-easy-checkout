@@ -78,7 +78,8 @@ class AsyncPaymentFinalizePay
             $transactionId = $transaction->getOrderTransaction()->getId();
             $orderId = $transaction->getOrder()->getId();
             $context = $salesChannelContext->getContext();
-            $chargeNow = $this->configService->getChargeNow();
+            $salesChannelId = $salesChannelContext->getSalesChannelId();
+            $chargeNow = $this->configService->getChargeNow($salesChannelId);
 
             $this->orderRepository->update([
                 [
@@ -118,7 +119,7 @@ class AsyncPaymentFinalizePay
             ], $context);
 
             // For inserting amount available respect to charge id
-            if ($this->configService->getChargeNow() == 'yes' || $payment->getPaymentType() == 'A2A') {
+            if ($this->configService->getChargeNow($salesChannelId) == 'yes' || $payment->getPaymentType() == 'A2A') {
                 $this->netsApiRepository->create([
                     [
                         'order_id' => $orderId ? $orderId : '',
@@ -141,7 +142,7 @@ class AsyncPaymentFinalizePay
      */
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): string
     {
-        $checkoutType = $this->configService->getCheckoutType();
+        $checkoutType = $this->configService->getCheckoutType($salesChannelContext->getSalesChannelId());
 
         if (CheckoutService::CHECKOUT_TYPE_EMBEDDED === $checkoutType) {
             $paymentId = $this->extractPaymentId();
