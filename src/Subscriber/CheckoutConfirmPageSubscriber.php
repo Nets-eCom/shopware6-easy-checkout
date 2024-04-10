@@ -55,9 +55,10 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 
     public function onCheckoutConfirmLoaded(CheckoutConfirmPageLoadedEvent $event): void
     {
-        $salesChannelContext   = $event->getSalesChannelContext();
-        $paymentMethod         = $salesChannelContext->getPaymentMethod();
-        $checkoutType          = $this->configService->getCheckoutType();
+        $salesChannelContext = $event->getSalesChannelContext();
+        $paymentMethod = $salesChannelContext->getPaymentMethod();
+        $salesChannelId = $salesChannelContext->getSalesChannelId();
+        $checkoutType = $this->configService->getCheckoutType($salesChannelId);
 
         // @TODO this should be merged with AsyncPaymentFinalizePay, refactor
         // @todo early return
@@ -76,18 +77,18 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
                 $paymentId = null;
             }
 
-            $environment = $this->configService->getEnvironment();
+            $environment = $this->configService->getEnvironment($salesChannelId);
             $easyCheckoutJsAsset = $environment == EasyApiService::ENV_LIVE
                 ? CheckoutService::EASY_CHECKOUT_JS_ASSET_LIVE
                 : CheckoutService::EASY_CHECKOUT_JS_ASSET_TEST;
 
             $templateVars = [
-                'checkoutKey' => $this->configService->getCheckoutKey(),
+                'checkoutKey' => $this->configService->getCheckoutKey($salesChannelId),
                 'paymentId' => $paymentId,
                 'handlePaymentUrl' => $this->router->generate('frontend.nets.handle_payment'),
                 'easyCheckoutJs' => $easyCheckoutJsAsset,
                 'language' => $this->languageProvider->getLanguage($salesChannelContext->getContext()),
-                'isEmbeddedCheckout' => $this->configService->getCheckoutType() === 'embedded'
+                'isEmbeddedCheckout' => $this->configService->getCheckoutType($salesChannelId) === 'embedded'
             ];
 
             $variablesStruct = new TransactionDetailsStruct();

@@ -21,50 +21,50 @@ class ConfigService
         $this->systemConfigService = $systemConfigService;
     }
 
-    public function getSecretKey(): ?string
+    public function getSecretKey(?string $salesChannelId = null): ?string
     {
         $env = 'testSecretKey';
 
-        if ($this->getEnvironment() === EasyApiService::ENV_LIVE) {
+        if ($this->getEnvironment($salesChannelId) === EasyApiService::ENV_LIVE) {
             $env = 'liveSecretKey';
         }
 
         return $this->systemConfigService->get(self::CONFIG_PREFIX . $env);
     }
 
-    public function getCheckoutKey(): ?string
+    public function getCheckoutKey(?string $salesChannelId = null): ?string
     {
         $env = 'testCheckoutKey';
 
-        if ($this->getEnvironment() === EasyApiService::ENV_LIVE) {
+        if ($this->getEnvironment($salesChannelId) === EasyApiService::ENV_LIVE) {
             $env = 'liveCheckoutKey';
         }
 
-        return $this->systemConfigService->get(self::CONFIG_PREFIX . $env);
+        return $this->systemConfigService->get(self::CONFIG_PREFIX . $env, $salesChannelId);
     }
 
-    public function getEnvironment(): ?string
+    public function getEnvironment(?string $salesChannelId = null): ?string
     {
-        return $this->systemConfigService->get(self::CONFIG_PREFIX . self::ENVIRONMENT);
+        return $this->systemConfigService->get(self::CONFIG_PREFIX . self::ENVIRONMENT, $salesChannelId);
     }
 
-    public function getCheckoutType(): ?string
+    public function getCheckoutType(?string $salesChannelId = null): ?string
     {
-        return $this->systemConfigService->get(self::CONFIG_PREFIX . self::CHECKOUT_TYPE);
+        return $this->systemConfigService->get(self::CONFIG_PREFIX . self::CHECKOUT_TYPE, $salesChannelId);
     }
 
-    public function getTermsAndConditionsUrl(): ?string
+    public function getTermsAndConditionsUrl(?string $salesChannelId = null): ?string
     {
-        return $this->systemConfigService->get(self::CONFIG_PREFIX . self::TERMS_URL);
+        return $this->systemConfigService->get(self::CONFIG_PREFIX . self::TERMS_URL, $salesChannelId);
     }
 
-    public function getMerchantTermsUrl(): ?string
+    public function getMerchantTermsUrl(?string $salesChannelId = null): ?string
     {
-        return $this->systemConfigService->get(self::CONFIG_PREFIX . self::MERCHANT_TERMS_URL);
+        return $this->systemConfigService->get(self::CONFIG_PREFIX . self::MERCHANT_TERMS_URL, $salesChannelId);
     }
 
-    public function getChargeNow(): ?string
+    public function getChargeNow(?string $salesChannelId = null): ?string
     {
-        return $this->systemConfigService->get(self::CONFIG_PREFIX . self::CHARGE_NOW);
+        return $this->systemConfigService->get(self::CONFIG_PREFIX . self::CHARGE_NOW, $salesChannelId);
     }
 }
