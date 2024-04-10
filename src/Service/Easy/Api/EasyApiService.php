@@ -1,4 +1,5 @@
 <?php
+
 namespace Nets\Checkout\Service\Easy\Api;
 
 use Nets\Checkout\NetsCheckout;
@@ -35,11 +36,11 @@ class EasyApiService
     /**
      * @throws EasyApiException
      */
-    public function createPayment(string $data): ?string
+    public function createPayment(string $data, ?string $salesChannelId = null): ?string
     {
-        $this->setAuthorizationHeader();
+        $this->setAuthorizationHeader(null, $salesChannelId);
         $this->client->setHeader('commercePlatformTag', $this->buildCommercePlatformTag());
-        $url = $this->getCreatePaymentUrl();
+        $url = $this->getCreatePaymentUrl($salesChannelId);
 
         return $this->handleResponse($this->client->post($url, $data));
     }
@@ -47,48 +48,48 @@ class EasyApiService
     /**
      * @throws EasyApiException
      */
-    public function getPayment(string $paymentId): Payment
+    public function getPayment(string $paymentId, ?string $salesChannelId = null): Payment
     {
-        $this->setAuthorizationHeader();
-        $url = $this->getGetPaymentUrl($paymentId);
+        $this->setAuthorizationHeader(null, $salesChannelId);
+        $url = $this->getGetPaymentUrl($paymentId, $salesChannelId);
 
         return new Payment($this->handleResponse($this->client->get($url)));
     }
 
-    public function updateReference(string $paymentId, string $data)
+    public function updateReference(string $paymentId, string $data, ?string $salesChannelId = null)
     {
-        $this->setAuthorizationHeader();
-        $url = $this->getUpdateReferenceUrl($paymentId);
+        $this->setAuthorizationHeader(null, $salesChannelId);
+        $url = $this->getUpdateReferenceUrl($paymentId, $salesChannelId);
 
         return $this->handleResponse($this->client->put($url, $data, true));
     }
 
-    public function chargePayment(string $paymentId, string $data)
+    public function chargePayment(string $paymentId, string $data, ?string $salesChannelId = null)
     {
-        $this->setAuthorizationHeader();
-        $url = $this->getChargePaymentUrl($paymentId);
+        $this->setAuthorizationHeader(null, $salesChannelId);
+        $url = $this->getChargePaymentUrl($paymentId, $salesChannelId);
 
         return $this->handleResponse($this->client->post($url, $data));
     }
 
-    public function refundPayment(string $chargeId, string $data)
+    public function refundPayment(string $chargeId, string $data, ?string $salesChannelId = null)
     {
-        $this->setAuthorizationHeader();
-        $url = $this->getRefundPaymentUrl($chargeId);
+        $this->setAuthorizationHeader(null, $salesChannelId);
+        $url = $this->getRefundPaymentUrl($chargeId, $salesChannelId);
 
         return $this->handleResponse($this->client->post($url, $data));
     }
 
-    public function voidPayment(string $paymentId, string $data = null): void
+    public function voidPayment(string $paymentId, string $data = null, ?string $salesChannelId = null): void
     {
-        $this->setAuthorizationHeader();
-        $url = $this->getVoidPaymentUrl($paymentId);
+        $this->setAuthorizationHeader(null, $salesChannelId);
+        $url = $this->getVoidPaymentUrl($paymentId, $salesChannelId);
         $this->handleResponse($this->client->post($url, $data));
     }
 
     /**
-     * @todo call termiante after verify
      * @throws EasyApiException
+     * @todo call termiante after verify
      */
     public function verifyConnection(string $env, string $secretKey, string $data): bool
     {
@@ -113,30 +114,30 @@ class EasyApiService
         return true;
     }
 
-    private function getUpdateReferenceUrl(string $paymentId): string
+    private function getUpdateReferenceUrl(string $paymentId, ?string $salesChannelId = null): string
     {
-        return $this->isLiveEnv()
+        return $this->isLiveEnv($salesChannelId)
             ? self::ENDPOINT_LIVE_PAYMENTS . $paymentId . '/referenceinformation'
             : self::ENDPOINT_TEST_PAYMENTS . $paymentId . '/referenceinformation';
     }
 
-    private function getChargePaymentUrl(string $paymentId): string
+    private function getChargePaymentUrl(string $paymentId, ?string $salesChannelId = null): string
     {
-        return $this->isLiveEnv()
+        return $this->isLiveEnv($salesChannelId)
             ? self::ENDPOINT_LIVE_PAYMENTS . $paymentId . '/charges'
             : self::ENDPOINT_TEST_PAYMENTS . $paymentId . '/charges';
     }
 
-    private function getVoidPaymentUrl(string $paymentId): string
+    private function getVoidPaymentUrl(string $paymentId, ?string $salesChannelId = null): string
     {
-        return $this->isLiveEnv()
+        return $this->isLiveEnv($salesChannelId)
             ? self::ENDPOINT_LIVE_PAYMENTS . $paymentId . '/cancels'
             : self::ENDPOINT_TEST_PAYMENTS . $paymentId . '/cancels';
     }
 
-    private function getRefundPaymentUrl(string $chargeId): string
+    private function getRefundPaymentUrl(string $chargeId, ?string $salesChannelId = null): string
     {
-        return $this->isLiveEnv()
+        return $this->isLiveEnv($salesChannelId)
             ? self::ENDPOINT_LIVE_CHARGES . $chargeId . '/refunds'
             : self::ENDPOINT_TEST_CHARGES . $chargeId . '/refunds';
     }
@@ -151,33 +152,33 @@ class EasyApiService
         }
     }
 
-    private function setAuthorizationHeader(string $authorizationKey = null): void
+    private function setAuthorizationHeader(string $authorizationKey = null, ?string $salesChannelId = null): void
     {
         if (null === $authorizationKey) {
-            $authorizationKey = $this->getAuthorizationKey();
+            $authorizationKey = $this->getAuthorizationKey($salesChannelId);
         }
 
         $this->client->setHeader('Authorization', str_replace('-', '', trim($authorizationKey)));
     }
 
-    private function getCreatePaymentUrl(): string
+    private function getCreatePaymentUrl(?string $salesChannelId = null): string
     {
-        return $this->isLiveEnv() ? self::ENDPOINT_LIVE_PAYMENTS : self::ENDPOINT_TEST_PAYMENTS;
+        return $this->isLiveEnv($salesChannelId) ? self::ENDPOINT_LIVE_PAYMENTS : self::ENDPOINT_TEST_PAYMENTS;
     }
 
-    private function getGetPaymentUrl(string $paymentId): string
+    private function getGetPaymentUrl(string $paymentId, ?string $salesChannelId = null): string
     {
-        return $this->isLiveEnv() ? self::ENDPOINT_LIVE_PAYMENTS . $paymentId : self::ENDPOINT_TEST_PAYMENTS . $paymentId;
+        return $this->isLiveEnv($salesChannelId) ? self::ENDPOINT_LIVE_PAYMENTS . $paymentId : self::ENDPOINT_TEST_PAYMENTS . $paymentId;
     }
 
-    private function getAuthorizationKey(): string
+    private function getAuthorizationKey(?string $salesChannelId = null): string
     {
-        return (string) $this->configService->getSecretKey();
+        return (string)$this->configService->getSecretKey($salesChannelId);
     }
 
-    private function isLiveEnv(): bool
+    private function isLiveEnv(?string $salesChannelId = null): bool
     {
-        return self::ENV_LIVE === (string) $this->configService->getEnvironment();
+        return self::ENV_LIVE === (string)$this->configService->getEnvironment($salesChannelId);
     }
 
     private function buildCommercePlatformTag(): string

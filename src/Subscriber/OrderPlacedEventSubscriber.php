@@ -31,6 +31,7 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
         $paymentId = null;
         $order = $event->getOrder();
         $orderId = $order->getId();
+        $salesChannelId = $event->getSalesChannelId();
         $currentRequest = $this->request->getCurrentRequest();
         $session = $currentRequest->getSession();
         $session->set('orderId', $orderId);
@@ -48,7 +49,7 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
         }
 
         if ($paymentId !== null) {
-            $payment = $this->api->getPayment($paymentId);
+            $payment = $this->api->getPayment($paymentId, $salesChannelId);
 
             $this->api->updateReference(
                 $paymentId,
