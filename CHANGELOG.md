@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4+`
-|Version | `1.4.2`
+|Version | `1.4.3`
 |Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.4.3 - Released 2024-04-10
+
+* update: handle sales channel context
 
 ### Version 1.4.2 - Released 2024-03-04
 
