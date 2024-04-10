@@ -87,7 +87,7 @@ class CheckoutService
     {
         $payload = json_encode($this->collectRequestParams($salesChannelContext, $checkoutType, $transaction));
 
-        return $this->easyApiService->createPayment($payload);
+        return $this->easyApiService->createPayment($payload, $salesChannelContext->getSalesChannelId());
     }
 
     public function getTransactionOrderItems(OrderEntity $orderEntity, $amount): array
@@ -122,13 +122,14 @@ class CheckoutService
     public function chargePayment(OrderEntity $orderEntity, Context $context, $paymentId, $amount): array
     {
         $transaction = $orderEntity->getTransactions()->first();
+        $salesChanelId = $orderEntity->getSalesChannelId();
 
         $payload = $this->getTransactionOrderItems($orderEntity, $amount);
 
-        $chargeId = $this->easyApiService->chargePayment($paymentId, json_encode($payload));
+        $chargeId = $this->easyApiService->chargePayment($paymentId, json_encode($payload), $salesChanelId);
 
         $chargeIdArr = json_decode($chargeId);
-        $payment     = $this->easyApiService->getPayment($paymentId);
+        $payment     = $this->easyApiService->getPayment($paymentId, $salesChanelId);
 
         $allChargeAmount = $payment->getChargedAmount();
 
@@ -159,7 +160,8 @@ class CheckoutService
     public function refundPayment(OrderEntity $orderEntity, Context $context, $paymentId, $amount): array
     {
         $transaction = $orderEntity->getTransactions()->first();
-        $payment  = $this->easyApiService->getPayment($paymentId);
+        $salesChanelId = $orderEntity->getSalesChannelId();
+        $payment  = $this->easyApiService->getPayment($paymentId, $salesChanelId);
         $payload  = false;
 
         // Refund functionality
@@ -206,7 +208,7 @@ class CheckoutService
                 // refund method
                 $payload = $this->getTransactionOrderItems($orderEntity, $value);
 
-                $refundResult = $this->easyApiService->refundPayment($key, json_encode($payload));
+                $refundResult = $this->easyApiService->refundPayment($key, json_encode($payload), $salesChanelId);
 
                 // update table for amount available
                 if ($refundResult) {
@@ -236,7 +238,7 @@ class CheckoutService
         $allRefundAmount = $payment->getRefundedAmount();
 
         if ($refundResult) {
-            $payment = $this->easyApiService->getPayment($paymentId);
+            $payment = $this->easyApiService->getPayment($paymentId, $salesChanelId);
 
             if ($this->prepareAmount($amountToRefund) == $payment->getOrderAmount() || $allRefundAmount == $payment->getOrderAmount()) {
                 $this->transactionStateHandler->refund($transaction->getId(), $context);

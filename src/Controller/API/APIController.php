@@ -99,9 +99,10 @@ class APIController extends StorefrontController
     {
         $orderId     = $request->get('params')['transaction']['orderId'];
         $orderEntity = $this->orderDataReader->getOrderEntityById($context, $orderId);
+        $salesChanelId = $orderEntity->getSalesChannelId();
         $transaction = $orderEntity->getTransactions()->first();
         $paymentId   = $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
-        $payment     = $this->easyApiService->getPayment($paymentId);
+        $payment     = $this->easyApiService->getPayment($paymentId, $salesChanelId);
 
         $orderStatus                 = $orderEntity->getStateMachineState()->getTechnicalName();
         $refundPendingStatus         = false;
@@ -113,7 +114,7 @@ class APIController extends StorefrontController
             }
 
             if ($transaction->getStateMachineState()->getTechnicalName() == OrderStates::STATE_CANCELLED) {
-                $payment = $this->easyApiService->getPayment($paymentId);
+                $payment = $this->easyApiService->getPayment($paymentId, $salesChanelId);
 
                 if (empty($payment->getCancelledAmount())) {
                     $cancelBody = [
@@ -121,7 +122,7 @@ class APIController extends StorefrontController
                     ];
 
                     try {
-                        $this->easyApiService->voidPayment($paymentId, json_encode($cancelBody));
+                        $this->easyApiService->voidPayment($paymentId, json_encode($cancelBody), $salesChanelId);
                     } catch (\Exception $e) {
                     }
                 }
