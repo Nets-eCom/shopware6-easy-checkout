@@ -162,12 +162,12 @@ class CheckoutService
         $transaction = $orderEntity->getTransactions()->first();
         $salesChanelId = $orderEntity->getSalesChannelId();
         $payment  = $this->easyApiService->getPayment($paymentId, $salesChanelId);
-        $payload  = false;
+        $payload  = [];
 
         // Refund functionality
         $chargeArrWithAmountAvailable = [];
         $chargeIdArr                  = $payment->getAllCharges();
-        $refundResult                 = false;
+        $refundResult                 = null;
         foreach ($chargeIdArr as $row) {
             // select query based on charge to get amount available
             $criteria = new Criteria();
@@ -211,7 +211,7 @@ class CheckoutService
                 $refundResult = $this->easyApiService->refundPayment($key, json_encode($payload), $salesChanelId);
 
                 // update table for amount available
-                if ($refundResult) {
+                if ($refundResult !== null) {
                     // get amount available based on charge id
 
                     $criteria = new Criteria();
@@ -237,7 +237,7 @@ class CheckoutService
         // End of refund
         $allRefundAmount = $payment->getRefundedAmount();
 
-        if ($refundResult) {
+        if ($refundResult !== null) {
             $payment = $this->easyApiService->getPayment($paymentId, $salesChanelId);
 
             if ($this->prepareAmount($amountToRefund) == $payment->getOrderAmount() || $allRefundAmount == $payment->getOrderAmount()) {
