@@ -26,7 +26,8 @@ Mixin.register("nets-checkout-order", {
     canCapture(orderStateTechnicalName) {
       return (
         orderStateTechnicalName === PaymentStates.AUTHORIZED ||
-        orderStateTechnicalName === PaymentStates.PAID_PARTIALLY
+        orderStateTechnicalName === PaymentStates.PAID_PARTIALLY ||
+        orderStateTechnicalName === PaymentStates.REFUNDED_PARTIALLY
       );
     },
 
