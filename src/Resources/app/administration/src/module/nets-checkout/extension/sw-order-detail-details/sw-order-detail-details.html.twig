@@ -30,7 +30,7 @@
                 </div>
                 <sw-number-field
                     style="margin: 8px 0 4px 0" numberType="float" :step="null" :min="null" :max="null"
-                    v-model="amountAvailableForCapturing" :digits="2" :allowEmpty="false">
+                    v-model:value="amountAvailableForCapturing" :digits="2" :allowEmpty="false">
                 </sw-number-field>
                 <sw-button-process
                     @click="capture(getTransactionId(transaction), order)"
@@ -46,14 +46,13 @@
                 </div>
                 <sw-number-field
                     style="margin: 8px 0 4px 0" numberType="float" :step="null" :min="null" :max="null"
-                    v-model="amountAvailableForRefunding" :digits="2" :allowEmpty="false">
+                    v-model:value="amountAvailableForRefunding" :digits="2" :allowEmpty="false">
                 </sw-number-field>
                 <sw-button-process
                     @click="refund(getTransactionId(transaction), order)"
                     :isLoading="refundButtonLoading"
                     style="margin: 0 0 8px 0">
                     {{ $tc('nets-checkout.refund.buttonTitle') }}
-
                 </sw-button-process>
             </div>
         </div>

@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
-use Rector\Core\ValueObject\PhpVersion;
 use Rector\Set\ValueObject\SetList;
+use Rector\ValueObject\PhpVersion;
 
 return static function (RectorConfig $rectorConfig): void {
-    $rectorConfig->phpVersion(PhpVersion::PHP_74);
+
+    $rectorConfig->phpVersion(PhpVersion::PHP_83);
     $rectorConfig->paths([
         __DIR__ . '/src',
     ]);

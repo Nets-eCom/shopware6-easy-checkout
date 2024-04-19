@@ -29,14 +29,10 @@ class EasyApiExceptionHandler
     }
 
     /**
-     * @param \Nets\Checkout\Service\Easy\Api\Exception\EasyApiException $e
-     *
      * @throws \Exception
      */
-    public function handle(EasyApiException $e, array $add = null): string
+    public function handle(EasyApiException $e): string
     {
-        $prefixMessage = 'Exception call to Easy Api. ' . PHP_EOL;
-        $stackTrace    = 'Stack trace: ' . PHP_EOL . $e->getTraceAsString();
         $message       = 'Response code:  ' . $e->getCode() . PHP_EOL . 'Message: ';
 
         switch ($e->getCode()) {
@@ -74,10 +70,8 @@ class EasyApiExceptionHandler
 
     /**
      * Parse json error message and fetch error message readable for users
-     *
-     * @param string $msgJson
      */
-    public function parseError($msgJson)
+    public function parseError(string $msgJson): string
     {
         $msgArr   = json_decode($msgJson, true);
         $errorStr = '';

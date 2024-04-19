@@ -1,6 +1,5 @@
 const { Module } = Shopware;
 
-import './extension/sw-order';
 import './extension/sw-order-detail-details';
 
 import deDE from './snippet/de-DE.json';

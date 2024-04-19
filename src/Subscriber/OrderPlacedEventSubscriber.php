@@ -3,6 +3,7 @@
 namespace Nets\Checkout\Subscriber;
 
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
+use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Shopware\Core\Checkout\Cart\Event\CheckoutOrderPlacedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -26,6 +27,9 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @throws EasyApiException
+     */
     public function orderPlaced(CheckoutOrderPlacedEvent $event): void
     {
         $paymentId = null;

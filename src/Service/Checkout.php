@@ -21,11 +21,14 @@ class Checkout implements AsynchronousPaymentHandlerInterface
         $this->payFinalizeFacade = $payFinalizeFacade;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): RedirectResponse
     {
             $paymentUrl = $this->payFinalizeFacade->pay($transaction, $dataBag, $salesChannelContext);
 
-            return new RedirectResponse((string) $paymentUrl);
+            return new RedirectResponse($paymentUrl);
     }
 
     public function finalize(AsyncPaymentTransactionStruct $transaction, Request $request, SalesChannelContext $salesChannelContext): void
