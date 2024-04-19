@@ -12,8 +12,7 @@ use Nets\Checkout\Service\Easy\CheckoutService;
 use Nets\Checkout\Service\Easy\LanguageProvider;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
-use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentFinalizeException;
-use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentProcessException;
+use Shopware\Core\Checkout\Payment\PaymentException;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -91,7 +90,7 @@ class AsyncPaymentFinalizePay
             ], $context);
 
             if (empty($payment->getReservedAmount()) && empty($payment->getChargedAmount())) {
-                throw new AsyncPaymentFinalizeException($transactionId, 'Customer canceled the payment on the Easy payment page');
+                throw PaymentException::asyncFinalizeInterrupted($transactionId, 'Customer canceled the payment on the Easy payment page');
             }
 
             $this->transactionStateHandler->authorize(
@@ -132,13 +131,12 @@ class AsyncPaymentFinalizePay
             }
         } catch (EasyApiException $ex) {
             $this->easyApiExceptionHandler->handle($ex);
-
-            throw new AsyncPaymentFinalizeException($transactionId, 'Exception during transaction completion');
+            throw PaymentException::asyncFinalizeInterrupted($transactionId, 'Exception during transaction completion');
         }
     }
 
     /**
-     * @throws AsyncPaymentProcessException|\Exception
+     * @throws PaymentException|\Exception
      */
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): string
     {
@@ -158,8 +156,7 @@ class AsyncPaymentFinalizePay
             $this->requestStack->getCurrentRequest()->getSession()->set('nets_paymentId', $PaymentCreateResult['paymentId']);
         } catch (EasyApiException $ex) {
             $this->easyApiExceptionHandler->handle($ex);
-
-            throw new AsyncPaymentProcessException($transaction->getOrderTransaction()->getId(), $ex->getMessage());
+            throw PaymentException::asyncProcessInterrupted($transaction->getOrderTransaction()->getId(), $ex->getMessage());
         }
 
         $language = $this->languageProvider->getLanguage($salesChannelContext->getContext());

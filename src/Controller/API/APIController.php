@@ -17,7 +17,6 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\Kernel;
@@ -28,12 +27,9 @@ use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @RouteScope(scopes={"api"})
- * @Route(defaults={"_routeScope"={"api"}})
- */
+#[Route(defaults: ['_routeScope' => ['api']])]
 class APIController extends StorefrontController
 {
     private CheckoutService $checkout;
@@ -59,9 +55,7 @@ class APIController extends StorefrontController
         $this->orderDataReader      = $orderDataReader;
     }
 
-    /**
-     * @Route("/api/nets/transaction/charge", name="nets.charge.payment.action", options={"seo": "false"}, methods={"POST"})
-     */
+    #[Route(path: '/api/nets/transaction/charge', name: 'nets.charge.payment.action', options: ['seo' => 'false'], methods: ['POST'])]
     public function chargePayment(Context $context, Request $request): JsonResponse
     {
         $orderId = $request->get('params')['orderId'];
@@ -91,10 +85,9 @@ class APIController extends StorefrontController
     }
 
     /**
-     * @Route("/api/nets/transaction/summary", name="nets.summary.payment.action", options={"seo": "false"}, methods={"POST"})
-     *
      * @throws EasyApiException
      */
+    #[Route(path: '/api/nets/transaction/summary', name: 'nets.summary.payment.action', options: ['seo' => 'false'], methods: ['POST'])]
     public function getSummaryAmounts(Context $context, Request $request): JsonResponse
     {
         $orderId     = $request->get('params')['transaction']['orderId'];
@@ -145,7 +138,7 @@ class APIController extends StorefrontController
                     if (empty($chargeId)) {
                         $this->netsApiRepository->create([
                             [
-                                'order_id'         => $orderId ? $orderId : '',
+                                'order_id'         => $orderId ?: '',
                                 'charge_id'        => $key->chargeId,
                                 'operation_type'   => 'capture',
                                 'operation_amount' => $key->amount / 100,
@@ -289,10 +282,9 @@ class APIController extends StorefrontController
     }
 
     /**
-     * @Route("/api/nets/transaction/refund", name="nets.refund.payment.action", options={"seo": "false"}, methods={"POST"})
-     *
      * @throws \Exception
      */
+    #[Route(path: '/api/nets/transaction/refund', name: 'nets.refund.payment.action', options: ['seo' => 'false'], methods: ['POST'])]
     public function refundPayment(Context $context, Request $request): JsonResponse
     {
         $orderId        = $request->get('params')['orderId'];
@@ -322,9 +314,9 @@ class APIController extends StorefrontController
     }
 
     /**
-     * @Route("/api/nets/test/verify", name="nets.api.test.controller", options={"seo": "false"}, methods={"POST"})
      * @throws EasyApiException|\Exception
      */
+    #[Route(path: '/api/nets/test/verify', name: 'nets.api.test.controller', options: ['seo' => 'false'], methods: ['POST'])]
     public function check(Context $context, Request $request, RequestDataBag $dataBag): JsonResponse
     {
         $environment = $dataBag->get('NetsCheckout.config.enviromnent');

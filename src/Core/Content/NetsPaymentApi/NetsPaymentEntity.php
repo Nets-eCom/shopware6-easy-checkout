@@ -11,30 +11,15 @@ class NetsPaymentEntity extends Entity
 {
     use EntityIdTrait;
 
-    /**
-     * @var null|string
-     */
-    protected $order_id;
+    protected ?string $order_id;
 
-    /**
-     * @var null|string
-     */
-    protected $charge_id;
+    protected ?string $charge_id;
 
-    /**
-     * @var string
-     */
-    protected $operation_type;
+    protected string $operation_type;
 
-    /**
-     * @var null|float
-     */
-    protected $operation_amount;
+    protected ?float $operation_amount;
 
-    /**
-     * @var null|float
-     */
-    protected $amount_available;
+    protected ?float $amount_available;
 
     public function getOrderId(): ?string
     {
