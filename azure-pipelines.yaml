@@ -46,7 +46,7 @@ stages:
       and(
         succeeded(),
         or(
-          in(variables['Build.SourceBranch'], 'refs/heads/main'),
+          in(variables['Build.SourceBranch'], 'refs/heads/main-6.5'),
           and(${{ parameters.ShouldBuildReleasePackage }}, eq(variables['Build.Reason'], 'Manual'))
         )
       )
@@ -99,7 +99,7 @@ stages:
       and(
         succeeded(),
         or(
-          in(variables['Build.SourceBranch'], 'refs/heads/development'),
+          in(variables['Build.SourceBranch'], 'refs/heads/develop-6.5'),
           and(${{ parameters.ShouldDeployApplication }}, eq(variables['Build.Reason'], 'Manual'))
         )
       )
