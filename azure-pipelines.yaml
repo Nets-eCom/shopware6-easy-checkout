@@ -67,6 +67,7 @@ stages:
               version: '20.11'
             displayName: 'Install Node.js 20'
           - script: |
+              sed -i "s/{{ version }}/~6.6.1/g" .shopware-extension.yml
               shopware-cli extension zip --disable-git . --release
               mv $(extensionName).zip $(publishDir)/$(extensionName).zip
             displayName: 'Build extension 6.6'
