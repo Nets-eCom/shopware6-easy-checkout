@@ -64,36 +64,20 @@ stages:
             displayName: 'Create publish dir'
           - task: UseNode@1
             inputs:
-              version: '16.x'
-            displayName: 'Install Node.js 16'
+              version: '20.11'
+            displayName: 'Install Node.js 20'
           - script: |
-              sed -i "s/{{ version }}/~6.4.5/g" .shopware-extension.yml
-              jq '.require."shopware/core" = "~6.4.0"' composer.json > composer.tmp && mv composer.tmp composer.json
-              jq '.version = .version + "64"' composer.json > composer.tmp && mv composer.tmp composer.json
-              shopware-cli extension zip --disable-git . --release
-              mv $(extensionName).zip $(publishDir)/$(extensionName)-64.zip
-            displayName: 'Build extension 6.4'
-          - script: |
-              shopware-cli extension validate $(publishDir)/$(extensionName)-64.zip
-            displayName: 'Validate extension 6.4'
-          - task: UseNode@1
-            inputs:
-              version: '18.18'
-            displayName: 'Install Node.js 18'
-          - script: |
-              sed -i "s/~6.4.5/~6.5.0/g" .shopware-extension.yml
-              jq '.version = .version[:-2]' composer.json > composer.tmp && mv composer.tmp composer.json
-              jq '.require."shopware/core" = "~6.5.0"' composer.json > composer.tmp && mv composer.tmp composer.json
+              sed -i "s/{{ version }}/~6.6.1/g" .shopware-extension.yml
               shopware-cli extension zip --disable-git . --release
               mv $(extensionName).zip $(publishDir)/$(extensionName).zip
-            displayName: 'Build extension 6.5'
+            displayName: 'Build extension 6.6'
           - script: |
               shopware-cli extension validate $(publishDir)/$(extensionName).zip
-            displayName: 'Validate extension 6.5'
+            displayName: 'Validate extension 6.6'
           - publish: $(publishDir)
             artifact: $(extensionName)
           
-  - stage: Deploy_Development # This stage success will trigger deployment of CD-Services-Magento2
+  - stage: Deploy_Development # This stage success will trigger deployment of CD-Services-Shopware6
     displayName: Deploy_Development
     condition: |
       and(
@@ -107,4 +91,4 @@ stages:
       - job: Trigger_Deploy_Development
         steps:
           - checkout: none
-          - bash: echo "CD-Services-Magento2 runs after this completes"
+          - bash: echo "CD-Services-Shopware6 runs after this completes"

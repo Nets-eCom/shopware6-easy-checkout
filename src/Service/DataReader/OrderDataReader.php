@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Nets\Checkout\Service\DataReader;
 
-use Shopware\Core\Checkout\Order\OrderException;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -19,12 +18,7 @@ class OrderDataReader
         $this->orderRepository = $orderRepository;
     }
 
-    /**
-     * @param string $orderId
-     *
-     * @return null|mixed
-     */
-    public function getOrderEntityById(Context $context, $orderId)
+    public function getOrderEntityById(Context $context, string $orderId): mixed
     {
         $criteria = new Criteria([
             $orderId,
@@ -37,6 +31,7 @@ class OrderDataReader
             ->addAssociation('transactions.paymentMethod')
             ->addAssociation('currency')
             ->addAssociation('addresses.country')
+            ->addAssociation('stateMachineState')
             ->addAssociation('transactions.stateMachineState');
 
         return $this->orderRepository->search($criteria, $context)->first();
