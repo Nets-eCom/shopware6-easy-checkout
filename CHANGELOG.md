@@ -5,12 +5,19 @@
 |------|----------
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
-|Shop Version | `6.4+`
-|Version | `1.4.3`
-|Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
+|Shop Version | `6.6+`
+|Version | `1.5.0`
+|Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.5.0 - Released 2024-04-25
+
+* Update: Handle sales channel context
+* Update: Add support for version 6.6.1
+* Fixed: Allow order refund partially
+* Fixed: Update initial types
 
 ### Version 1.4.3 - Released 2024-04-10
 

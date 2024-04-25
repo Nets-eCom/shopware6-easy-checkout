@@ -5,13 +5,13 @@
 |------|----------
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
-|Shop Version | `6.4.x`, `6.5.x`
-|Version | `1.4.3`
-|Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
+|Shop Version | `6.6.x`
+|Version | `1.5.0`
+|Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 
-### Note: This version 1.4.3 of Nets Easy Module is supported for shopware 6.4+ version, if you want to get this module installed for other shopware version i.e. 6.3 or lower, please go for Nets Checkout Module released version 1.1.4
+### Note: This version 1.5.0 of Nets Easy Module is supported for shopware 6.6+ version, if you want to get this module installed for other shopware version i.e. 6.5, 6.4 or lower, please go for Nets Checkout Module released version 1.4.x
 
 
 ## INSTALLATION
@@ -19,7 +19,7 @@
 ### Download / Installation
 * Method 1
 1. Unzip and upload the plugin file manually to root /custom/plugins OR Upload the zipped plugin file "shopware6-easy-checkout-master.zip" in admin > Settings > Plugins using the 'Upload plugin' function.
-2. Clear your cache and update your indexes after a succesful installation in admin > Settings > Caches & Indexes.
+2. Clear your cache and update your indexes after a successful installation in admin > Settings > Caches & Indexes.
 
 * Method 2
 1. Connect with a SSH client and navigate to root directory of your Shopware 6 installation and run commands :
@@ -36,7 +36,7 @@ bin/console cache:clear
 2. Payment Environment. Select between Test/Live transactions. Live mode requires an approved account. Testcard information can be found here: https://tech.dibspayment.com/easy/test-information
 3. Checkout Flow. Redirect / Embedded. Select between 2 checkout types. Redirect - Nets Hosted loads a new payment page. Embedded checkout inserts the payment window directly on the checkout page.
 4. Enable auto-capture. This function allows you to instantly charge a payment straight after the order is placed.
-   NOTE. Capturing a payment before shipment of the order might be lia ble to restrictions based upon legislations set in your country. Misuse can result in your Easy account bei ng forfeit.
+   NOTE. Capturing a payment before shipment of the order might be lia ble to restrictions based upon legislation's set in your country. Misuse can result in your Easy account bei ng forfeit.
 
 ### Operations
 * Cancel / Capture / Refund
@@ -48,7 +48,7 @@ bin/console cache:clear
 * Nets payment plugin is not visible as a payment method
 - Ensure the Nets plugin is available in the right Sales Channel in the plugin configuration.
 - Under Sales Channel section select your Shop Name for General Settings. Add plugin in Payment methods.
-- Temporarily switch to Shopware 6 standard template. Custom templates might need addtional changes to ensure correct display. Consult with your webdesigner / developer.
+- Temporarily switch to Shopware 6 standard template. Custom templates might need additional changes to ensure correct display. Consult with your web designer / developer.
 
 * Nets payment window is blank
 - Ensure your keys in Nets plugin Settings are correct and with no additional blank spaces.
