@@ -23,12 +23,9 @@ class Client
     }
 
     /**
-     * @param string $url
-     * @param array  $data
-     *
      * @throws EasyApiException
      */
-    public function post($url, $data = [])
+    public function post(string $url, string|array $data = []): ResponseInterface
     {
         try {
             $params = ['headers' => $this->headers,
@@ -42,11 +39,7 @@ class Client
         }
     }
 
-    /**
-     * @param string $key
-     * @param string $value
-     */
-    public function setHeader($key, $value): void
+    public function setHeader(string $key, string $value): void
     {
         $this->headers[$key] = $value;
     }
@@ -62,12 +55,9 @@ class Client
     }
 
     /**
-     * @param string $url
-     * @param array  $data
-     *
      * @throws EasyApiException
      */
-    public function get($url, $data = []): ResponseInterface
+    public function get(string $url): ResponseInterface
     {
         try {
             $params = ['headers' => $this->headers];
@@ -78,7 +68,10 @@ class Client
         }
     }
 
-    public function put($url, $data = [], $payload = false)
+    /**
+     * @throws EasyApiException
+     */
+    public function put($url, $data = []): ResponseInterface
     {
         try {
             $params = ['headers' => $this->headers,

@@ -56,15 +56,21 @@ class EasyApiService
         return new Payment($this->handleResponse($this->client->get($url)));
     }
 
-    public function updateReference(string $paymentId, string $data, ?string $salesChannelId = null)
+    /**
+     * @throws EasyApiException
+     */
+    public function updateReference(string $paymentId, string $data, ?string $salesChannelId = null): ?string
     {
         $this->setAuthorizationHeader(null, $salesChannelId);
         $url = $this->getUpdateReferenceUrl($paymentId, $salesChannelId);
 
-        return $this->handleResponse($this->client->put($url, $data, true));
+        return $this->handleResponse($this->client->put($url, $data));
     }
 
-    public function chargePayment(string $paymentId, string $data, ?string $salesChannelId = null)
+    /**
+     * @throws EasyApiException
+     */
+    public function chargePayment(string $paymentId, string $data, ?string $salesChannelId = null): ?string
     {
         $this->setAuthorizationHeader(null, $salesChannelId);
         $url = $this->getChargePaymentUrl($paymentId, $salesChannelId);
@@ -72,7 +78,10 @@ class EasyApiService
         return $this->handleResponse($this->client->post($url, $data));
     }
 
-    public function refundPayment(string $chargeId, string $data, ?string $salesChannelId = null)
+    /**
+     * @throws EasyApiException
+     */
+    public function refundPayment(string $chargeId, string $data, ?string $salesChannelId = null): ?string
     {
         $this->setAuthorizationHeader(null, $salesChannelId);
         $url = $this->getRefundPaymentUrl($chargeId, $salesChannelId);
@@ -80,6 +89,9 @@ class EasyApiService
         return $this->handleResponse($this->client->post($url, $data));
     }
 
+    /**
+     * @throws EasyApiException
+     */
     public function voidPayment(string $paymentId, string $data = null, ?string $salesChannelId = null): void
     {
         $this->setAuthorizationHeader(null, $salesChannelId);
@@ -89,7 +101,7 @@ class EasyApiService
 
     /**
      * @throws EasyApiException
-     * @todo call termiante after verify
+     * @todo call terminate after verify
      */
     public function verifyConnection(string $env, string $secretKey, string $data): bool
     {

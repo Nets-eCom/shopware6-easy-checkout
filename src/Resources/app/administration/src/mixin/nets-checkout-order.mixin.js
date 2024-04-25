@@ -26,7 +26,8 @@ Mixin.register("nets-checkout-order", {
     canCapture(orderStateTechnicalName) {
       return (
         orderStateTechnicalName === PaymentStates.AUTHORIZED ||
-        orderStateTechnicalName === PaymentStates.PAID_PARTIALLY
+        orderStateTechnicalName === PaymentStates.PAID_PARTIALLY ||
+        orderStateTechnicalName === PaymentStates.REFUNDED_PARTIALLY
       );
     },
 
@@ -34,7 +35,6 @@ Mixin.register("nets-checkout-order", {
       let me;
       me = this;
       me.isLoading = true;
-
       if (this.getTransactionId(order.transactions.first())) {
         this.NetsCheckoutApiPaymentService.getSummaryAmounts(order)
           .then((response) => {
@@ -94,10 +94,8 @@ Mixin.register("nets-checkout-order", {
     refund(paymentId, order) {
       let me = this;
       me.isLoading = true;
-
       const orderId = order.id;
       const amount = this.amountAvailableForRefunding;
-
       this.NetsCheckoutApiPaymentService.refundTransaction(orderId, paymentId, amount)
         .then(() => {
           this.createNotificationSuccess({

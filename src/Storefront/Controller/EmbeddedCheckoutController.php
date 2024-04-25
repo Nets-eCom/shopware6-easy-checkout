@@ -16,9 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route(defaults={"_routeScope"={"storefront"}})
- */
+#[Route(defaults: ['_routeScope' => ['storefront']])]
 class EmbeddedCheckoutController extends StorefrontController
 {
     private AbstractCartOrderRoute $cartOrderRoute;
@@ -35,14 +33,7 @@ class EmbeddedCheckoutController extends StorefrontController
         $this->handlePaymentMethodRoute = $handlePaymentMethodRoute;
     }
 
-    /**
-     * @Route(
-     *     "/nets/handle-payment",
-     *     name="frontend.nets.handle_payment",
-     *     methods={"POST"},
-     *     defaults={"XmlHttpRequest"=true, "csrf_protected"=false}
-     * )
-     */
+    #[Route(path: '/nets/handle-payment', name: 'frontend.nets.handle_payment', defaults: ['XmlHttpRequest' => true, 'csrf_protected' => false], methods: ['POST'])]
     public function handle(Request $request, RequestDataBag $data, SalesChannelContext $salesChannelContext): Response
     {
         try {
