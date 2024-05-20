@@ -18,7 +18,6 @@
             <argument type="service" id="order.repository"/>
             <argument type="service" id="nets_payment_operations.repository" />
             <argument type="service" id="Nets\Checkout\Service\Easy\LanguageProvider" />
-            <argument type="service" id="request_stack" />
         </service>
 
         <service id="Nets\Checkout\Controller\API\APIController" public="true">
@@ -38,6 +37,7 @@
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <argument type="service" id="Shopware\Core\Checkout\Payment\SalesChannel\HandlePaymentMethodRoute" />
+            <argument type="service" id="order_transaction.repository"/>
 
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -94,6 +94,13 @@
             <argument type="service" id="request_stack"/>
             <argument type="service" id="Nets\Checkout\Service\Easy\LanguageProvider" />
             <argument type="service" id="router"/>
+            <argument type="service" id="Nets\Checkout\Service\Easy\Api\EasyApiService"/>
+            <tag name="kernel.event_subscriber" />
+        </service>
+
+        <service id="Nets\Checkout\Subscriber\RedirectToConfirmationPageSubscriber" public="true">
+            <argument type="service" id="router"/>
+            <argument type="service" id="translator"/>
             <tag name="kernel.event_subscriber" />
         </service>
 
