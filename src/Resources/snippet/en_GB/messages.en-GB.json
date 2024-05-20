@@ -2,6 +2,9 @@
   "nexi-nets": {
     "finishPage": {
       "reference": "Nets reference ID:"
+    },
+    "exception" : {
+      "cartUpdated": "The shopping cart was updated. Redirected to the confirmation page."
     }
   }
 }

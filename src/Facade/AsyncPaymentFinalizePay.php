@@ -13,11 +13,11 @@ use Nets\Checkout\Service\Easy\LanguageProvider;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\PaymentException;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 class AsyncPaymentFinalizePay
 {
@@ -39,8 +39,6 @@ class AsyncPaymentFinalizePay
 
     private LanguageProvider $languageProvider;
 
-    private RequestStack $requestStack;
-
     public function __construct(
         CheckoutService $checkout,
         EasyApiExceptionHandler $easyApiExceptionHandler,
@@ -51,7 +49,6 @@ class AsyncPaymentFinalizePay
         EntityRepository $orderRepository,
         EntityRepository $netsApiRepository,
         LanguageProvider $languageProvider,
-        RequestStack $requestStack
     ) {
         $this->checkout = $checkout;
         $this->easyApiExceptionHandler = $easyApiExceptionHandler;
@@ -62,60 +59,50 @@ class AsyncPaymentFinalizePay
         $this->orderRepository = $orderRepository;
         $this->netsApiRepository = $netsApiRepository;
         $this->languageProvider = $languageProvider;
-        $this->requestStack = $requestStack;
     }
 
     public function finalize(AsyncPaymentTransactionStruct $transaction, Request $request, SalesChannelContext $salesChannelContext): void
     {
         $transactionId = $transaction->getOrderTransaction()->getId();
+        $context = $salesChannelContext->getContext();
+
+        $netsTransactionId = $transaction
+            ->getOrderTransaction()
+            ->getCustomFieldsValue('nets_easy_payment_details')['transaction_id'];
 
         try {
-            $paymentId = $this->extractPaymentId();
-
-            // it is incorrect check for captured amount
-            $payment = $this->easyApiService->getPayment($paymentId);
-            $transactionId = $transaction->getOrderTransaction()->getId();
+            $payment = $this->easyApiService->getPayment($netsTransactionId);
             $orderId = $transaction->getOrder()->getId();
-            $context = $salesChannelContext->getContext();
             $salesChannelId = $salesChannelContext->getSalesChannelId();
             $chargeNow = $this->configService->getChargeNow($salesChannelId);
 
-            $this->orderRepository->update([
+            $this->orderRepository->update(
                 [
-                    'id' => $orderId,
-                    'customFields' => [
-                        'paymentId' => $paymentId,
+                    [
+                        'id' => $orderId,
+                        'customFields' => [
+                            'paymentId' => $netsTransactionId,
+                        ],
                     ],
                 ],
-            ], $context);
+                $context
+            );
 
             if (empty($payment->getReservedAmount()) && empty($payment->getChargedAmount())) {
                 throw PaymentException::asyncFinalizeInterrupted($transactionId, 'Customer canceled the payment on the Easy payment page');
             }
 
             $this->transactionStateHandler->authorize(
-                $transaction->getOrderTransaction()->getId(),
+                $transactionId,
                 $context
             );
 
             if ($chargeNow == 'yes') {
                 $this->transactionStateHandler->paid(
-                    $transaction->getOrderTransaction()->getId(),
+                    $transactionId,
                     $context
                 );
             }
-            
-            $this->orderTransactionRepo->update([
-                [
-                    'id' => $transactionId,
-                    'customFields' => [
-                        'nets_easy_payment_details' => [
-                            'transaction_id' => $paymentId,
-                            'can_capture' => true,
-                        ],
-                    ],
-                ],
-            ], $context);
 
             // For inserting amount available respect to charge id
             if ($this->configService->getChargeNow($salesChannelId) == 'yes' || $payment->getPaymentType() == 'A2A') {
@@ -141,39 +128,63 @@ class AsyncPaymentFinalizePay
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): string
     {
         $checkoutType = $this->configService->getCheckoutType($salesChannelContext->getSalesChannelId());
+        $context = $salesChannelContext->getContext();
+        $transactionId = $transaction->getOrderTransaction()->getId();
 
         if (CheckoutService::CHECKOUT_TYPE_EMBEDDED === $checkoutType) {
-            $paymentId = $this->extractPaymentId();
+            $paymentId = $dataBag->getString('paymentId') ?: $dataBag->getString('paymentid');
 
-            // for embedded customer already paid in CheckoutConfirmPageSubscriber and js code
-            // redirect user to finalize
-            return $transaction->getReturnUrl() . '&paymentId=' . $paymentId;
+            if ($paymentId === '') {
+                throw PaymentException::asyncProcessInterrupted($transactionId, 'Missing payment id');
+            }
+
+            $netsTransactionId = $transaction
+                ->getOrderTransaction()
+                ->getCustomFieldsValue('nets_easy_payment_details')['transaction_id'];
+
+            if ($netsTransactionId !== $paymentId) {
+                throw PaymentException::asyncProcessInterrupted($transactionId, 'Mismatched transaction');
+            }
+
+            // EmbeddedCheckoutController::handle creates order, and commits transaction
+            return $transaction->getReturnUrl();
         }
 
         try {
-            $result = $this->checkout->createPayment($salesChannelContext, CheckoutService::CHECKOUT_TYPE_HOSTED, $transaction);
-            $PaymentCreateResult = json_decode($result, true);
-            $this->requestStack->getCurrentRequest()->getSession()->set('nets_paymentId', $PaymentCreateResult['paymentId']);
+            $result = $this->checkout->createPayment(
+                $salesChannelContext,
+                CheckoutService::CHECKOUT_TYPE_HOSTED,
+                $transaction
+            );
+
+            $payment = json_decode($result, true);
+            $this->orderTransactionRepo->update(
+                [
+                    [
+                        'id' => $transactionId,
+                        'customFields' => [
+                            'nets_easy_payment_details' => [
+                                'transaction_id' => $payment['paymentId'],
+                            ]
+                        ]
+                    ]
+                ],
+                $context
+            );
         } catch (EasyApiException $ex) {
             $this->easyApiExceptionHandler->handle($ex);
-            throw PaymentException::asyncProcessInterrupted($transaction->getOrderTransaction()->getId(), $ex->getMessage());
+            throw PaymentException::asyncProcessInterrupted($transactionId, $ex->getMessage());
         }
 
-        $language = $this->languageProvider->getLanguage($salesChannelContext->getContext());
-
-        return $PaymentCreateResult['hostedPaymentPageUrl'] . '&language=' . $language;
+        return $this->createUrl($payment['hostedPaymentPageUrl'], $context);
     }
 
-    private function extractPaymentId(): ?string
+    private function createUrl(string $url, Context $context): string
     {
-        if (!empty($this->requestStack->getCurrentRequest()->get('paymentId'))) {
-            return $this->requestStack->getCurrentRequest()->get('paymentId');
-        }
-
-        if (!empty($this->requestStack->getCurrentRequest()->get('paymentid'))) {
-            return $this->requestStack->getCurrentRequest()->get('paymentid');
-        }
-
-        return null;
+        return sprintf(
+            "%s&language=%s",
+            $url,
+            $this->languageProvider->getLanguage($context)
+        );
     }
 }
