@@ -48,7 +48,7 @@ class AsyncPaymentFinalizePay
         ConfigService $configService,
         EntityRepository $orderRepository,
         EntityRepository $netsApiRepository,
-        LanguageProvider $languageProvider,
+        LanguageProvider $languageProvider
     ) {
         $this->checkout = $checkout;
         $this->easyApiExceptionHandler = $easyApiExceptionHandler;
