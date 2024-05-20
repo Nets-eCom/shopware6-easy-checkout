@@ -6,11 +6,16 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.6+`
-|Version | `1.5.0`
+|Version | `1.5.1`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.5.1 - Released 2024-05-20
+
+Update: support Klarna in with embedded flow
+Fix: add missing sales channel argument
 
 ### Version 1.5.0 - Released 2024-04-25
 
