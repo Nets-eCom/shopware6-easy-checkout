@@ -29,7 +29,7 @@ class ConfigService
             $env = 'liveSecretKey';
         }
 
-        return $this->systemConfigService->get(self::CONFIG_PREFIX . $env);
+        return $this->systemConfigService->get(self::CONFIG_PREFIX . $env, $salesChannelId);
     }
 
     public function getCheckoutKey(?string $salesChannelId = null): ?string
