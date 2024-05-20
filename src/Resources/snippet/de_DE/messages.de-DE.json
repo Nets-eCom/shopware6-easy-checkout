@@ -2,6 +2,9 @@
   "nexi-nets": {
     "finishPage": {
       "reference": "Nets referenz ID:"
+    },
+    "exception" : {
+      "cartUpdated": "Der Warenkorb wurde aktualisiert. Weiterleitung zur Bestätigungsseite."
     }
   }
 }

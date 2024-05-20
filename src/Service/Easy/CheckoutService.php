@@ -300,7 +300,7 @@ class CheckoutService
         }
 
         if ($checkoutType == self::CHECKOUT_TYPE_EMBEDDED) {
-            $data['checkout']['url'] = $this->router->generate('frontend.checkout.finish.order', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $data['checkout']['url'] = $this->router->generate('frontend.checkout.confirm.page', [], UrlGeneratorInterface::ABSOLUTE_URL);
         }
 
         $data['checkout']['consumer'] = [
