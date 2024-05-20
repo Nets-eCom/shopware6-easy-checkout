@@ -6,11 +6,16 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4.x`, `6.5.x`
-|Version | `1.4.4`
+|Version | `1.4.5`
 |Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.4.5 - Released 2024-05-20
+
+* update: support Klarna in with embedded flow
+* fix: add missing sales channel argument
 
 ### Version 1.4.4 - Released 2024-04-24
 
