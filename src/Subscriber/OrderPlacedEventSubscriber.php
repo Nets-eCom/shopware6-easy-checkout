@@ -60,7 +60,8 @@ class OrderPlacedEventSubscriber implements EventSubscriberInterface
                 json_encode([
                     'reference' => $order->getOrderNumber(),
                     'checkoutUrl' => $payment->getCheckoutUrl(),
-                ])
+                ]),
+                $salesChannelId
             );
         }
     }
