@@ -114,7 +114,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
         SalesChannelContext $salesChannelContext,
         Cart $cart
     ): string {
-        $paymentId = $request->query->getString('paymentId');
+        $paymentId = $request->query->getAlnum('paymentId');
 
         if ($this->isPaymentValid($cart, $paymentId, $salesChannelContext->getSalesChannelId())) {
             return $paymentId;
