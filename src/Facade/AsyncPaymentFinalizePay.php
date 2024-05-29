@@ -12,7 +12,8 @@ use Nets\Checkout\Service\Easy\CheckoutService;
 use Nets\Checkout\Service\Easy\LanguageProvider;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
-use Shopware\Core\Checkout\Payment\PaymentException;
+use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentFinalizeException;
+use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentProcessException;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
@@ -65,15 +66,13 @@ class AsyncPaymentFinalizePay
     {
         $transactionId = $transaction->getOrderTransaction()->getId();
         $context = $salesChannelContext->getContext();
+        $salesChannelId = $salesChannelContext->getSalesChannelId();
 
-        $netsTransactionId = $transaction
-            ->getOrderTransaction()
-            ->getCustomFieldsValue('nets_easy_payment_details')['transaction_id'];
+        $netsTransactionId = $this->getNetsPaymentId($transaction);
 
         try {
-            $payment = $this->easyApiService->getPayment($netsTransactionId);
+            $payment = $this->easyApiService->getPayment($netsTransactionId, $salesChannelId);
             $orderId = $transaction->getOrder()->getId();
-            $salesChannelId = $salesChannelContext->getSalesChannelId();
             $chargeNow = $this->configService->getChargeNow($salesChannelId);
 
             $this->orderRepository->update(
@@ -89,7 +88,7 @@ class AsyncPaymentFinalizePay
             );
 
             if (empty($payment->getReservedAmount()) && empty($payment->getChargedAmount())) {
-                throw PaymentException::asyncFinalizeInterrupted($transactionId, 'Customer canceled the payment on the Easy payment page');
+                throw new AsyncPaymentFinalizeException($transactionId, 'Customer canceled the payment on the Easy payment page');
             }
 
             $this->transactionStateHandler->authorize(
@@ -118,12 +117,12 @@ class AsyncPaymentFinalizePay
             }
         } catch (EasyApiException $ex) {
             $this->easyApiExceptionHandler->handle($ex);
-            throw PaymentException::asyncFinalizeInterrupted($transactionId, 'Exception during transaction completion');
+            throw new AsyncPaymentFinalizeException($transactionId, 'Exception during transaction completion');
         }
     }
 
     /**
-     * @throws PaymentException|\Exception
+     * @throws AsyncPaymentProcessException|\Exception
      */
     public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): string
     {
@@ -132,18 +131,14 @@ class AsyncPaymentFinalizePay
         $transactionId = $transaction->getOrderTransaction()->getId();
 
         if (CheckoutService::CHECKOUT_TYPE_EMBEDDED === $checkoutType) {
-            $paymentId = $dataBag->getString('paymentId') ?: $dataBag->getString('paymentid');
+            $paymentId = $dataBag->getAlnum('paymentId') ?: $dataBag->getAlnum('paymentid');
 
             if ($paymentId === '') {
-                throw PaymentException::asyncProcessInterrupted($transactionId, 'Missing payment id');
+                throw new AsyncPaymentProcessException($transactionId, 'Missing payment id');
             }
 
-            $netsTransactionId = $transaction
-                ->getOrderTransaction()
-                ->getCustomFieldsValue('nets_easy_payment_details')['transaction_id'];
-
-            if ($netsTransactionId !== $paymentId) {
-                throw PaymentException::asyncProcessInterrupted($transactionId, 'Mismatched transaction');
+            if ($this->getNetsPaymentId($transaction) !== $paymentId) {
+                throw new AsyncPaymentProcessException($transactionId, 'Mismatched transaction');
             }
 
             // EmbeddedCheckoutController::handle creates order, and commits transaction
@@ -173,7 +168,7 @@ class AsyncPaymentFinalizePay
             );
         } catch (EasyApiException $ex) {
             $this->easyApiExceptionHandler->handle($ex);
-            throw PaymentException::asyncProcessInterrupted($transactionId, $ex->getMessage());
+            throw new AsyncPaymentProcessException($transactionId, $ex->getMessage());
         }
 
         return $this->createUrl($payment['hostedPaymentPageUrl'], $context);
@@ -186,5 +181,12 @@ class AsyncPaymentFinalizePay
             $url,
             $this->languageProvider->getLanguage($context)
         );
+    }
+
+    private function getNetsPaymentId(AsyncPaymentTransactionStruct $transaction): string
+    {
+        return $transaction
+            ->getOrderTransaction()
+            ->getCustomFields()['nets_easy_payment_details']['transaction_id'];
     }
 }
