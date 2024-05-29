@@ -1,0 +1,39 @@
+{
+    "name": "netseu/checkout",
+    "description": "netseu/checkout",
+    "type": "shopware-platform-plugin",
+    "version": "2.0.0",
+    "license": "MIT",
+    "require": {
+        "shopware/core": "~6.6.0"
+    },
+    "extra": {
+        "shopware-plugin-class": "NexiNets\\NetsCheckout",
+        "label": {
+            "de-DE": "NestCheckout plugin",
+            "en-GB": "NestCheckout plugin"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "NexiNets\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NexiNets\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "symfony/runtime": true
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9",
+        "phpstan/phpstan": "^1.11",
+        "symplify/easy-coding-standard": "^12.2",
+        "rector/rector": "^1.1",
+        "qossmic/deptrac": "^2.0"
+    }
+}
