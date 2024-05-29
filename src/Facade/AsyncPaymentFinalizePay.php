@@ -65,15 +65,15 @@ class AsyncPaymentFinalizePay
     {
         $transactionId = $transaction->getOrderTransaction()->getId();
         $context = $salesChannelContext->getContext();
+        $salesChannelId = $salesChannelContext->getSalesChannelId();
 
         $netsTransactionId = $transaction
             ->getOrderTransaction()
             ->getCustomFieldsValue('nets_easy_payment_details')['transaction_id'];
 
         try {
-            $payment = $this->easyApiService->getPayment($netsTransactionId);
+            $payment = $this->easyApiService->getPayment($netsTransactionId, $salesChannelId);
             $orderId = $transaction->getOrder()->getId();
-            $salesChannelId = $salesChannelContext->getSalesChannelId();
             $chargeNow = $this->configService->getChargeNow($salesChannelId);
 
             $this->orderRepository->update(
