@@ -6,11 +6,16 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4.x`, `6.5.x`
-|Version | `1.4.6`
+|Version | `1.4.7`
 |Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.4.7 - Released 2024-05-29
+
+* fix: use backward compatible interface
+* fix: invoke get payment with sales
 
 ### Version 1.4.6 - Released 2024-05-28
 
