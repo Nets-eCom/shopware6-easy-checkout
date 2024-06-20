@@ -3,3 +3,4 @@
 phpstan.neon
 composer.lock
 vendor
+phpunit.xml
