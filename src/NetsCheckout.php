@@ -1,19 +1,27 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace NexiNets;
 
+use NexiNets\Lifecycle\HostedPaymentMethodActivator;
+use NexiNets\Lifecycle\HostedPaymentMethodInstaller;
+use Shopware\Core\Checkout\Payment\PaymentMethodDefinition;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\ActivateContext;
 use Shopware\Core\Framework\Plugin\Context\DeactivateContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\UpdateContext;
+use Shopware\Core\Framework\Plugin\Util\PluginIdProvider;
 
 class NetsCheckout extends Plugin
 {
     public function install(InstallContext $installContext): void
     {
-        // Do stuff such as creating a new payment method
+        $this
+            ->getPaymentMethodInstalled()
+            ->install($installContext->getContext());
     }
 
     public function uninstall(UninstallContext $uninstallContext): void
@@ -29,8 +37,7 @@ class NetsCheckout extends Plugin
 
     public function activate(ActivateContext $activateContext): void
     {
-        // Activate entities, such as a new payment method
-        // Or create new entities here, because now your plugin is installed and active for sure
+        $this->getPaymentMethodActivator()->activate($activateContext->getContext());
     }
 
     public function deactivate(DeactivateContext $deactivateContext): void
@@ -50,5 +57,20 @@ class NetsCheckout extends Plugin
 
     public function postUpdate(UpdateContext $updateContext): void
     {
+    }
+
+    private function getPaymentMethodInstalled(): HostedPaymentMethodInstaller
+    {
+        return new HostedPaymentMethodInstaller(
+            $this->container->get(PluginIdProvider::class),
+            $this->container->get(sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME))
+        );
+    }
+
+    private function getPaymentMethodActivator(): HostedPaymentMethodActivator
+    {
+        return new HostedPaymentMethodActivator(
+            $this->container->get(sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME))
+        );
     }
 }
