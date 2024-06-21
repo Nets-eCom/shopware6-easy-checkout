@@ -10,8 +10,8 @@
     "extra": {
         "shopware-plugin-class": "NexiNets\\NetsCheckout",
         "label": {
-            "de-DE": "NestCheckout plugin",
-            "en-GB": "NestCheckout plugin"
+            "de-DE": "NexiNets Checkout",
+            "en-GB": "NexiNets Checkout"
         }
     },
     "autoload": {
