@@ -19,6 +19,9 @@ final class HostedPayment implements AsynchronousPaymentHandlerInterface
         SalesChannelContext $salesChannelContext
     ): RedirectResponse {
         // TODO
+        return new RedirectResponse(
+            $transaction->getReturnUrl()
+        );
     }
 
     public function finalize(
