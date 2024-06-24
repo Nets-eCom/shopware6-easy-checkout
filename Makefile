@@ -26,3 +26,6 @@ ecs-fix: ## ECS fix
 
 rector-fix: ## Rector Fix
 	vendor/bin/rector process
+
+phpunit: ## PHPUnit test
+	vendor/bin/phpunit
