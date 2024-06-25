@@ -25,7 +25,16 @@ final class HostedPaymentMethodActivatorTest extends TestCase
     {
         $context = Context::createDefaultContext();
         $repository = $this->createPaymentMethodRepository(
-            $this->createSearchResult($context, $totalCount, [['primaryKey' => $id, 'data' => []]])
+            $this->createSearchResult(
+                $context,
+                $totalCount,
+                [
+                    [
+                        'primaryKey' => $id,
+                        'data' => [],
+                    ],
+                ]
+            )
         );
 
         $repository
@@ -36,7 +45,7 @@ final class HostedPaymentMethodActivatorTest extends TestCase
                     [
                         'id' => $id,
                         'active' => $active,
-                    ]
+                    ],
                 ],
                 $context
             );
