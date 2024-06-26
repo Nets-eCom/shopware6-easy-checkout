@@ -20,7 +20,7 @@ class Migration1719409373NexinetsPayment extends MigrationStep
     public function update(Connection $connection): void
     {
         $query = <<<'SQL'
-CREATE TABLE nexinets_payment
+CREATE TABLE IF NOT EXISTS nexinets_payment
 (
     id         BINARY(16) NOT NULL,
     order_id   VARCHAR(255) DEFAULT NULL,
@@ -29,7 +29,10 @@ CREATE TABLE nexinets_payment
     created_at DATETIME NOT NULL,
     updated_at DATETIME     DEFAULT NULL,
     PRIMARY KEY (id)
-) DEFAULT CHARACTER SET utf8 COLLATE `utf8_unicode_ci` ENGINE = InnoDB;
+) 
+    DEFAULT CHARACTER SET utf8
+    COLLATE `utf8_unicode_ci`
+    ENGINE = InnoDB;
 SQL;
 
         $connection->executeStatement($query);
