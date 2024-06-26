@@ -6,7 +6,7 @@
 
     <services>
         <service id="NexiNets\Core\Content\NexiNetsPaymentApi\NexiNetsPaymentDefinition">
-            <tag name="shopware.entity.definition" entity="nexinets_payment_operations" />
+            <tag name="shopware.entity.definition" entity="nexinets_payment" />
         </service>
     </services>
 </container>

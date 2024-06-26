@@ -11,39 +11,40 @@ class NexiNetsPaymentEntity extends Entity
 {
     use EntityIdTrait;
 
-    protected ?string $name;
+    protected ?string $order_id;
 
-    protected ?string $description;
+    protected ?string $charge_id;
 
-    protected bool $active;
+    protected ?string $data;
 
-    public function getName(): ?string
+    public function getOrderId(): ?string
     {
-        return $this->name;
+        return $this->order_id;
     }
 
-    public function setName(?string $name): void
+    public function setOrderId(?string $orderId): void
     {
-        $this->name = $name;
+        $this->order_id = $orderId;
     }
 
-    public function getDescription(): ?string
+    public function getChargeId(): ?string
     {
-        return $this->description;
+        return $this->charge_id;
     }
 
-    public function setDescription(?string $description): void
+    public function setChargeId(?string $chargeId): void
     {
-        $this->description = $description;
+        $this->charge_id = $chargeId;
     }
 
-    public function isActive(): bool
+    public function getData(): ?string
     {
-        return $this->active;
+        return $this->data;
     }
 
-    public function setActive(bool $active): void
+    public function setData(?string $data): void
     {
-        $this->active = $active;
+        $this->charge_id = $data;
     }
+
 }
