@@ -10,11 +10,11 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\BoolField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextField;
 
 class NexiNetsPaymentDefinition extends EntityDefinition
 {
-    public const ENTITY_NAME = 'nexinets_payment_operations';
+    public const ENTITY_NAME = 'nexinets_payment';
 
     public function getEntityName(): string
     {
@@ -35,9 +35,9 @@ class NexiNetsPaymentDefinition extends EntityDefinition
     {
         return new FieldCollection([
             (new IdField('id', 'id'))->addFlags(new Required(), new PrimaryKey()),
-            (new StringField('name', 'name')),
-            (new StringField('description', 'description')),
-            (new BoolField('active', 'active'))
+            new StringField('order_id', 'orderId'),
+            new StringField('charge_id', 'charge_id'),
+            new LongTextField('data', 'data'),
         ]);
     }
 }
