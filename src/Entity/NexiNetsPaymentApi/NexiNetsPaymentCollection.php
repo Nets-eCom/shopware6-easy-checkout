@@ -12,11 +12,10 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
  * @method void               set(string $key, ExampleEntity $entity)
  * @method ExampleEntity[]    getIterator()
  * @method ExampleEntity[]    getElements()
- * @method null|ExampleEntity get(string $key)
- * @method null|ExampleEntity first()
- * @method null|ExampleEntity last()
+ * @method ExampleEntity|null get(string $key)
+ * @method ExampleEntity|null first()
+ * @method ExampleEntity|null last()
  */
-
 class NexiNetsPaymentCollection extends EntityCollection
 {
     protected function getExpectedClass(): string

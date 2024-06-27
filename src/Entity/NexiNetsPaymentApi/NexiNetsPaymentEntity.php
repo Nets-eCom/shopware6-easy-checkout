@@ -11,12 +11,11 @@ class NexiNetsPaymentEntity extends Entity
 {
     use EntityIdTrait;
 
-    protected ?string $order_id;
+    protected ?string $order_id = null;
 
-    protected ?string $charge_id;
+    protected ?string $charge_id = null;
 
     protected $createdAt;
-
 
     public function getOrderId(): ?string
     {
@@ -47,5 +46,4 @@ class NexiNetsPaymentEntity extends Entity
     {
         $this->createdAt = $createdAt;
     }
-
 }
