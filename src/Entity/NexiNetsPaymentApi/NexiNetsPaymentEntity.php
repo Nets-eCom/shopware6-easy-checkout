@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Core\Content\NexiNetsPaymentApi;
+namespace NexiNets\Entity\NexiNetsPaymentApi;
 
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
@@ -15,7 +15,8 @@ class NexiNetsPaymentEntity extends Entity
 
     protected ?string $charge_id;
 
-    protected ?string $data;
+    protected $createdAt;
+
 
     public function getOrderId(): ?string
     {
@@ -37,14 +38,14 @@ class NexiNetsPaymentEntity extends Entity
         $this->charge_id = $chargeId;
     }
 
-    public function getData(): ?string
+    public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->data;
+        return $this->createdAt;
     }
 
-    public function setData(?string $data): void
+    public function setCreatedAt(?\DateTimeInterface $createdAt): void
     {
-        $this->charge_id = $data;
+        $this->createdAt = $createdAt;
     }
 
 }

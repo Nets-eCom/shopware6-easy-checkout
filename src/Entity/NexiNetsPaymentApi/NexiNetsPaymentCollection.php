@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Core\Content\NexiNetsPaymentApi;
+namespace NexiNets\Entity\NexiNetsPaymentApi;
 
+use NexiNets\Core\Content\NexiNetsPaymentApi\ExampleEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 
 /**
