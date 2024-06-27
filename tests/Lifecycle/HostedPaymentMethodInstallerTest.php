@@ -41,7 +41,16 @@ final class HostedPaymentMethodInstallerTest extends TestCase
     {
         $context = Context::createDefaultContext();
         $repository = $this->createPaymentMethodRepository(
-            $this->createSearchResult($context, 1, [['primaryKey' => '1234', 'data' => []]])
+            $this->createSearchResult(
+                $context,
+                1,
+                [
+                    [
+                        'primaryKey' => '1234',
+                        'data' => [],
+                    ],
+                ]
+            )
         );
 
         $repository
@@ -56,7 +65,7 @@ final class HostedPaymentMethodInstallerTest extends TestCase
                         'description' => 'NexiNets Hosted Checkout',
                         'technicalName' => 'nexi_nets_hosted_checkout',
                         'pluginId' => '',
-                    ]
+                    ],
                 ],
                 $context
             );

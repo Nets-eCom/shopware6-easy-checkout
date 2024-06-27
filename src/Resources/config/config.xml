@@ -1,16 +1,179 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
-
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
     <card>
-        <title>Minimal configuration</title>
+        <title>NexiNets Checkout configuration</title>
+        <title lang="de-DE">NexiNets Checkout configuration</title>
+        <title lang="da-DK">NexiNets Checkout konfiguration</title>
+        <title lang="sv-SE">NexiNets Checkout konfigurering</title>
+        <title lang="nb-NO">NexiNets Checkout konfigurasjon</title>
 
-        <input-field type="text">
-            <name>textField</name>
-            <label>Test field with default value</label>
-            <defaultValue>test</defaultValue>
+        <input-field type="password">
+            <name>liveSecretKey</name>
+            <label>Live secret key</label>
+            <placeholder>00000000000000000000000000000000</placeholder>
+            <helpText>All keys can be found in : Nets Easy Administration > Company > Integration</helpText>
+            <helpText lang="de-DE">
+                Alle Schlüssel finden Sie in : Nets Easy Administration > Unternehmen > Integration
+            </helpText>
+            <helpText lang="da-DK">
+                Alle nøgler kan findes i : Nets Easy Administration > Firmaet > Integration
+            </helpText>
+            <helpText lang="sv-SE">
+                Alla nycklar finns i : Nets Easy Administration > Företag > Integration
+            </helpText>
+            <helpText lang="nb-NO">
+                Alle nøkler finnes i : Nets Easy Administration > Firmaet > Integration
+            </helpText>
+        </input-field>
+        <input-field type="password">
+            <name>liveCheckoutKey</name>
+            <label>Live checkout key</label>
+            <placeholder>00000000000000000000000000000000</placeholder>
+        </input-field>
+        <input-field type="password">
+            <name>testSecretKey</name>
+            <label>Test secret key</label>
+            <placeholder>00000000000000000000000000000000</placeholder>
+        </input-field>
+        <input-field type="password">
+            <name>testCheckoutKey</name>
+            <label>Test checkout key</label>
+            <placeholder>00000000000000000000000000000000</placeholder>
+        </input-field>
+        <input-field type="bool">
+            <name>autoCharge</name>
+            <label>Enable auto-charge</label>
+            <label lang="de-DE">Auto-Capture aktivieren</label>
+            <label lang="da-DK">Aktivér auto-capture</label>
+            <label lang="sv-SE">Aktivera auto-debitering</label>
+            <label lang="nb-NO">Tillatt Auto-capture</label>
+            <defaultValue>false</defaultValue>
+            <helpText>
+                Charge your customers immediately after payment completion. Only compliant products/services by
+                legislation.
+            </helpText>
+            <helpText lang="de-DE">
+                Wenn aktiviert, belastet Nets Easy Ihren Kunden sofort nach Abschluss der Zahlung.
+                Nur für konforme/kompatible Produkte / Dienstleistungen aktivierbar.
+            </helpText>
+            <helpText lang="da-DK">
+                Debiter din kunde umiddelbart efter betaling er gennemført. Kun produkter/ydelser efter lovgivning.
+            </helpText>
+            <helpText lang="sv-SE">
+                Om aktiverad debiterar Nets Easy kunderna direkt efter att betalningen är genomförd.
+                Aktivera endast detta för behöriga produkter/tjänster.
+            </helpText>
+            <helpText lang="nb-NO">
+                Hvis tillatt Nets Easy vil belaste sluttkunden umiddelbart etter at betalingen er
+                utført. Bare tillatt for kompatible produkter / tjenester.
+            </helpText>
+        </input-field>
+        <input-field type="bool">
+            <name>liveMode</name>
+            <label>Enable live mode</label>
+            <label lang="de-DE">Live-Modus aktivieren</label>
+            <label lang="da-DK">Aktiver live-tilstand</label>
+            <label lang="sv-SE">Aktivera liveläge</label>
+            <label lang="nb-NO">Aktiver live-modus</label>
+            <defaultValue>false</defaultValue>
+            <helpText>
+                Choose wether you want to charge payments in test environment or live production mode
+            </helpText>
+            <helpText lang="de-DE">
+                Wählen Sie, ob Sie Zahlungsumfeld im Test oder im Live berechnen möchten
+            </helpText>
+            <helpText lang="da-DK">
+                Vælg hvor du vil opkræve betalinger i test mode eller live-mode
+            </helpText>
+            <helpText lang="sv-SE">
+                Välj om du vill ta betalt i testmiljö eller live produktionsmiljö
+            </helpText>
+            <helpText lang="nb-NO">
+                Velg om du vil belaste betalinger i testmiljø eller live produksjonsmiljø
+            </helpText>
+        </input-field>
+        <input-field type="single-select">
+            <name>integrationType</name>
+            <label>Integration Type</label>
+            <label lang="de-DE">Integrationstyp</label>
+            <label lang="da-DK">Integrationstype</label>
+            <label lang="sv-SE">Integrationstyp</label>
+            <label lang="nb-NO">Integrasjonstype</label>
+            <placeholder>Select payment window checkout type</placeholder>
+            <placeholder lang="de-DE">Wählen Sie die typ für das Zahlungsfenster</placeholder>
+            <placeholder lang="da-DK">Vælg type for betalingsvinduet</placeholder>
+            <placeholder lang="sv-SE">Välj typ för betalningsfönster</placeholder>
+            <placeholder lang="nb-NO">Velg type for betalingsvindu</placeholder>
+            <defaultValue>hosted</defaultValue>
+            <options>
+                <option>
+                    <id>hosted</id>
+                    <name>Hosted</name>
+                </option>
+                <option>
+                    <id>embedded</id>
+                    <name>Embedded</name>
+                </option>
+            </options>
+            <helpText>
+                Choose whether you want the payment window to be loaded in a new page or embedded in your checkout
+                page
+            </helpText>
+            <helpText lang="de-DE">
+                Wählen Sie aus, ob das Zahlungsfenster auf einer neuen Seite geladen oder in Ihre
+                Kasse Seite eingebettet werden soll
+            </helpText>
+            <helpText lang="da-DK">
+                Vælg, om betalingsvinduet skal indlæses på en ny side eller indlejres på din tjekud
+                side
+            </helpText>
+            <helpText lang="sv-SE">
+                Välj om du vill att betalningsfönstret ska laddas på en ny sida eller inbäddas i din
+                checka ut sida
+            </helpText>
+            <helpText lang="nb-NO">
+                Velg om du vil at betalingsvinduet skal lastes inn på en ny side eller innebygd på
+                sjekk ut siden din
+            </helpText>
+        </input-field>
+        <input-field>
+            <name>termsUrl</name>
+            <label>Terms Url</label>
+            <label lang="de-DE">Geschäftsbedingungen URL</label>
+            <label lang="da-DK">Handelsbetingelser URL</label>
+            <label lang="sv-SE">Handelsvillkor URL</label>
+            <label lang="nb-NO">Kjøpsvilkår URL</label>
+            <placeholder>Insert your Terms Url here</placeholder>
+            <placeholder lang="de-DE">Fügen Sie hier Ihre Geschäftsbedingungenseite ein</placeholder>
+            <placeholder lang="da-DK">Indsæt Handelsbetingelser URL her</placeholder>
+            <placeholder lang="sv-SE">Infoga dina villkor url här</placeholder>
+            <placeholder lang="nb-NO">Sett inn vilkårens url her</placeholder>
+            <helpText>Please insert the complete URL to your terms and conditions page</helpText>
+            <helpText lang="de-DE">Bitte geben Sie die vollständige URL in Ihre Geschäftsbedingungenseite ein</helpText>
+            <helpText lang="da-DK">Indsæt venligst den koplette URL til din handelsbetingelser side</helpText>
+            <helpText lang="sv-SE">Vänligen sätt in den fullständiga URL på sidan Villkor</helpText>
+            <helpText lang="nb-NO">Vennligst sett inn den fullstendige URL på vilkårssiden</helpText>
+            <defaultValue>https://yoursite.com/terms</defaultValue>
+        </input-field>
+        <input-field>
+            <name>merchantTermsUrl</name>
+            <label>Merchant Terms Url</label>
+            <label lang="de-DE">Geschäftsbedingungen URL</label>
+            <label lang="da-DK">Handelsbetingelser URL</label>
+            <label lang="sv-SE">Handelsvillkor URL</label>
+            <label lang="nb-NO">Kjøpsvilkår URL</label>
+            <helpText>Please insert the complete URL to your terms and conditions page</helpText>
+            <helpText lang="de-DE">Bitte geben Sie die vollständige URL in Ihre Geschäftsbedingungenseite ein</helpText>
+            <helpText lang="da-DK">Indsæt venligst den koplette URL til din handelsbetingelser side</helpText>
+            <helpText lang="sv-SE">Vänligen sätt in den fullständiga URL på sidan Villkor</helpText>
+            <helpText lang="nb-NO">Vennligst sett inn den fullstendige URL på vilkårssiden</helpText>
+            <defaultValue>https://cdn.connect.easy.nets.eu/terms/easy/terms_of_use.pdf</defaultValue>
+            <placeholder>Insert your Merchant Terms Url here</placeholder>
+            <placeholder lang="de-DE">Fügen Sie hier Ihre Geschäftsbedingungenseite ein</placeholder>
+            <placeholder lang="da-DK">Indsæt Handelsbetingelser URL her</placeholder>
+            <placeholder lang="sv-SE">Infoga dina villkor url här</placeholder>
+            <placeholder lang="nb-NO">Sett inn vilkårens url her</placeholder>
         </input-field>
     </card>
-
 </config>
