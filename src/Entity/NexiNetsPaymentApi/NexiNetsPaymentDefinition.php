@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Core\Content\NexiNetsPaymentApi;
+namespace NexiNets\Entity\NexiNetsPaymentApi;
 
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\Field\LongTextField;
 
 class NexiNetsPaymentDefinition extends EntityDefinition
 {
@@ -36,8 +36,8 @@ class NexiNetsPaymentDefinition extends EntityDefinition
         return new FieldCollection([
             (new IdField('id', 'id'))->addFlags(new Required(), new PrimaryKey()),
             new StringField('order_id', 'orderId'),
+            new StringField('order_id', 'orderId'),
             new StringField('charge_id', 'charge_id'),
-            new LongTextField('data', 'data'),
         ]);
     }
 }

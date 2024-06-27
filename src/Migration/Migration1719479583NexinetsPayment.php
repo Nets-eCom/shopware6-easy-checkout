@@ -10,26 +10,25 @@ use Shopware\Core\Framework\Migration\MigrationStep;
  * @internal
  */
 #[Package('core')]
-class Migration1719409373NexinetsPayment extends MigrationStep
+class Migration1719479583NexinetsPayment extends MigrationStep
 {
     public function getCreationTimestamp(): int
     {
-        return 1719409373;
+        return 1719479583;
     }
 
     public function update(Connection $connection): void
     {
         $query = <<<'SQL'
-CREATE TABLE IF NOT EXISTS nexinets_payment
+CREATE TABLE nexinets_payment
 (
     id         BINARY(16) NOT NULL,
     order_id   VARCHAR(255) DEFAULT NULL,
     charge_id  VARCHAR(255) DEFAULT NULL,
-    data       LONGTEXT     DEFAULT NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME     DEFAULT NULL,
     PRIMARY KEY (id)
-) 
+)
     DEFAULT CHARACTER SET utf8
     COLLATE `utf8_unicode_ci`
     ENGINE = InnoDB;
