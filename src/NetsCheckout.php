@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace NexiNets;
 
+use Doctrine\DBAL\Connection;
 use NexiNets\Lifecycle\HostedPaymentMethodActivator;
 use NexiNets\Lifecycle\HostedPaymentMethodInstaller;
+use NexiNets\Lifecycle\UserDataRemover;
+use NexiNets\Lifecycle\UserDataRemoverInterface;
 use Shopware\Core\Checkout\Payment\PaymentMethodDefinition;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\ActivateContext;
@@ -19,6 +22,8 @@ class NetsCheckout extends Plugin
 {
     public function install(InstallContext $installContext): void
     {
+        parent::install($installContext);
+
         $this
             ->getPaymentMethodInstalled()
             ->install($installContext->getContext());
@@ -28,22 +33,25 @@ class NetsCheckout extends Plugin
     {
         parent::uninstall($uninstallContext);
 
+        $this->getPaymentMethodActivator()->deactivate($uninstallContext->getContext());
+
         if ($uninstallContext->keepUserData()) {
             return;
         }
 
-        // Remove or deactivate the data created by the plugin
+        $this->getUserDataRemover()->removeUserData($this->container->get(Connection::class));
     }
 
     public function activate(ActivateContext $activateContext): void
     {
+        parent::activate($activateContext);
         $this->getPaymentMethodActivator()->activate($activateContext->getContext());
     }
 
     public function deactivate(DeactivateContext $deactivateContext): void
     {
-        // Deactivate entities, such as a new payment method
-        // Or remove previously created entities
+        parent::deactivate($deactivateContext);
+        $this->getPaymentMethodActivator()->deactivate($deactivateContext->getContext());
     }
 
     public function update(UpdateContext $updateContext): void
@@ -72,5 +80,10 @@ class NetsCheckout extends Plugin
         return new HostedPaymentMethodActivator(
             $this->container->get(sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME))
         );
+    }
+
+    private function getUserDataRemover(): UserDataRemoverInterface
+    {
+        return new UserDataRemover();
     }
 }
