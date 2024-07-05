@@ -20,7 +20,7 @@ class Migration1719479583NexinetsPayment extends MigrationStep
     public function update(Connection $connection): void
     {
         $query = <<<'SQL'
-CREATE TABLE nexinets_payment
+CREATE TABLE IF NOT EXISTS nexinets_payment
 (
     id         BINARY(16) NOT NULL,
     order_id   VARCHAR(255) DEFAULT NULL,
@@ -39,6 +39,6 @@ SQL;
 
     public function updateDestructive(Connection $connection): void
     {
-        // Add destructive update if necessary
+        $connection->executeStatement('DROP TABLE IF EXISTS `nexinets_payment`');
     }
 }

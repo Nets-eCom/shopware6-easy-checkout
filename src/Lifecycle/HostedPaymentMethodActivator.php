@@ -12,7 +12,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 
-final readonly class HostedPaymentMethodActivator implements PaymentMethodActivatorInterface
+final readonly class HostedPaymentMethodActivator implements PaymentMethodActivatorInterface, PaymentMethodDeactivatorInterface
 {
     /**
      * @param EntityRepository<PaymentMethodCollection> $paymentMethodRepository
@@ -34,6 +34,24 @@ final readonly class HostedPaymentMethodActivator implements PaymentMethodActiva
                     [
                         'id' => $this->getMethodIdSearchResult($context, HostedPayment::class)->firstId(),
                         'active' => true,
+                    ],
+                ],
+                $context
+            );
+    }
+
+    public function deactivate(Context $context): void
+    {
+        if (!$this->isMethodInstalled($context, HostedPayment::class)) {
+            return;
+        }
+
+        $this
+            ->paymentMethodRepository->update(
+                [
+                    [
+                        'id' => $this->getMethodIdSearchResult($context, HostedPayment::class)->firstId(),
+                        'active' => false,
                     ],
                 ],
                 $context
