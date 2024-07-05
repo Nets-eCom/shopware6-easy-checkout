@@ -56,6 +56,43 @@ final class HostedPaymentMethodActivatorTest extends TestCase
     }
 
     /**
+     * @dataProvider activateProvider
+     */
+    public function testDeactivate(InvokedCount $invokedCount, string $id, int $totalCount, bool $active): void
+    {
+        $context = Context::createDefaultContext();
+        $repository = $this->createPaymentMethodRepository(
+            $this->createSearchResult(
+                $context,
+                $totalCount,
+                [
+                    [
+                        'primaryKey' => $id,
+                        'data' => [],
+                    ],
+                ]
+            )
+        );
+
+        $repository
+            ->expects($invokedCount)
+            ->method('update')
+            ->with(
+                [
+                    [
+                        'id' => $id,
+                        'active' => !$active,
+                    ],
+                ],
+                $context
+            );
+
+
+        $sut = new HostedPaymentMethodActivator($repository);
+        $sut->deactivate($context);
+    }
+
+    /**
      * @return iterable<array{InvokedCount, string, int, bool}>
      */
     public function activateProvider(): iterable
