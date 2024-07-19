@@ -5,8 +5,65 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
+        <service id="NexiNets\Handler\HostedPayment">
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest"/>
+            <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="order_transaction.repository"/>
+            <argument>%kernel.shopware_version%</argument>
+            <tag name="shopware.payment.method.async" />
+        </service>
+
         <service id="NexiNets\Entity\NexiNetsPaymentApi\NexiNetsPaymentDefinition">
             <tag name="shopware.entity.definition" entity="nexinets_payment" />
         </service>
+
+        <service id="NexiNets\Configuration\ConfigurationProvider">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+        </service>
+
+        <service id="NexiNets\CheckoutApi\Factory\PaymentApiFactory">
+            <argument type="service" id="NexiNets\CheckoutApi\Factory\HttpClientFactory"/>
+        </service>
+
+
+        <service id="NexiNets\CheckoutApi\Factory\HttpClientFactory">
+            <argument type="service" id="Psr\Http\Client\ClientInterface"/>
+            <argument type="service" id="nyholm.psr7.psr17_factory"/>
+            <argument type="service" id="nyholm.psr7.psr17_factory"/>
+        </service>
+
+        <service id="NexiNets\CheckoutApi\Http\HttpClient">
+            <argument type="service" id="Psr\Http\Client\ClientInterface"/>
+            <argument type="service" id="nyholm.psr7.psr17_factory"/>
+            <argument type="service" id="nyholm.psr7.psr17_factory"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest">
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory"/>
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\Items"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest\Items">
+            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest\CustomerBuilder">
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\AddressBuilder"/>
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\PhoneNumberBuilder"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest\PhoneNumberBuilder"/>
+        <service id="NexiNets\RequestBuilder\PaymentRequest\AddressBuilder"/>
+
+        <service id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory">
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\CustomerBuilder"/>
+            <argument type="service" id="router"/>
+        </service>
+
+
     </services>
 </container>

@@ -5,20 +5,29 @@ deptrac:
   layers:
     - name: Plugin
       collectors:
-        - type: classLike
-          value: .*NexiNets\\(?!CheckoutApi|Tests\\CheckoutApi).*
-        - type: classLike
-          value: NexiNets\\NetsCheckout
+        - type: bool
+          must:
+            - type: classLike
+              value: .*NexiNets\\
+          must_not:
+            - type: directory
+              value: src/CheckoutApi
     - name: CheckoutApi
       collectors:
-        - type: classLike
-          value: .*CheckoutApi.*
-    - name: Vendor
+        - type: directory
+          value: src/CheckoutApi
+    - name: DomainVendor
       collectors:
         - type: classLike
-          value: ^(?!NexiNets\\).*
+          value: .*Psr\\
+    - name: Vendor
+      collectors:
+          - type: classLike
+            value: ^(Shopware\\|PHPUnit|Symfony|Doctrine|libphonenumber)
   ruleset:
     Plugin:
       - CheckoutApi
       - Vendor
-    CheckoutApi: ~
+      - DomainVendor
+    CheckoutApi:
+      - DomainVendor

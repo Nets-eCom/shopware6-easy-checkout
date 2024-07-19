@@ -20,6 +20,10 @@ use Shopware\Core\Framework\Plugin\Util\PluginIdProvider;
 
 class NetsCheckout extends Plugin
 {
+    public const COMMERCE_PLATFORM_TAG = 'Shopware6';
+
+    public const PLUGIN_VERSION = '2.0.0';
+
     public function install(InstallContext $installContext): void
     {
         parent::install($installContext);
@@ -27,6 +31,14 @@ class NetsCheckout extends Plugin
         $this
             ->getPaymentMethodInstalled()
             ->install($installContext->getContext());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function executeComposerCommands(): bool
+    {
+        return true;
     }
 
     public function uninstall(UninstallContext $uninstallContext): void
