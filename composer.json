@@ -6,7 +6,8 @@
     "license": "MIT",
     "require": {
         "php": "~8.2.0 || ~8.3.0",
-        "shopware/core": "~6.6.0"
+        "shopware/core": "~6.6.0",
+        "giggsey/libphonenumber-for-php-lite": "*"
     },
     "extra": {
         "shopware-plugin-class": "NexiNets\\NetsCheckout",
