@@ -10,7 +10,7 @@
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
             <argument type="service" id="order_transaction.repository"/>
-            <argument>%kernel.shopware_version%</argument>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <tag name="shopware.payment.method.async" />
         </service>
 
@@ -24,6 +24,7 @@
 
         <service id="NexiNets\CheckoutApi\Factory\PaymentApiFactory">
             <argument type="service" id="NexiNets\CheckoutApi\Factory\HttpClientFactory"/>
+            <argument type="service" id="NexiNets\Http\HttpClientConfigurationProvider"/>
         </service>
 
 
@@ -64,6 +65,8 @@
             <argument type="service" id="router"/>
         </service>
 
-
+        <service id="NexiNets\Http\HttpClientConfigurationProvider">
+            <argument>%kernel.shopware_version%</argument>
+        </service>
     </services>
 </container>

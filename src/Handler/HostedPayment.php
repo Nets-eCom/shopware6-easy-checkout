@@ -8,10 +8,11 @@ use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Request\Payment\IntegrationTypeEnum;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Summary;
 use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\NetsCheckout;
 use NexiNets\RequestBuilder\PaymentRequest;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AsynchronousPaymentHandlerInterface;
 use Shopware\Core\Checkout\Payment\PaymentException;
@@ -33,7 +34,7 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
         private PaymentApiFactory $paymentApiFactory,
         private ConfigurationProvider $configurationProvider,
         private EntityRepository $orderTransactionRepository,
-        private string $shopwareVersion
+        private OrderTransactionStateHandler $orderTransactionStateHandler
     ) {
     }
 
@@ -42,7 +43,7 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
         RequestDataBag $dataBag,
         SalesChannelContext $salesChannelContext
     ): RedirectResponse {
-        $paymentApi = $this->createPaymentApi($salesChannelContext);
+        $paymentApi = $this->createPaymentApi($salesChannelContext->getSalesChannelId());
         $transactionId = $transaction->getOrderTransaction()->getId();
 
         try {
@@ -79,26 +80,42 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
         Request $request,
         SalesChannelContext $salesChannelContext
     ): void {
-        // TODO
+        $paymentApi = $this->createPaymentApi($salesChannelContext->getSalesChannelId());
+        $orderTransaction = $transaction->getOrderTransaction();
+        $orderTransactionId = $transaction->getOrderTransaction()->getId();
+        $paymentId = $orderTransaction->getCustomFieldsValue(
+            self::ORDER_TRANSACTION_CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+        );
+
+        try {
+            $payment = $paymentApi->retrievePayment($paymentId)->getPayment();
+        } catch (PaymentApiException $paymentApiException) {
+            throw PaymentException::asyncFinalizeInterrupted(
+                $orderTransaction->getId(),
+                'Couldn\'t finalize transaction',
+                $paymentApiException
+            );
+        }
+
+        $summary = $payment->getSummary();
+
+        if ($this->canAuthorize($summary)) {
+            throw PaymentException::asyncFinalizeInterrupted($orderTransactionId, 'Couldn\'t finalize transaction');
+        }
+
+        $this->orderTransactionStateHandler->authorize($orderTransactionId, $salesChannelContext->getContext());
     }
 
-    private function createPaymentApi(SalesChannelContext $salesChannelContext): PaymentApi
+    private function createPaymentApi(string $salesChannelId): PaymentApi
     {
         return $this->paymentApiFactory->create(
-            $this->configurationProvider->getSecretKey($salesChannelContext->getSalesChannelId()),
-            $this->configurationProvider->isLiveMode($salesChannelContext->getSalesChannelId()),
-            $this->getCommercePlatformTag()
+            $this->configurationProvider->getSecretKey($salesChannelId),
+            $this->configurationProvider->isLiveMode($salesChannelId),
         );
     }
 
-    private function getCommercePlatformTag(): string
+    private function canAuthorize(Summary $summary): bool
     {
-        return sprintf(
-            '%s %s, %s, php%s',
-            NetsCheckout::COMMERCE_PLATFORM_TAG,
-            $this->shopwareVersion,
-            NetsCheckout::PLUGIN_VERSION,
-            \PHP_VERSION
-        );
+        return $summary->getReservedAmount() > 0;
     }
 }

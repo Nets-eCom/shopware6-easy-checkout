@@ -7,16 +7,14 @@ namespace NexiNets\RequestBuilder\PaymentRequest;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberUtil;
 use NexiNets\CheckoutApi\Model\Request\Payment\PhoneNumber;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 
 class PhoneNumberBuilder
 {
     public function create(
-        SalesChannelContext $salesChannelContext
+        CustomerAddressEntity $customerAddress,
     ): ?PhoneNumber {
-        $phoneNumber = $salesChannelContext->getCustomer()
-            ->getActiveShippingAddress()
-            ->getPhoneNumber();
+        $phoneNumber = $customerAddress->getPhoneNumber();
 
         if ($phoneNumber === null) {
             return null;
@@ -26,7 +24,7 @@ class PhoneNumberBuilder
         try {
             $phoneNumberObject = $phoneUtil->parse(
                 $phoneNumber,
-                $salesChannelContext->getCustomer()->getActiveShippingAddress()->getCountry()->getIso()
+                $customerAddress->getCountry()->getIso()
             );
         } catch (NumberParseException) {
             // @TODO log error to investigate issue
