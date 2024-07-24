@@ -7,7 +7,7 @@ namespace NexiNets\RequestBuilder\PaymentRequest;
 use NexiNets\CheckoutApi\Model\Request\Payment\Company;
 use NexiNets\CheckoutApi\Model\Request\Payment\Consumer;
 use NexiNets\CheckoutApi\Model\Request\Payment\PrivatePerson;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Checkout\Customer\CustomerEntity;
 
 class CustomerBuilder
 {
@@ -18,9 +18,8 @@ class CustomerBuilder
     }
 
     public function create(
-        SalesChannelContext $salesChannelContext
+        CustomerEntity $customer
     ): Consumer {
-        $customer = $salesChannelContext->getCustomer();
         $isCompany = $this->isCompany($customer->getActiveBillingAddress()->getCompany());
 
         return new Consumer(
@@ -28,7 +27,7 @@ class CustomerBuilder
             null,
             $this->addressBuilder->create($customer->getActiveShippingAddress()),
             null,
-            $this->phoneNumberBuilder->create($salesChannelContext),
+            $this->phoneNumberBuilder->create($customer->getActiveShippingAddress()),
             $isCompany ? null : new PrivatePerson($customer->getFirstName(), $customer->getLastName()),
             $isCompany ? new Company(
                 $customer->getActiveBillingAddress()->getCompany(),
