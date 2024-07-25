@@ -24,13 +24,15 @@ final readonly class HostedCheckoutBuilder implements CheckoutBuilderInterface
         AsyncPaymentTransactionStruct $transaction,
         SalesChannelContext $salesChannelContext,
     ): HostedCheckout {
+        $salesChannelId = $salesChannelContext->getSalesChannelId();
+
         return new HostedCheckout(
             $transaction->getReturnUrl(),
             $this->createCancelUrl(),
-            $this->configurationProvider->getTermsUrl($salesChannelContext->getSalesChannelId()),
-            $this->configurationProvider->getMerchantTermsUrl($salesChannelContext->getSalesChannelId()),
-            $this->customerBuilder->create($salesChannelContext),
-            $this->configurationProvider->isAutoCharge($salesChannelContext->getSalesChannelId()),
+            $this->configurationProvider->getTermsUrl($salesChannelId),
+            $this->configurationProvider->getMerchantTermsUrl($salesChannelId),
+            $this->customerBuilder->create($salesChannelContext->getCustomer()),
+            $this->configurationProvider->isAutoCharge($salesChannelId),
             true
         );
     }

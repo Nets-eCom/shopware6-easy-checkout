@@ -144,10 +144,10 @@ final class RetrievePaymentResult extends AbstractResult
     private static function createSummary(array $data): Summary
     {
         return new Summary(
-            $data['totalAmount'] ?? null,
-            $data['chargedAmount'] ?? null,
-            $data['refundedAmount'] ?? null,
-            $data['cancelledAmount'] ?? null
+            $data['reservedAmount'] ?? 0,
+            $data['chargedAmount'] ?? 0,
+            $data['refundedAmount'] ?? 0,
+            $data['cancelledAmount'] ?? 0
         );
     }
 

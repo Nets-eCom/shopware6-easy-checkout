@@ -52,7 +52,7 @@ final class PaymentApiTest extends TestCase
                 $streamFactory,
                 new Configuration('1234')
             ),
-            false
+            'https://api.example.com/'
         );
 
         $result = $sut->createPayment($this->createPaymentRequest());
@@ -73,7 +73,7 @@ final class PaymentApiTest extends TestCase
                 $this->createStub(StreamFactoryInterface::class),
                 new Configuration('1234')
             ),
-            false
+            'https://api.example.com/'
         );
 
         $sut->createPayment($this->createPaymentRequest());
@@ -93,7 +93,7 @@ final class PaymentApiTest extends TestCase
                 $this->createStub(StreamFactoryInterface::class),
                 new Configuration('1234')
             ),
-            false
+            'https://api.example.com/'
         );
 
         $sut->createPayment($this->createPaymentRequest());
