@@ -26,7 +26,7 @@ class PaymentApiFactory
         return new PaymentApi(
             $this
                 ->clientFactory
-                ->createWithConfiguration(
+                ->create(
                     $this->configurationProvider->provide($secretKey)
                 ),
             $this->getBaseUrl($isLiveMode),
