@@ -19,7 +19,7 @@ class HttpClientFactory
     ) {
     }
 
-    public function createWithConfiguration(Configuration $configuration): HttpClient
+    public function create(Configuration $configuration): HttpClient
     {
         return new HttpClient(
             $this->client,
