@@ -17,7 +17,7 @@ class HttpClient
         private readonly ClientInterface $client,
         private readonly RequestFactoryInterface $requestFactory,
         private readonly StreamFactoryInterface $streamFactory,
-        private readonly ?Configuration $configuration = null
+        private readonly Configuration $configuration
     ) {
     }
 
@@ -54,10 +54,6 @@ class HttpClient
     private function createRequest(string $url, string $method): RequestInterface
     {
         $request = $this->requestFactory->createRequest($method, $url);
-
-        if (!$this->configuration instanceof Configuration) {
-            return $request;
-        }
 
         $headers = [
             'Authorization' => $this->configuration->getSecretKey(),
