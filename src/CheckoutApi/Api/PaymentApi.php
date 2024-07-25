@@ -13,15 +13,11 @@ use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 
 class PaymentApi
 {
-    private const LIVE_URL = 'https://api.dibspayment.eu';
-
-    private const TEST_URL = 'https://test.api.dibspayment.eu';
-
     private const PAYMENTS_ENDPOINT = '/v1/payments';
 
     public function __construct(
         private readonly HttpClient $client,
-        private readonly bool $isLiveMode,
+        private readonly string $baseUrl,
     ) {
     }
 
@@ -77,12 +73,7 @@ class PaymentApi
 
     private function getPaymentsUrl(): string
     {
-        return sprintf('%s%s', $this->getBaseUrl(), self::PAYMENTS_ENDPOINT);
-    }
-
-    private function getBaseUrl(): string
-    {
-        return $this->isLiveMode ? self::LIVE_URL : self::TEST_URL;
+        return sprintf('%s%s', $this->baseUrl, self::PAYMENTS_ENDPOINT);
     }
 
     private function isSuccessCode(int $code): bool
