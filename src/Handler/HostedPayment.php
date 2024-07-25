@@ -99,7 +99,7 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
 
         $summary = $payment->getSummary();
 
-        if ($this->canAuthorize($summary)) {
+        if (!$this->canAuthorize($summary)) {
             throw PaymentException::asyncFinalizeInterrupted($orderTransactionId, 'Couldn\'t finalize transaction');
         }
 
