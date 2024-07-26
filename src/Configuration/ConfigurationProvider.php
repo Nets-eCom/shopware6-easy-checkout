@@ -6,7 +6,7 @@ namespace NexiNets\Configuration;
 
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
-readonly class ConfigurationProvider
+class ConfigurationProvider
 {
     private const CONFIG_DOMAIN = 'NetsCheckout.config.';
 
@@ -28,7 +28,7 @@ readonly class ConfigurationProvider
 
     public const MERCHANT_TERMS_URL = self::CONFIG_DOMAIN . 'merchantTermsUrl';
 
-    public function __construct(private SystemConfigService $systemConfigService)
+    public function __construct(private readonly SystemConfigService $systemConfigService)
     {
     }
 

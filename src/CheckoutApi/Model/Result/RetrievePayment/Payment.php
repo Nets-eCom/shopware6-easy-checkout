@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace NexiNets\CheckoutApi\Model\Result\RetrievePayment;
 
-final readonly class Payment
+class Payment
 {
     /**
      * @param list<Refund>|null $refunds
      * @param list<Charge>|null $charges
      */
     public function __construct(
-        private string $paymentId,
-        private OrderDetails $orderDetails,
-        private Checkout $checkout,
-        private \DateTimeInterface $created,
-        private Consumer $consumer,
-        private ?\DateTimeInterface $terminated = null,
-        private ?Summary $summary = null,
-        private ?PaymentDetails $paymentDetails = null,
-        private ?array $refunds = null,
-        private ?array $charges = null,
-        private ?string $myReference = null,
+        private readonly string $paymentId,
+        private readonly OrderDetails $orderDetails,
+        private readonly Checkout $checkout,
+        private readonly \DateTimeInterface $created,
+        private readonly Consumer $consumer,
+        private readonly ?\DateTimeInterface $terminated = null,
+        private readonly ?Summary $summary = null,
+        private readonly ?PaymentDetails $paymentDetails = null,
+        private readonly ?array $refunds = null,
+        private readonly ?array $charges = null,
+        private readonly ?string $myReference = null,
     ) {
     }
 

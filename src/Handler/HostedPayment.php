@@ -82,7 +82,7 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
     ): void {
         $paymentApi = $this->createPaymentApi($salesChannelContext->getSalesChannelId());
         $orderTransaction = $transaction->getOrderTransaction();
-        $orderTransactionId = $transaction->getOrderTransaction()->getId();
+        $orderTransactionId = $orderTransaction->getId();
         $paymentId = $orderTransaction->getCustomFieldsValue(
             self::ORDER_TRANSACTION_CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
         );
