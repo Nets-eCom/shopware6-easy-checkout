@@ -22,7 +22,7 @@ use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Refund;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\RefundStateEnum;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Summary;
 
-final class RetrievePaymentResult extends AbstractResult
+class RetrievePaymentResult extends AbstractResult
 {
     public function __construct(private readonly Payment $payment)
     {
