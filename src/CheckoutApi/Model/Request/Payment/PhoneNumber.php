@@ -13,7 +13,10 @@ readonly class PhoneNumber implements \JsonSerializable
     }
 
     /**
-     * @return array<string, string>
+     * @return array{
+     *     prefix: string,
+     *     number: string,
+     * }
      */
     public function jsonSerialize(): array
     {
