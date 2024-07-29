@@ -91,7 +91,7 @@ class RetrievePaymentResult extends AbstractResult
             $data['receiverLine'] ?? null,
             $data['postalCode'] ?? null,
             $data['city'] ?? null,
-            self::createPhoneNumber($data['phoneNumber'])
+            self::createPhoneNumber($data['phoneNumber'] ?? [])
         );
     }
 
@@ -104,7 +104,7 @@ class RetrievePaymentResult extends AbstractResult
             $data['merchantReference'] ?? null,
             $data['name'] ?? null,
             $data['registrationNumber'] ?? null,
-            self::createContactDetails($data['contactDetails'])
+            isset($data['contactDetails']) ? self::createContactDetails($data['contactDetails']) : null
         );
     }
 
@@ -121,7 +121,7 @@ class RetrievePaymentResult extends AbstractResult
             $data['firstName'] ?? null,
             $data['lastName'] ?? null,
             $data['email'] ?? null,
-            self::createPhoneNumber($data['phoneNumber'])
+            self::createPhoneNumber($data['phoneNumber'] ?? [])
         );
     }
 
@@ -134,7 +134,7 @@ class RetrievePaymentResult extends AbstractResult
             $data['firstName'] ?? null,
             $data['lastName'] ?? null,
             $data['email'] ?? null,
-            self::createPhoneNumber($data['phoneNumber'])
+            self::createPhoneNumber($data['phoneNumber'] ?? [])
         );
     }
 
@@ -159,8 +159,8 @@ class RetrievePaymentResult extends AbstractResult
         return new PaymentDetails(
             isset($data['paymentType']) ? PaymentTypeEnum::tryFrom($data['paymentType']) : null,
             $data['paymentMethod'] ?? null,
-            self::createInvoiceDetails($data['invoiceDetails']),
-            self::createCardDetails($data['cardDetails'])
+            isset($data['invoiceDetails']) ? self::createInvoiceDetails($data['invoiceDetails']) : null,
+            isset($data['cardDetails']) ? self::createCardDetails($data['cardDetails']) : null
         );
     }
 
