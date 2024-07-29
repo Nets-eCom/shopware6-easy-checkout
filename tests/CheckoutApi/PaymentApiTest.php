@@ -15,6 +15,7 @@ use NexiNets\CheckoutApi\Model\Request\Payment\Notification;
 use NexiNets\CheckoutApi\Model\Request\Payment\Order;
 use NexiNets\CheckoutApi\Model\Request\Payment\Webhook;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
+use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
@@ -62,7 +63,7 @@ final class PaymentApiTest extends TestCase
         $this->assertSame('https://api.example.com/hostedUrl', $result->getHostedPaymentPageUrl());
     }
 
-    public function testItThrowsExceptionOnPsrClientException(): void
+    public function testItThrowsExceptionOnPsrClientExceptionCreatePayment(): void
     {
         $this->expectException(PaymentApiException::class);
 
@@ -79,7 +80,7 @@ final class PaymentApiTest extends TestCase
         $sut->createPayment($this->createPaymentRequest());
     }
 
-    public function testItThrowsExceptionOnUnsuccessfulStatusCode(): void
+    public function testItThrowsExceptionOnUnsuccessfulCreatePayment(): void
     {
         $this->expectException(PaymentApiException::class);
 
@@ -97,6 +98,78 @@ final class PaymentApiTest extends TestCase
         );
 
         $sut->createPayment($this->createPaymentRequest());
+    }
+
+    public function testItRetrievesPayment(): void
+    {
+        $stream = $this->createStub(StreamInterface::class);
+        $stream
+            ->method('getContents')
+            ->willReturn(
+                json_encode([
+                    'payment' => [
+                        'paymentId' => '1234',
+                        'orderDetails' => [
+                            'amount' => 1000,
+                            'currency' => 'PLN',
+                        ],
+                        'created' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                        'consumer' => [
+                            'shippingAddress' => [],
+                            'billingAddress' => [],
+                            'privatePerson' => [],
+                            'company' => [],
+                        ],
+                        'summary' => [],
+                        'paymentDetails' => [
+                            'invoiceDetails' => [],
+                        ],
+                        'checkout' => [
+                            'url' => 'https://api.example.com',
+                            'cancelUrl' => 'https://api.example.com/cancelUrl',
+                        ],
+                    ],
+                ])
+            );
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getBody')->willReturn($stream);
+
+        $sut = new PaymentApi(
+            new HttpClient(
+                $this->createPsrClient($response),
+                $this->createRequestFactoryStub(),
+                $this->createStub(StreamFactoryInterface::class),
+                new Configuration('1234')
+            ),
+            'https://api.example.com/'
+        );
+
+        $result = $sut->retrievePayment('1234');
+
+        $this->assertInstanceOf(RetrievePaymentResult::class, $result);
+        $this->assertSame($result->getPayment()->getPaymentId(), '1234');
+    }
+
+    public function testItThrowsExceptionOnUnknownPaymentRetrieve(): void
+    {
+        $this->expectException(PaymentApiException::class);
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(404);
+
+        $sut = new PaymentApi(
+            new HttpClient(
+                $this->createPsrClient($response),
+                $this->createRequestFactoryStub(),
+                $this->createStub(StreamFactoryInterface::class),
+                new Configuration('1234')
+            ),
+            'https://api.example.com/'
+        );
+
+        $sut->retrievePayment('1234');
     }
 
     private function createPsrClient(ResponseInterface $response): ClientInterface
@@ -128,7 +201,7 @@ final class PaymentApiTest extends TestCase
         };
     }
 
-    public function createPaymentRequest(): Payment
+    private function createPaymentRequest(): Payment
     {
         return new Payment(
             new Order(
@@ -159,7 +232,7 @@ final class PaymentApiTest extends TestCase
         );
     }
 
-    public function createRequestFactoryStub(): RequestFactoryInterface
+    private function createRequestFactoryStub(): RequestFactoryInterface
     {
         $request = $this->createStub(RequestInterface::class);
         $request->method('withBody')->willReturnSelf();
