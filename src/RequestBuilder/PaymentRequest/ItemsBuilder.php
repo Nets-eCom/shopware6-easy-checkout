@@ -6,11 +6,12 @@ namespace NexiNets\RequestBuilder\PaymentRequest;
 
 use NexiNets\CheckoutApi\Model\Request\Payment\Item;
 use NexiNets\RequestBuilder\Helper\FormatHelper;
+use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
-class Items
+class ItemsBuilder
 {
     public function __construct(
         private readonly FormatHelper $helper
@@ -31,7 +32,7 @@ class Items
             $unitPrice = $this->getUnitPrice($lineItem, $order->getTaxStatus());
             $taxRate = $this->getTaxRate($lineItem);
             $grossTotalAmount = $this->priceToInt($lineItem->getPrice()->getTotalPrice());
-            $netTotalAmount = $this->priceToInt($unitPrice * $lineItem->getQuantity());
+            $netTotalAmount = $unitPrice * $lineItem->getQuantity();
             $reference = $this->getReference($lineItem);
 
             $nexiItems[] = new Item(
@@ -43,6 +44,7 @@ class Items
                 $netTotalAmount,
                 substr($reference, 0, 128),
                 $taxRate,
+                $grossTotalAmount - $netTotalAmount ?: null
             );
         }
 
@@ -55,7 +57,7 @@ class Items
         $unitPrice = $this->priceToInt($calculatedPrice->getUnitPrice());
         $taxAmount = $this->priceToInt($calculatedPrice->getCalculatedTaxes()->getAmount() / $lineItem->getQuantity());
 
-        return $taxStatus === 'gross' ? $unitPrice - $taxAmount : $unitPrice;
+        return $taxStatus === CartPrice::TAX_STATE_GROSS ? $unitPrice - $taxAmount : $unitPrice;
     }
 
     private function getTaxRate(OrderLineItemEntity $lineItem): int

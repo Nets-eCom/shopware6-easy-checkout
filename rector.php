@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\CodingStyle\Rector\String_\SymplifyQuoteEscapeRector;
 use Rector\Config\RectorConfig;
+use Rector\Strict\Rector\Ternary\DisallowedShortTernaryRuleFixerRector;
 use Rector\TypeDeclaration\Rector\ClassMethod\AddVoidReturnTypeWhereNoReturnRector;
 
 return RectorConfig::configure()
@@ -25,5 +26,8 @@ return RectorConfig::configure()
         symfony: true,
         doctrine: true
     )
-    ->withSkip([SymplifyQuoteEscapeRector::class])
+    ->withSkip([
+        SymplifyQuoteEscapeRector::class,
+        DisallowedShortTernaryRuleFixerRector::class,
+    ])
     ->withImportNames(importShortClasses: false);
