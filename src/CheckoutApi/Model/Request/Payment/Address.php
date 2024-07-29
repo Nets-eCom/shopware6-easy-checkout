@@ -7,16 +7,22 @@ namespace NexiNets\CheckoutApi\Model\Request\Payment;
 readonly class Address implements \JsonSerializable
 {
     public function __construct(
-        private ?string $addressLine1,
+        private string $addressLine1,
         private ?string $addressLine2,
-        private ?string $postalCode,
-        private ?string $city,
-        private ?string $country,
+        private string $postalCode,
+        private string $city,
+        private string $country,
     ) {
     }
 
     /**
-     * @return string[]
+     * @return array{
+     *     addressLine1: string,
+     *     addressLine2?: ?string,
+     *     postalCode: string,
+     *     city: string,
+     *     country: string,
+     * }
      */
     public function jsonSerialize(): array
     {

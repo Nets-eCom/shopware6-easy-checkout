@@ -13,7 +13,10 @@ readonly class PrivatePerson implements \JsonSerializable
     }
 
     /**
-     * @return string[]
+     * @return array{
+     *     firstName: string,
+     *     lastName: string,
+     * }
      */
     public function jsonSerialize(): array
     {
