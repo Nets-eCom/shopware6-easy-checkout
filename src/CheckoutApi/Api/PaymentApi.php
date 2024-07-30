@@ -7,13 +7,17 @@ namespace NexiNets\CheckoutApi\Api;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Http\HttpClient;
 use NexiNets\CheckoutApi\Http\HttpClientException;
+use NexiNets\CheckoutApi\Model\Request\Charge;
 use NexiNets\CheckoutApi\Model\Request\Payment;
+use NexiNets\CheckoutApi\Model\Result\ChargeResult;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 
 class PaymentApi
 {
     private const PAYMENTS_ENDPOINT = '/v1/payments';
+
+    private const PAYMENT_CHARGES = '/charges';
 
     public function __construct(
         private readonly HttpClient $client,
@@ -69,6 +73,33 @@ class PaymentApi
         }
 
         return RetrievePaymentResult::fromJson($contents);
+    }
+
+    public function createCharge(string $paymentId, Charge $charge): ChargeResult
+    {
+        try {
+            $response = $this->client->post($this->getPaymentChargesUrl($paymentId), json_encode($charge));
+        } catch (HttpClientException $httpClientException) {
+            throw new PaymentApiException(
+                \sprintf('Couldn\'t create charge for a given payment with id: %s', $paymentId),
+                $httpClientException->getCode(),
+                $httpClientException
+            );
+        }
+
+        $code = $response->getStatusCode();
+        $contents = $response->getBody()->getContents();
+
+        if (!$this->isSuccessCode($code)) {
+            throw $this->createPaymentApiException($code, $contents);
+        }
+
+        return ChargeResult::fromJson($contents);
+    }
+
+    private function getPaymentChargesUrl(string $paymentId): string
+    {
+        return \sprintf('%s/%s%s', $this->getPaymentsUrl(), $paymentId, self::PAYMENT_CHARGES);
     }
 
     private function getPaymentsUrl(): string
