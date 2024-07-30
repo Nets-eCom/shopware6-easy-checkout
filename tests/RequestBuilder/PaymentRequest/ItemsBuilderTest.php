@@ -2,7 +2,7 @@
 
 namespace NexiNets\Tests\RequestBuilder\PaymentRequest;
 
-use NexiNets\CheckoutApi\Model\Request\Payment\Item;
+use NexiNets\CheckoutApi\Model\Request\Item;
 use NexiNets\RequestBuilder\Helper\FormatHelper;
 use NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder;
 use PHPUnit\Framework\TestCase;

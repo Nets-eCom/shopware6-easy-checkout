@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace NexiNets\CheckoutApi\Model\Request\Payment;
 
+use NexiNets\CheckoutApi\Model\Request\Item;
+
 final class Order implements \JsonSerializable
 {
     /**
