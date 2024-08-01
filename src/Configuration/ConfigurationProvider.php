@@ -28,6 +28,8 @@ class ConfigurationProvider
 
     public const MERCHANT_TERMS_URL = self::CONFIG_DOMAIN . 'merchantTermsUrl';
 
+    public const WEBHOOK_AUTHORIZATION_HEADER = self::CONFIG_DOMAIN . 'webhookAuthorizationHeader';
+
     public function __construct(private readonly SystemConfigService $systemConfigService)
     {
     }
@@ -66,6 +68,14 @@ class ConfigurationProvider
     {
         return $this->systemConfigService->getString(
             self::INTEGRATION_TYPE,
+            $salesChannelId
+        );
+    }
+
+    public function getWebhookAuthorizationHeader(?string $salesChannelId = null): string
+    {
+        return $this->systemConfigService->getString(
+            self::WEBHOOK_AUTHORIZATION_HEADER,
             $salesChannelId
         );
     }

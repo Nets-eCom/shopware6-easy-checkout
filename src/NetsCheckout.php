@@ -17,6 +17,7 @@ use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\UpdateContext;
 use Shopware\Core\Framework\Plugin\Util\PluginIdProvider;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class NetsCheckout extends Plugin
 {
@@ -90,7 +91,8 @@ class NetsCheckout extends Plugin
     private function getPaymentMethodActivator(): HostedPaymentMethodActivator
     {
         return new HostedPaymentMethodActivator(
-            $this->container->get(sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME))
+            $this->container->get(sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME)),
+            $this->container->get(SystemConfigService::class)
         );
     }
 
