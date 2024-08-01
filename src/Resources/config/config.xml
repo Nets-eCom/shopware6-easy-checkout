@@ -175,5 +175,18 @@
             <placeholder lang="sv-SE">Infoga dina villkor url här</placeholder>
             <placeholder lang="nb-NO">Sett inn vilkårens url her</placeholder>
         </input-field>
+        <input-field type="password">
+            <name>webhookAuthorizationHeader</name>
+            <label>Webhook Secret Code</label>
+            <label lang="de-DE">Geheimcode für Webhook</label>
+            <label lang="da-DK">Webhook hemmelig kode</label>
+            <label lang="sv-SE">Webhook hemlig kod</label>
+            <label lang="nb-NO">Webhook hemmelig kode</label>
+            <helpText>Secret code used to authorize webhook calls</helpText>
+            <helpText lang="de-DE">Geheimcode zur Autorisierung von Webhook-Aufrufen</helpText>
+            <helpText lang="da-DK">Hemmelig kode, der bruges til at godkende webhook-opkald</helpText>
+            <helpText lang="sv-SE">Hemlig kod som används för att auktorisera webhook-samtal</helpText>
+            <helpText lang="nb-NO">Hemmelig kode som brukes til å autorisere webhook-anrop</helpText>
+        </input-field>
     </card>
 </config>

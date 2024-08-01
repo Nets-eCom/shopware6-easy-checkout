@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NexiNets\Tests\Lifecycle;
 
+use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Handler\HostedPayment;
 use NexiNets\Lifecycle\HostedPaymentMethodActivator;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -15,6 +16,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 final class HostedPaymentMethodActivatorTest extends TestCase
 {
@@ -50,8 +52,24 @@ final class HostedPaymentMethodActivatorTest extends TestCase
                 $context
             );
 
+        $systemConfigService = $this->createMock(SystemConfigService::class);
+        $systemConfigService
+            ->method('getString')
+            ->with(ConfigurationProvider::WEBHOOK_AUTHORIZATION_HEADER)
+            ->willReturn('');
+        $systemConfigService
+            ->expects(clone $invokedCount)
+            ->method('set')
+            ->with(
+                ConfigurationProvider::WEBHOOK_AUTHORIZATION_HEADER,
+                $this->isType('string')
+            );
 
-        $sut = new HostedPaymentMethodActivator($repository);
+        $sut = new HostedPaymentMethodActivator(
+            $repository,
+            $systemConfigService
+        );
+
         $sut->activate($context);
     }
 
@@ -88,7 +106,10 @@ final class HostedPaymentMethodActivatorTest extends TestCase
             );
 
 
-        $sut = new HostedPaymentMethodActivator($repository);
+        $sut = new HostedPaymentMethodActivator(
+            $repository,
+            $this->createMock(SystemConfigService::class)
+        );
         $sut->deactivate($context);
     }
 
