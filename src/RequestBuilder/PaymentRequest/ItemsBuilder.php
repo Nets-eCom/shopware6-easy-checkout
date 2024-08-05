@@ -9,7 +9,6 @@ use NexiNets\RequestBuilder\Helper\FormatHelper;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class ItemsBuilder
 {
@@ -21,10 +20,8 @@ class ItemsBuilder
     /**
      * @return Item[]
      */
-    public function create(
-        OrderEntity $order,
-        SalesChannelContext $salesChannelContext
-    ): array {
+    public function create(OrderEntity $order): array
+    {
         $lineItems = $order->getNestedLineItems();
         $nexiItems = [];
 
@@ -34,6 +31,7 @@ class ItemsBuilder
             $grossTotalAmount = $this->priceToInt($lineItem->getPrice()->getTotalPrice());
             $netTotalAmount = $unitPrice * $lineItem->getQuantity();
             $reference = $this->getReference($lineItem);
+            $taxAmount = $this->getTaxAmount($grossTotalAmount, $netTotalAmount);
 
             $nexiItems[] = new Item(
                 $this->sanitize($lineItem->getLabel()),
@@ -44,7 +42,7 @@ class ItemsBuilder
                 $netTotalAmount,
                 substr($reference, 0, 128),
                 $taxRate,
-                $grossTotalAmount - $netTotalAmount ?: null
+                $taxAmount
             );
         }
 
@@ -65,6 +63,13 @@ class ItemsBuilder
         $taxRate = $lineItem->getPrice()->getCalculatedTaxes()->first();
 
         return empty($taxRate) ? 0 : (int) round($taxRate->getTaxRate() * 100);
+    }
+
+    private function getTaxAmount(int $grossTotalAmount, int $netTotalAmount): ?int
+    {
+        $taxAmount = $grossTotalAmount - $netTotalAmount;
+
+        return $taxAmount > 0 ? $taxAmount : null;
     }
 
     private function getReference(OrderLineItemEntity $lineItem): string

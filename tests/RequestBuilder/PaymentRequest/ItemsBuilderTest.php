@@ -14,7 +14,6 @@ use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
-use Shopware\Core\Test\Generator;
 
 final class ItemsBuilderTest extends TestCase
 {
@@ -31,11 +30,9 @@ final class ItemsBuilderTest extends TestCase
         ]);
         $orderEntity->setLineItems($orderItems);
 
-        $salesChannelContext = Generator::createSalesChannelContext();
-
         $object = new ItemsBuilder(new FormatHelper());
 
-        $items = $object->create($orderEntity, $salesChannelContext);
+        $items = $object->create($orderEntity);
 
         $this->assertCount(3, $items);
         $this->assertContainsOnlyInstancesOf(Item::class, $items);
@@ -73,11 +70,9 @@ final class ItemsBuilderTest extends TestCase
         ]);
         $orderEntity->setLineItems($orderItems);
 
-        $salesChannelContext = Generator::createSalesChannelContext();
-
         $object = new ItemsBuilder(new FormatHelper());
 
-        $items = $object->create($orderEntity, $salesChannelContext);
+        $items = $object->create($orderEntity);
 
         $this->assertCount(1, $items);
         $this->assertContainsOnlyInstancesOf(Item::class, $items);
