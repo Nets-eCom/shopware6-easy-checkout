@@ -52,10 +52,10 @@ class PaymentApi
     public function retrievePayment(string $paymentId): RetrievePaymentResult
     {
         try {
-            $response = $this->client->get(sprintf('%s/%s', $this->getPaymentsUrl(), $paymentId));
+            $response = $this->client->get(\sprintf('%s/%s', $this->getPaymentsUrl(), $paymentId));
         } catch (HttpClientException $httpClientException) {
             throw new PaymentApiException(
-                sprintf('Couldn\'t retrieve payment for a given id: %s', $paymentId),
+                \sprintf('Couldn\'t retrieve payment for a given id: %s', $paymentId),
                 $httpClientException->getCode(),
                 $httpClientException
             );
@@ -73,7 +73,7 @@ class PaymentApi
 
     private function getPaymentsUrl(): string
     {
-        return sprintf('%s%s', $this->baseUrl, self::PAYMENTS_ENDPOINT);
+        return \sprintf('%s%s', $this->baseUrl, self::PAYMENTS_ENDPOINT);
     }
 
     private function isSuccessCode(int $code): bool
@@ -85,7 +85,7 @@ class PaymentApi
     {
         return match (true) {
             $code >= 300 && $code < 400 => new PaymentApiException('Redirection not supported'),
-            $code >= 400 && $code < 500 => new PaymentApiException(sprintf('Client error: %s', $contents)),
+            $code >= 400 && $code < 500 => new PaymentApiException(\sprintf('Client error: %s', $contents)),
             $code >= 500 && $code < 600 => new PaymentApiException('Server error occurred'),
             default => new PaymentApiException('Unexpected status code'),
         };

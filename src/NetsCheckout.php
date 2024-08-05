@@ -83,14 +83,14 @@ class NetsCheckout extends Plugin
     {
         return new HostedPaymentMethodInstaller(
             $this->container->get(PluginIdProvider::class),
-            $this->container->get(sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME))
+            $this->container->get(\sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME))
         );
     }
 
     private function getPaymentMethodActivator(): HostedPaymentMethodActivator
     {
         return new HostedPaymentMethodActivator(
-            $this->container->get(sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME))
+            $this->container->get(\sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME))
         );
     }
 
