@@ -21,7 +21,7 @@ final readonly class HttpClientConfigurationProvider implements HttpClientConfig
 
     private function buildCommerceTag(): string
     {
-        return sprintf(
+        return \sprintf(
             '%s %s, %s, php%s',
             NetsCheckout::COMMERCE_PLATFORM_TAG,
             $this->shopwareVersion,
