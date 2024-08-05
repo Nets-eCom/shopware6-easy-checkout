@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Nets\Checkout\Facade;
 
+use Nets\Checkout\Service\Easy\Api\Payment;
 use Nets\Checkout\Service\Easy\ConfigService;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiExceptionHandler;
 use Nets\Checkout\Service\Easy\CheckoutService;
 use Nets\Checkout\Service\Easy\LanguageProvider;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentFinalizeException;
@@ -64,7 +66,8 @@ class AsyncPaymentFinalizePay
 
     public function finalize(AsyncPaymentTransactionStruct $transaction, Request $request, SalesChannelContext $salesChannelContext): void
     {
-        $transactionId = $transaction->getOrderTransaction()->getId();
+        $orderTransaction = $transaction->getOrderTransaction();
+        $transactionId = $orderTransaction->getId();
         $context = $salesChannelContext->getContext();
         $salesChannelId = $salesChannelContext->getSalesChannelId();
 
@@ -74,6 +77,10 @@ class AsyncPaymentFinalizePay
             $payment = $this->easyApiService->getPayment($netsTransactionId, $salesChannelId);
             $orderId = $transaction->getOrder()->getId();
             $chargeNow = $this->configService->getChargeNow($salesChannelId);
+
+            if (!$this->isSameTotalAmount($orderTransaction, $payment)) {
+                throw PaymentException::asyncFinalizeInterrupted($transactionId, 'Total amount mismatch');
+            }
 
             $this->orderRepository->update(
                 [
@@ -188,5 +195,10 @@ class AsyncPaymentFinalizePay
         return $transaction
             ->getOrderTransaction()
             ->getCustomFields()['nets_easy_payment_details']['transaction_id'];
+    }
+
+    private function isSameTotalAmount(OrderTransactionEntity $orderTransactionEntity, Payment $payment): bool
+    {
+        return $orderTransactionEntity->getAmount()->getTotalPrice() === (float)$payment->getOrderAmount() / 100;
     }
 }
