@@ -25,5 +25,7 @@ return RectorConfig::configure()
         symfony: true,
         doctrine: true
     )
-    ->withSkip([SymplifyQuoteEscapeRector::class])
+    ->withSkip([
+        SymplifyQuoteEscapeRector::class,
+    ])
     ->withImportNames(importShortClasses: false);
