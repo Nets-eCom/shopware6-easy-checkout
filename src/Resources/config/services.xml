@@ -22,11 +22,37 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
         </service>
 
+        <service id="NexiNets\RequestBuilder\PaymentRequest">
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory"/>
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder">
+            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest\CustomerBuilder">
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\AddressBuilder"/>
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\PhoneNumberBuilder"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest\PhoneNumberBuilder"/>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest\AddressBuilder"/>
+
+        <service id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory">
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\CustomerBuilder"/>
+            <argument type="service" id="router"/>
+        </service>
+
+        <!-- ### SDK ### -->
         <service id="NexiNets\CheckoutApi\Factory\PaymentApiFactory">
             <argument type="service" id="NexiNets\CheckoutApi\Factory\HttpClientFactory"/>
             <argument type="service" id="NexiNets\Http\HttpClientConfigurationProvider"/>
         </service>
-
 
         <service id="NexiNets\CheckoutApi\Factory\HttpClientFactory">
             <argument type="service" id="Psr\Http\Client\ClientInterface"/>
@@ -40,33 +66,26 @@
             <argument type="service" id="nyholm.psr7.psr17_factory"/>
         </service>
 
-        <service id="NexiNets\RequestBuilder\PaymentRequest">
-            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory"/>
-            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\Items"/>
-        </service>
-
-        <service id="NexiNets\RequestBuilder\PaymentRequest\Items">
-            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
-        </service>
-
-        <service id="NexiNets\RequestBuilder\PaymentRequest\CustomerBuilder">
-            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\AddressBuilder"/>
-            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\PhoneNumberBuilder"/>
-        </service>
-
-        <service id="NexiNets\RequestBuilder\PaymentRequest\PhoneNumberBuilder"/>
-        <service id="NexiNets\RequestBuilder\PaymentRequest\AddressBuilder"/>
-
-        <service id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
-
-        <service id="NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory">
-            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
-            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\CustomerBuilder"/>
-            <argument type="service" id="router"/>
-        </service>
-
         <service id="NexiNets\Http\HttpClientConfigurationProvider">
             <argument>%kernel.shopware_version%</argument>
         </service>
+
+        <!-- ### Webhooks ### -->
+        <service id="NexiNets\Storefront\Controller\WebhookController" public="true">
+            <argument type="service" id="NexiNets\Security\WebhookVoter"/>
+            <argument type="service" id="NexiNets\WebhookProcessor\WebhookProcessor"/>
+            <argument type="service" id="monolog.logger.nexinets_channel"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="NexiNets\Security\WebhookVoter">
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="request_stack"/>
+            <argument type="service" id="monolog.logger.nexinets_channel"/>
+        </service>
+
+        <service id="NexiNets\WebhookProcessor\WebhookProcessor"/>
     </services>
 </container>
