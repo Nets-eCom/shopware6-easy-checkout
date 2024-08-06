@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\CheckoutApi\Model\Request\Payment;
+namespace NexiNets\CheckoutApi\Model\Request;
 
 final readonly class Item implements \JsonSerializable
 {
@@ -19,6 +19,51 @@ final readonly class Item implements \JsonSerializable
     ) {
     }
 
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getQuantity(): int
+    {
+        return $this->quantity;
+    }
+
+    public function getUnit(): string
+    {
+        return $this->unit;
+    }
+
+    public function getUnitPrice(): int
+    {
+        return $this->unitPrice;
+    }
+
+    public function getGrossTotalAmount(): int
+    {
+        return $this->grossTotalAmount;
+    }
+
+    public function getNetTotalAmount(): int
+    {
+        return $this->netTotalAmount;
+    }
+
+    public function getReference(): string
+    {
+        return $this->reference;
+    }
+
+    public function getTaxRate(): ?int
+    {
+        return $this->taxRate;
+    }
+
+    public function getTaxAmount(): ?int
+    {
+        return $this->taxAmount;
+    }
+
     /**
      * @return array{
      *     name: string,
@@ -27,7 +72,7 @@ final readonly class Item implements \JsonSerializable
      *     unitPrice: float,
      *     grossTotalAmount: float,
      *     netTotalAmount: float,
-     *     reference: ?string,
+     *     reference: string,
      *     taxRate?: ?int,
      *     taxAmount?: ?int
      * }
