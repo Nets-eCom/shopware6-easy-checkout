@@ -24,9 +24,11 @@ class WebhookVoter extends NexiVoter
         return $attribute === self::HEADER_MATCH && $subject instanceof SalesChannelContext;
     }
 
+    /**
+     * @param SalesChannelContext $subject
+     */
     protected function voteOnAttribute(string $attribute, mixed $subject): bool
     {
-        /** @var SalesChannelContext $context */
         $context = $subject;
         $request = $this->requestStack->getMainRequest();
 
