@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace NexiNets\RequestBuilder\PaymentRequest;
 
-use NexiNets\CheckoutApi\Model\Request\Payment\Item;
+use NexiNets\CheckoutApi\Model\Request\Item;
 use NexiNets\RequestBuilder\Helper\FormatHelper;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
