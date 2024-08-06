@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NexiNets\Lifecycle;
 
+use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Handler\HostedPayment;
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 use Shopware\Core\Framework\Context;
@@ -11,6 +12,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
+use Shopware\Core\Framework\Util\Random;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 final readonly class HostedPaymentMethodActivator implements PaymentMethodActivatorInterface, PaymentMethodDeactivatorInterface
 {
@@ -18,7 +21,8 @@ final readonly class HostedPaymentMethodActivator implements PaymentMethodActiva
      * @param EntityRepository<PaymentMethodCollection> $paymentMethodRepository
      */
     public function __construct(
-        private EntityRepository $paymentMethodRepository
+        private EntityRepository $paymentMethodRepository,
+        private SystemConfigService $systemConfigService
     ) {
     }
 
@@ -38,6 +42,8 @@ final readonly class HostedPaymentMethodActivator implements PaymentMethodActiva
                 ],
                 $context
             );
+
+        $this->setRandomWebhookAuthorizationHeader();
     }
 
     public function deactivate(Context $context): void
@@ -74,5 +80,21 @@ final readonly class HostedPaymentMethodActivator implements PaymentMethodActiva
                     ),
                 $context
             );
+    }
+
+    private function setRandomWebhookAuthorizationHeader(): void
+    {
+        $webhookAuthorizationHeader = $this->systemConfigService->getString(
+            ConfigurationProvider::WEBHOOK_AUTHORIZATION_HEADER
+        );
+
+        if ($webhookAuthorizationHeader !== '') {
+            return;
+        }
+
+        $this->systemConfigService->set(
+            ConfigurationProvider::WEBHOOK_AUTHORIZATION_HEADER,
+            Random::getAlphanumericString(15)
+        );
     }
 }
