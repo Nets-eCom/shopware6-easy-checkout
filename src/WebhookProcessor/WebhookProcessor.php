@@ -27,6 +27,8 @@ final class WebhookProcessor
         foreach ($this->webhookProcessors as $webhookProcessor) {
             if ($webhook->getEvent() === $webhookProcessor->getEvent()) {
                 $webhookProcessor->process($webhook);
+
+                return;
             }
         }
 
