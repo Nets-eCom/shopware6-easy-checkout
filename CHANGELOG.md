@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.6+`
-|Version | `1.5.3`
+|Version | `1.5.4`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.5.4 - Released 2024-08-07
+
+fix: check amount mismatch on finalize
 
 ### Version 1.5.3 - Released 2024-05-29
 
