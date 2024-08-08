@@ -25,6 +25,7 @@
         <service id="NexiNets\RequestBuilder\PaymentRequest">
             <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory"/>
             <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder"/>
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\NotificationBuilder"/>
         </service>
 
         <service id="NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder">
@@ -34,6 +35,11 @@
         <service id="NexiNets\RequestBuilder\PaymentRequest\CustomerBuilder">
             <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\AddressBuilder"/>
             <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\PhoneNumberBuilder"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\PaymentRequest\NotificationBuilder">
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="router"/>
         </service>
 
         <service id="NexiNets\RequestBuilder\PaymentRequest\PhoneNumberBuilder"/>
@@ -86,6 +92,10 @@
             <argument type="service" id="monolog.logger.nexinets_channel"/>
         </service>
 
-        <service id="NexiNets\WebhookProcessor\WebhookProcessor"/>
+        <service id="NexiNets\WebhookProcessor\WebhookProcessor">
+            <argument type="service" id="NexiNets\WebhookProcessor\Processor\ChargeCreated"/>
+        </service>
+
+        <service id="NexiNets\WebhookProcessor\Processor\ChargeCreated"/>
     </services>
 </container>
