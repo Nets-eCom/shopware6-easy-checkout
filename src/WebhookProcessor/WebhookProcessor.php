@@ -2,7 +2,7 @@
 
 namespace NexiNets\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Model\Result\Webhook\Webhook;
+use NexiNets\CheckoutApi\Model\Webhook\Webhook;
 
 final class WebhookProcessor
 {

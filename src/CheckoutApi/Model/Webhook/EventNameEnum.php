@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\CheckoutApi\Model\Result\Webhook;
+namespace NexiNets\CheckoutApi\Model\Webhook;
 
 enum EventNameEnum: string
 {

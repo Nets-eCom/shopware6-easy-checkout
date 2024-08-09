@@ -6,7 +6,7 @@ namespace NexiNets\RequestBuilder\PaymentRequest;
 
 use NexiNets\CheckoutApi\Model\Request\Payment\Notification;
 use NexiNets\CheckoutApi\Model\Request\Payment\Webhook;
-use NexiNets\CheckoutApi\Model\Result\Webhook\EventNameEnum;
+use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\Configuration\ConfigurationProvider;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -31,6 +31,9 @@ class NotificationBuilder
         );
     }
 
+    /**
+     * @return Webhook[]
+     */
     private function createWebhooks(SalesChannelContext $salesChannelContext): array
     {
         $webhooks = [];

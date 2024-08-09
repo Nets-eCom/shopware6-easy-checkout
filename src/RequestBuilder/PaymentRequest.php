@@ -31,7 +31,8 @@ class PaymentRequest
             new Order(
                 $this->itemsBuilder->create($transaction->getOrder()),
                 $salesChannelContext->getCurrency()->getIsoCode(),
-                (int) round($transaction->getOrderTransaction()->getAmount()->getTotalPrice() * 100) // TODO: use helper instead
+                (int) round($transaction->getOrderTransaction()->getAmount()->getTotalPrice() * 100), // TODO: use helper instead
+                $transaction->getOrder()->getOrderNumber()
             ),
             $this
                 ->checkoutBuilderFactory
