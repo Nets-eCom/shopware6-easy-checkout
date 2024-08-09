@@ -2,8 +2,8 @@
 
 namespace NexiNets\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Model\Result\Webhook\EventNameEnum;
-use NexiNets\CheckoutApi\Model\Result\Webhook\Webhook;
+use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
+use NexiNets\CheckoutApi\Model\Webhook\Webhook;
 
 interface WebhookInterface
 {

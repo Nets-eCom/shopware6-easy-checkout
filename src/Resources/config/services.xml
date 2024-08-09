@@ -96,6 +96,8 @@
             <argument type="service" id="NexiNets\WebhookProcessor\Processor\ChargeCreated"/>
         </service>
 
-        <service id="NexiNets\WebhookProcessor\Processor\ChargeCreated"/>
+        <service id="NexiNets\WebhookProcessor\Processor\ChargeCreated">
+            <argument type="service" id="monolog.logger.nexinets_channel"/>
+        </service>
     </services>
 </container>
