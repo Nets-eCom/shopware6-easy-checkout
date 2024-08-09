@@ -2,7 +2,7 @@
 
 namespace NexiNets\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Model\Result\Webhook\Webhook;
+use NexiNets\CheckoutApi\Model\Webhook\Webhook;
 
 final class WebhookProcessor
 {
@@ -23,7 +23,6 @@ final class WebhookProcessor
      */
     public function process(Webhook $webhook): void
     {
-        /** @var WebhookInterface $webhookProcessor */
         foreach ($this->webhookProcessors as $webhookProcessor) {
             if ($webhook->getEvent() === $webhookProcessor->getEvent()) {
                 $webhookProcessor->process($webhook);
@@ -32,6 +31,6 @@ final class WebhookProcessor
             }
         }
 
-        throw new \RuntimeException('Invalid webhook event');
+        throw new \RuntimeException('Webhook event processor missing');
     }
 }

@@ -9,6 +9,7 @@ use NexiNets\CheckoutApi\Model\Request\Payment\IntegrationTypeEnum;
 use NexiNets\CheckoutApi\Model\Request\Payment\Order;
 use NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory;
 use NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder;
+use NexiNets\RequestBuilder\PaymentRequest\NotificationBuilder;
 use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
@@ -16,7 +17,8 @@ class PaymentRequest
 {
     public function __construct(
         private readonly CheckoutBuilderFactory $checkoutBuilderFactory,
-        private readonly ItemsBuilder $itemsBuilder
+        private readonly ItemsBuilder $itemsBuilder,
+        private readonly NotificationBuilder $notificationBuilder
     ) {
     }
 
@@ -29,7 +31,8 @@ class PaymentRequest
             new Order(
                 $this->itemsBuilder->create($transaction->getOrder()),
                 $salesChannelContext->getCurrency()->getIsoCode(),
-                (int) round($transaction->getOrderTransaction()->getAmount()->getTotalPrice() * 100) // TODO: use helper instead
+                (int) round($transaction->getOrderTransaction()->getAmount()->getTotalPrice() * 100), // TODO: use helper instead
+                $transaction->getOrder()->getOrderNumber()
             ),
             $this
                 ->checkoutBuilderFactory
@@ -37,7 +40,10 @@ class PaymentRequest
                 ->create(
                     $transaction,
                     $salesChannelContext
-                )
+                ),
+            $this
+                ->notificationBuilder
+                ->create($salesChannelContext)
         );
     }
 }
