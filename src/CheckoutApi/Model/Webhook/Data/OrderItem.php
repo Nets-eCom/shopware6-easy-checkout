@@ -7,7 +7,7 @@ class OrderItem
     public function __construct(
         private readonly string $reference,
         private readonly string $name,
-        private readonly int $quantity,
+        private readonly float|int $quantity,
         private readonly string $unit,
         private readonly int $unitPrice,
         private readonly int $taxRate,
@@ -27,7 +27,7 @@ class OrderItem
         return $this->name;
     }
 
-    public function getQuantity(): int
+    public function getQuantity(): float
     {
         return $this->quantity;
     }

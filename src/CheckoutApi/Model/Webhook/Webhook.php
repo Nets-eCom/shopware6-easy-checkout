@@ -12,7 +12,7 @@ class Webhook extends AbstractResult
     public function __construct(
         private readonly string $id,
         private readonly \DateTimeInterface $timestamp,
-        private readonly string $merchantNumber,
+        private readonly int $merchantNumber,
         private readonly EventNameEnum $event,
         private readonly ?Data $data,
     ) {
@@ -28,7 +28,7 @@ class Webhook extends AbstractResult
         return $this->timestamp;
     }
 
-    public function getMerchantNumber(): string
+    public function getMerchantNumber(): int
     {
         return $this->merchantNumber;
     }
