@@ -32,7 +32,20 @@ class WebhookController extends AbstractController
     {
         $this->webhookVoter->denyAccessUnlessGranted(WebhookVoter::HEADER_MATCH, $context);
 
-        $webhook = Webhook::fromJson($request->getContent());
+        try {
+            $webhook = Webhook::fromJson($request->getContent());
+        } catch (\Throwable $throwable) {
+            $this->logger->critical(
+                'Webhook payload parsing failed',
+                [
+                    'content' => $request->getContent(),
+                    'exception' => $throwable,
+                ]
+            );
+
+            throw $throwable;
+        }
+
         try {
             $this->webhookProcessor->process($webhook);
         } catch (WebhookProcessorException $webhookProcessorException) {

@@ -7,6 +7,7 @@ namespace NexiNets\Tests\Lifecycle;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Handler\HostedPayment;
 use NexiNets\Lifecycle\HostedPaymentMethodActivator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Rule\InvokedCount;
 use PHPUnit\Framework\TestCase;
@@ -20,9 +21,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 final class HostedPaymentMethodActivatorTest extends TestCase
 {
-    /**
-     * @dataProvider activateProvider
-     */
+    #[DataProvider('activateProvider')]
     public function testActivate(InvokedCount $invokedCount, string $id, int $totalCount, bool $active): void
     {
         $context = Context::createDefaultContext();
@@ -73,9 +72,7 @@ final class HostedPaymentMethodActivatorTest extends TestCase
         $sut->activate($context);
     }
 
-    /**
-     * @dataProvider activateProvider
-     */
+    #[DataProvider('activateProvider')]
     public function testDeactivate(InvokedCount $invokedCount, string $id, int $totalCount, bool $active): void
     {
         $context = Context::createDefaultContext();
@@ -116,10 +113,10 @@ final class HostedPaymentMethodActivatorTest extends TestCase
     /**
      * @return iterable<array{InvokedCount, string, int, bool}>
      */
-    public function activateProvider(): iterable
+    public static function activateProvider(): iterable
     {
-        yield [$this->never(), '', 0, true];
-        yield [$this->once(), '1234', 1, true];
+        yield [new InvokedCount(0), '', 0, true];
+        yield [new InvokedCount(1), '1234', 1, true];
     }
 
     /**

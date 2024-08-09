@@ -1,0 +1,29 @@
+{
+    "id": "01ee00006091b2196937598058c4e488",
+    "timestamp": "2021-05-04T22:44:10.1185+02:00",
+    "merchantNumber": 100017120,
+    "event": "payment.charge.created.v2",
+    "data": {
+        "chargeId": "01ee00006091b2196937598058c4e488",
+        "orderItems": [
+            {
+                "reference": "Sneaky NE2816-82",
+                "name": "Sneaky",
+                "quantity": 2.0,
+                "unit": "pcs",
+                "unitPrice": 2500,
+                "taxRate": 1000,
+                "taxAmount": 500,
+                "netTotalAmount": 5000,
+                "grossTotalAmount": 5500
+            }
+        ],
+        "paymentMethod": "Visa",
+        "paymentType": "CARD",
+        "amount": {
+            "amount": 5500,
+            "currency": "SEK"
+        },
+        "paymentId": "025400006091b1ef6937598058c4e487"
+    }
+}

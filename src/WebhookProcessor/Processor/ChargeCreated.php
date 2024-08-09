@@ -2,6 +2,7 @@
 
 namespace NexiNets\WebhookProcessor\Processor;
 
+use NexiNets\CheckoutApi\Model\Webhook\Data\ChargeCreated as DataChargeCreated;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\CheckoutApi\Model\Webhook\Webhook;
 use NexiNets\WebhookProcessor\WebhookInterface;
@@ -23,7 +24,14 @@ final readonly class ChargeCreated implements WebhookInterface
         $this->logger->info('payment.charge.created.v2 started', [
             'paymentId' => $webhook->getData()->getPaymentId(),
         ]);
+
+        $data = $webhook->getData();
+        if (!$data instanceof DataChargeCreated) {
+            throw new WebhookProcessorException('Invalid Data type');
+        }
+
         // @TODO implement
+
         $this->logger->info('payment.charge.created.v2 finished', [
             'paymentId' => $webhook->getData()->getPaymentId(),
         ]);
