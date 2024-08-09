@@ -8,7 +8,7 @@ final readonly class Item implements \JsonSerializable
 {
     public function __construct(
         private string $name,
-        private int $quantity,
+        private float|int $quantity,
         private string $unit,
         private int $unitPrice,
         private int $grossTotalAmount,
@@ -24,7 +24,7 @@ final readonly class Item implements \JsonSerializable
         return $this->name;
     }
 
-    public function getQuantity(): int
+    public function getQuantity(): float
     {
         return $this->quantity;
     }
