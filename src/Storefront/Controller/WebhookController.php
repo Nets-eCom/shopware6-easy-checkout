@@ -2,7 +2,7 @@
 
 namespace NexiNets\Storefront\Controller;
 
-use NexiNets\CheckoutApi\Model\Result\Webhook\Webhook;
+use NexiNets\CheckoutApi\Model\Webhook\Webhook;
 use NexiNets\Security\WebhookVoter;
 use NexiNets\WebhookProcessor\WebhookProcessor;
 use NexiNets\WebhookProcessor\WebhookProcessorException;

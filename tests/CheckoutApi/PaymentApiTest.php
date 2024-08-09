@@ -184,7 +184,7 @@ final class PaymentApiTest extends TestCase
 
     private function createPsrClientThrowingException(): ClientInterface
     {
-        return new class() implements ClientInterface {
+        return new class implements ClientInterface {
             public function sendRequest(RequestInterface $request): ResponseInterface
             {
                 throw $this->createClientException();
@@ -192,7 +192,7 @@ final class PaymentApiTest extends TestCase
 
             private function createClientException(): ClientExceptionInterface
             {
-                return new class() extends \Exception implements ClientExceptionInterface {};
+                return new class extends \Exception implements ClientExceptionInterface {};
             }
         };
     }

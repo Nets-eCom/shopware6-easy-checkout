@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\CheckoutApi\Model\Result\Webhook;
+namespace NexiNets\CheckoutApi\Model\Webhook;
 
 abstract class Data
 {
     public function __construct(
-        protected readonly string $paymentId,
+        private readonly string $paymentId,
     ) {
     }
 
