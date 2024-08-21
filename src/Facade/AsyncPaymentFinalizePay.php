@@ -79,7 +79,7 @@ class AsyncPaymentFinalizePay
             $chargeNow = $this->configService->getChargeNow($salesChannelId);
 
             if (!$this->isSameTotalAmount($orderTransaction, $payment)) {
-                throw PaymentException::asyncFinalizeInterrupted($transactionId, 'Total amount mismatch');
+                throw new AsyncPaymentFinalizeException($transactionId, 'Total amount mismatch');
             }
 
             $this->orderRepository->update(
