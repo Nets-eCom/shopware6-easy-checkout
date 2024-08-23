@@ -7,6 +7,7 @@ namespace NexiNets\RequestBuilder;
 use NexiNets\CheckoutApi\Model\Request\Payment;
 use NexiNets\CheckoutApi\Model\Request\Payment\IntegrationTypeEnum;
 use NexiNets\CheckoutApi\Model\Request\Payment\Order;
+use NexiNets\RequestBuilder\Helper\FormatHelper;
 use NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory;
 use NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder;
 use NexiNets\RequestBuilder\PaymentRequest\NotificationBuilder;
@@ -18,7 +19,8 @@ class PaymentRequest
     public function __construct(
         private readonly CheckoutBuilderFactory $checkoutBuilderFactory,
         private readonly ItemsBuilder $itemsBuilder,
-        private readonly NotificationBuilder $notificationBuilder
+        private readonly NotificationBuilder $notificationBuilder,
+        private readonly FormatHelper $formatHelper,
     ) {
     }
 
@@ -31,7 +33,7 @@ class PaymentRequest
             new Order(
                 $this->itemsBuilder->create($transaction->getOrder()),
                 $salesChannelContext->getCurrency()->getIsoCode(),
-                (int) round($transaction->getOrderTransaction()->getAmount()->getTotalPrice() * 100), // TODO: use helper instead
+                $this->formatHelper->priceToInt($transaction->getOrderTransaction()->getAmount()->getTotalPrice()),
                 $transaction->getOrder()->getOrderNumber()
             ),
             $this

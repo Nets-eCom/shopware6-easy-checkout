@@ -8,7 +8,7 @@ class Item
 {
     public function __construct(
         private readonly string $name,
-        private readonly int $quantity,
+        private readonly float $quantity,
         private readonly string $unit,
         private readonly int $unitPrice,
         private readonly int $grossTotalAmount,
@@ -24,7 +24,7 @@ class Item
         return $this->name;
     }
 
-    public function getQuantity(): int
+    public function getQuantity(): float
     {
         return $this->quantity;
     }

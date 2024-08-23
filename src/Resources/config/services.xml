@@ -26,6 +26,7 @@
             <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory"/>
             <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder"/>
             <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\NotificationBuilder"/>
+            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
         </service>
 
         <service id="NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder">
@@ -93,11 +94,16 @@
         </service>
 
         <service id="NexiNets\WebhookProcessor\WebhookProcessor">
-            <argument type="service" id="NexiNets\WebhookProcessor\Processor\ChargeCreated"/>
+            <argument type="tagged_iterator" tag="nexinets.webhook_processor"/>
         </service>
 
         <service id="NexiNets\WebhookProcessor\Processor\ChargeCreated">
+            <argument type="service" id="order_transaction.repository"/>
             <argument type="service" id="monolog.logger.nexinets_channel"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <tag name="nexinets.webhook_processor" />
         </service>
     </services>
 </container>
