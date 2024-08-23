@@ -30,8 +30,12 @@ class Payment
         return $this->paymentId;
     }
 
-    public function getSummary(): ?Summary
+    public function getSummary(): Summary
     {
+        if (!$this->summary instanceof Summary) {
+            throw new \DomainException('Summary doesn\'t exist');
+        }
+
         return $this->summary;
     }
 
@@ -84,5 +88,21 @@ class Payment
     public function getMyReference(): ?string
     {
         return $this->myReference;
+    }
+
+    public function isFullyCharged(): bool
+    {
+        $summary = $this->getSummary();
+
+        if (!$this->isCharged()) {
+            return false;
+        }
+
+        return $summary->getChargedAmount() === $summary->getReservedAmount();
+    }
+
+    public function isCharged(): bool
+    {
+        return $this->getSummary()->getChargedAmount() > 0;
     }
 }

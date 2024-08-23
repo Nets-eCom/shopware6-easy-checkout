@@ -171,7 +171,12 @@ class RetrievePaymentResult extends AbstractResult
      */
     private static function createRefunds(array $data): array
     {
-        return array_map([self::class, 'createRefund'], $data);
+        $result = [];
+        foreach ($data as $refund) {
+            $result[] = self::createRefund($refund);
+        }
+
+        return $result;
     }
 
     /**
@@ -179,14 +184,14 @@ class RetrievePaymentResult extends AbstractResult
      *
      * @throws \Exception
      */
-    private function createRefund(array $data): Refund
+    private static function createRefund(array $data): Refund
     {
         return new Refund(
             $data['refundId'],
             $data['amount'],
             RefundStateEnum::tryFrom($data['state']),
             new \DateTime($data['lastUpdated']),
-            $this->createOrderItems($data['orderItems'])
+            self::createOrderItems($data['orderItems'])
         );
     }
 
@@ -197,7 +202,12 @@ class RetrievePaymentResult extends AbstractResult
      */
     private static function createCharges(array $data): array
     {
-        return array_map([self::class, 'createCharge'], $data);
+        $result = [];
+        foreach ($data as $charge) {
+            $result[] = self::createCharge($charge);
+        }
+
+        return $result;
     }
 
     /**
@@ -205,13 +215,13 @@ class RetrievePaymentResult extends AbstractResult
      *
      * @throws \Exception
      */
-    private function createCharge(array $data): Charge
+    private static function createCharge(array $data): Charge
     {
         return new Charge(
             $data['chargeId'],
             $data['amount'],
             new \DateTime($data['created']),
-            $this->createOrderItems($data['orderItems'])
+            self::createOrderItems($data['orderItems'])
         );
     }
 
@@ -220,15 +230,20 @@ class RetrievePaymentResult extends AbstractResult
      *
      * @return array<Item>
      */
-    private function createOrderItems(array $data): array
+    private static function createOrderItems(array $data): array
     {
-        return array_map([self::class, 'createItem'], $data);
+        $result = [];
+        foreach ($data as $item) {
+            $result[] = self::createItem($item);
+        }
+
+        return $result;
     }
 
     /**
      * @param array<string, mixed> $data
      */
-    private function createItem(array $data): Item
+    private static function createItem(array $data): Item
     {
         return new Item(
             $data['name'],

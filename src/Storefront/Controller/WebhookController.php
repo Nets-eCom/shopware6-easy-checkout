@@ -28,9 +28,9 @@ class WebhookController extends AbstractController
     }
 
     #[Route(path: '/webhook', name: 'payment.nexinets.webhook', methods: ['POST'])]
-    public function webhook(Request $request, SalesChannelContext $context): Response
+    public function webhook(Request $request, SalesChannelContext $salesChannelContext): Response
     {
-        $this->webhookVoter->denyAccessUnlessGranted(WebhookVoter::HEADER_MATCH, $context);
+        $this->webhookVoter->denyAccessUnlessGranted(WebhookVoter::HEADER_MATCH, $salesChannelContext);
 
         try {
             $webhook = Webhook::fromJson($request->getContent());
@@ -47,7 +47,7 @@ class WebhookController extends AbstractController
         }
 
         try {
-            $this->webhookProcessor->process($webhook);
+            $this->webhookProcessor->process($webhook, $salesChannelContext);
         } catch (WebhookProcessorException $webhookProcessorException) {
             $this->logger->error(
                 'Webhook processing failed',
