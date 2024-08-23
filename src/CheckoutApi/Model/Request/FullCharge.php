@@ -10,12 +10,11 @@ final class FullCharge extends Charge
 {
     public function __construct(
         private readonly int $amount,
-        protected bool $finalCharge = true,
         protected ?Shipping $shipping = null,
         protected ?string $myReference = null,
         protected ?string $paymentMethodReference = null
     ) {
-        parent::__construct($finalCharge, $shipping, $myReference, $paymentMethodReference);
+        parent::__construct(true, $shipping, $myReference, $paymentMethodReference);
     }
 
     public function getAmount(): int

@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 final readonly class HostedPayment implements AsynchronousPaymentHandlerInterface
 {
-    private const ORDER_TRANSACTION_CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID = 'nexi_nets_payment_id';
+    public const ORDER_TRANSACTION_CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID = 'nexi_nets_payment_id'; // @todo move it because it will be the same for embedded
 
     /**
      * @param EntityRepository<OrderTransactionCollection> $orderTransactionRepository
