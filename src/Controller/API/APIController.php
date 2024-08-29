@@ -9,7 +9,6 @@ use Nets\Checkout\Service\DataReader\OrderDataReader;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Nets\Checkout\Service\Easy\CheckoutService;
-use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
 use Shopware\Core\Checkout\Order\OrderStates;
@@ -20,9 +19,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\Kernel;
-use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions;
-use Shopware\Core\System\StateMachine\StateMachineRegistry;
-use Shopware\Core\System\StateMachine\Transition;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -36,7 +32,6 @@ class APIController extends StorefrontController
     private EasyApiService $easyApiService;
     private EntityRepository $netsApiRepository;
     private OrderTransactionStateHandler $transHandler;
-    private StateMachineRegistry $stateMachineRegistry;
     private OrderDataReader $orderDataReader;
 
     public function __construct(
@@ -44,14 +39,12 @@ class APIController extends StorefrontController
         EasyApiService $easyApiService,
         EntityRepository $netsApiRepository,
         OrderTransactionStateHandler $transHandler,
-        StateMachineRegistry $machineRegistry,
         OrderDataReader $orderDataReader
     ) {
         $this->checkout             = $checkout;
         $this->easyApiService       = $easyApiService;
         $this->netsApiRepository    = $netsApiRepository;
         $this->transHandler         = $transHandler;
-        $this->stateMachineRegistry = $machineRegistry;
         $this->orderDataReader      = $orderDataReader;
     }
 
@@ -93,25 +86,40 @@ class APIController extends StorefrontController
         $orderId     = $request->get('params')['transaction']['orderId'];
         $orderEntity = $this->orderDataReader->getOrderEntityById($context, $orderId);
         $salesChanelId = $orderEntity->getSalesChannelId();
+        $orderStateTechnicalName = $orderEntity->getStateMachineState()->getTechnicalName();
+
         $transaction = $orderEntity->getTransactions()->first();
+        $transactionStateTechnicalName = $transaction->getStateMachineState()->getTechnicalName();
+        $transactionId = $transaction->getId();
+
         $paymentId   = $request->get('params')['transaction']['customFields']['nets_easy_payment_details']['transaction_id'];
         $payment     = $this->easyApiService->getPayment($paymentId, $salesChanelId);
+        $paymentMethod = $payment->getPaymentMethod();
+        $refundedAmount = $payment->getRefundedAmount();
+        $chargedAmount = $payment->getChargedAmount();
+        $reservedAmount = $payment->getReservedAmount();
+        $cancelledAmount = $payment->getCancelledAmount();
 
-        $orderStatus                 = $orderEntity->getStateMachineState()->getTechnicalName();
-        $refundPendingStatus         = false;
+        if ($transactionStateTechnicalName === OrderTransactionStates::STATE_FAILED) {
+            return $this->json([
+                'amountAvailableForCapturing' => 0,
+                'amountAvailableForRefunding' => 0,
+                'orderState' => $transactionStateTechnicalName,
+                'refundPendingStatus' => false,
+                'paymentMethod' => $paymentMethod,
+                'refunded' => $refundedAmount,
+            ]);
+        }
 
-        if ($orderStatus == OrderStates::STATE_CANCELLED) {
-
-            if ($transaction->getStateMachineState()->getTechnicalName() != OrderStates::STATE_CANCELLED) {
-                $this->transHandler->cancel($orderEntity->getTransactions()->first()->getId(), $context);
+        if ($orderStateTechnicalName === OrderStates::STATE_CANCELLED) {
+            if ($transactionStateTechnicalName !== OrderStates::STATE_CANCELLED) {
+                $this->transHandler->cancel($transactionId, $context);
             }
 
-            if ($transaction->getStateMachineState()->getTechnicalName() == OrderStates::STATE_CANCELLED) {
-                $payment = $this->easyApiService->getPayment($paymentId, $salesChanelId);
-
-                if (empty($payment->getCancelledAmount())) {
+            if ($transactionStateTechnicalName === OrderStates::STATE_CANCELLED) {
+                if (empty($cancelledAmount)) {
                     $cancelBody = [
-                        'amount' => $payment->getReservedAmount(),
+                        'amount' => $reservedAmount,
                     ];
 
                     try {
@@ -122,13 +130,13 @@ class APIController extends StorefrontController
             }
             return new JsonResponse();
         } else {
-            if ($payment->getChargedAmount() == 0) {
+            if ($chargedAmount == 0) {
                 $amountAvailableForCapturing = $payment->getOrderAmount() / 100;
             } else {
-                $amountAvailableForCapturing = ($payment->getReservedAmount() - $payment->getChargedAmount()) / 100;
+                $amountAvailableForCapturing = ($reservedAmount - $chargedAmount) / 100;
             }
 
-            if ($payment->getChargedAmount() > 0) {
+            if ($chargedAmount > 0) {
                 $response = $payment->getAllCharges();
                 foreach ($response as $key) {
                     $criteria = new Criteria();
@@ -149,35 +157,24 @@ class APIController extends StorefrontController
                 }
             }
 
-            if ($payment->getRefundedAmount() == 0) {
-                if ($payment->getReservedAmount() == $payment->getChargedAmount()) {
-                    if ($transaction->getStateMachineState()->getTechnicalName() == OrderTransactionStates::STATE_PARTIALLY_PAID) {
-                        $this->transHandler->reopen($orderEntity->getTransactions()->first()
-                            ->getId(), $context);
-
-                        $this->stateMachineRegistry->transition(new Transition(
-                            OrderTransactionDefinition::ENTITY_NAME,
-                            $orderEntity->getTransactions()->first()
-                                ->getId(),
-                            StateMachineTransitionActions::ACTION_PAID,
-                            'stateId'
-                        ), $context);
-                    } elseif ($transaction->getStateMachineState()->getTechnicalName() !== OrderTransactionStates::STATE_CANCELLED) {
-                        $this->transHandler->paid($orderEntity->getTransactions()->first()->getId(), $context);
+            if ($refundedAmount == 0) {
+                if ($reservedAmount == $chargedAmount) {
+                    if ($transactionStateTechnicalName === OrderTransactionStates::STATE_PARTIALLY_PAID) {
+                        $this->transHandler->reopen($transactionId, $context);
+                        $this->transHandler->paid($transactionId, $context);
+                    } elseif ($transactionStateTechnicalName !== OrderTransactionStates::STATE_CANCELLED) {
+                        $this->transHandler->paid($transactionId, $context);
                     }
-                } elseif ($payment->getChargedAmount() < $payment->getReservedAmount() && $payment->getChargedAmount() > 0 && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PARTIALLY_PAID) {
-                    $this->transHandler->payPartially($orderEntity->getTransactions()->first()
-                        ->getId(), $context);
+                } elseif ($chargedAmount < $reservedAmount && $chargedAmount > 0 && $transactionStateTechnicalName !== OrderTransactionStates::STATE_PARTIALLY_PAID) {
+                    $this->transHandler->payPartially($transactionId, $context);
                 }
             }
 
-            if ($payment->getRefundedAmount() > 0) {
-                if ($payment->getChargedAmount() == $payment->getRefundedAmount() && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_REFUNDED) {
-                    $this->transHandler->refund($orderEntity->getTransactions()->first()
-                        ->getId(), $context);
-                } elseif ($payment->getRefundedAmount() < $payment->getChargedAmount() && $transaction->getStateMachineState()->getTechnicalName() != OrderTransactionStates::STATE_PARTIALLY_REFUNDED) {
-                    $this->transHandler->refundPartially($orderEntity->getTransactions()->first()
-                        ->getId(), $context);
+            if ($refundedAmount > 0) {
+                if ($chargedAmount == $refundedAmount && $transactionStateTechnicalName !== OrderTransactionStates::STATE_REFUNDED) {
+                    $this->transHandler->refund($transactionId, $context);
+                } elseif ($refundedAmount < $chargedAmount && $transactionStateTechnicalName !== OrderTransactionStates::STATE_PARTIALLY_REFUNDED) {
+                    $this->transHandler->refundPartially($transactionId, $context);
                 }
             }
 
@@ -205,9 +202,9 @@ class APIController extends StorefrontController
             // second block
             $refundsArray = $payment->getAllRefund();
 
-            $amountAvailableForRefunding = ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100;
+            $amountAvailableForRefunding = ($chargedAmount - $refundedAmount) / 100;
 
-            if ($payment->getRefundedAmount() > 0 && $remainingAmount != $amountAvailableForRefunding) {
+            if ($refundedAmount > 0 && $remainingAmount != $amountAvailableForRefunding) {
                 foreach ($refundsArray as $ky) {
                     $amountToRefund      = $ky->amount / 100;
                     $refundChargeIdArray = [];
@@ -262,6 +259,8 @@ class APIController extends StorefrontController
                 }
             }
 
+            $refundPendingStatus = false;
+
             if (!empty($refundsArray)) {
                 foreach ($refundsArray as $row) {
                     if ($row->state == 'Pending') {
@@ -272,11 +271,11 @@ class APIController extends StorefrontController
 
             return new JsonResponse([
                 'amountAvailableForCapturing' => $amountAvailableForCapturing,
-                'amountAvailableForRefunding' => ($payment->getChargedAmount() - $payment->getRefundedAmount()) / 100,
-                'orderState'                  => $transaction->getStateMachineState()->getTechnicalName(),
+                'amountAvailableForRefunding' => ($chargedAmount - $refundedAmount) / 100,
+                'orderState'                  => $transactionStateTechnicalName,
                 'refundPendingStatus'         => $refundPendingStatus,
-                'paymentMethod'               => $payment->getPaymentMethod(),
-                'refunded'                    => $payment->getRefundedAmount(),
+                'paymentMethod'               => $paymentMethod,
+                'refunded'                    => $refundedAmount,
             ]);
         }
     }
