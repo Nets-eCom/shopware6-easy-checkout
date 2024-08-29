@@ -12,11 +12,11 @@
 
 ## CHANGELOG
 
-### Version 1.4.9 - Released 2024-08-07
+### Version 1.4.9 - Released 2024-08-21
 
 fix: use exception class instead of helper
 
-### Version 1.4.8 - Released 2024-08-21
+### Version 1.4.8 - Released 2024-08-07
 
 fix: check amount mismatch on finalize
 
