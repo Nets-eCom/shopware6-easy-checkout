@@ -6,12 +6,12 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.6.x`
-|Version | `1.5.4`
+|Version | `1.5.5`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 
-### Note: This version 1.5.4 of Nets Easy Module is supported for shopware 6.6+ version, if you want to get this module installed for other shopware version i.e. 6.5, 6.4 or lower, please go for Nets Checkout Module released version 1.4.x
+### Note: This version 1.5.5 of Nets Easy Module is supported for shopware 6.6+ version, if you want to get this module installed for other shopware version i.e. 6.5, 6.4 or lower, please go for Nets Checkout Module released version 1.4.x
 
 
 ## INSTALLATION

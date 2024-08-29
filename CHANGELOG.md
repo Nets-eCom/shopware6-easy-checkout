@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.6+`
-|Version | `1.5.4`
+|Version | `1.5.5`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.5.5 - Released 2024-08-29
+
+fix: prevent order transition if marked as failed
 
 ### Version 1.5.4 - Released 2024-08-07
 
