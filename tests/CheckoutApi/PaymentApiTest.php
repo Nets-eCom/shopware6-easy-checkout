@@ -162,7 +162,7 @@ final class PaymentApiTest extends TestCase
 
         $sut = $this->createPaymentApi($response, $streamFactory);
 
-        $result = $sut->createCharge('1234', $this->createChargeRequest());
+        $result = $sut->charge('1234', $this->createChargeRequest());
 
         $this->assertInstanceOf(ChargeResult::class, $result);
         $this->assertSame('1234', $result->getChargeId());

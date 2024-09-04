@@ -9,7 +9,7 @@ use NexiNets\CheckoutApi\Model\Request\Charge\Shipping;
 abstract class Charge implements \JsonSerializable
 {
     public function __construct(
-        protected bool $finalCharge = true,
+        protected bool $finalCharge = true, // @todo remove, not used by nexi, ask checkout team
         protected ?Shipping $shipping = null,
         protected ?string $myReference = null,
         protected ?string $paymentMethodReference = null
@@ -21,7 +21,6 @@ abstract class Charge implements \JsonSerializable
     /**
      * @return array{
      *     amount: int,
-     *     finalCharge: bool,
      *     shipping: ?Shipping,
      *     myReference: ?string,
      *     paymentMethodReference: ?string
@@ -31,7 +30,6 @@ abstract class Charge implements \JsonSerializable
     {
         $result = [
             'amount' => $this->getAmount(),
-            'finalCharge' => $this->finalCharge,
         ];
 
         if ($this->shipping instanceof Shipping) {

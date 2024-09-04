@@ -38,7 +38,6 @@ class PartialCharge extends Charge
      *     amount: int,
      *     orderItems: array<Item>,
      *     shipping: ?Shipping,
-     *     finalCharge: bool,
      *     myReference: ?string,
      *     paymentMethodReference: ?string
      * }

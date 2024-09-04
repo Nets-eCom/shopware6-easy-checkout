@@ -1,0 +1,6 @@
+{
+    "nexinets-charge-action": {
+        "title": "Make Full Charge",
+        "description": "Send charge request to Nexi/Nets"
+    }
+}
