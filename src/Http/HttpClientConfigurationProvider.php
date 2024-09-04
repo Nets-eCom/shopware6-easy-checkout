@@ -8,6 +8,7 @@ use NexiNets\CheckoutApi\Factory\Provider\HttpClientConfigurationProviderInterfa
 use NexiNets\CheckoutApi\Http\Configuration;
 use NexiNets\NetsCheckout;
 
+// TODO: move it to RequestBuilder
 final readonly class HttpClientConfigurationProvider implements HttpClientConfigurationProviderInterface
 {
     public function __construct(private string $shopwareVersion)
