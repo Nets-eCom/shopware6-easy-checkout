@@ -1,0 +1,6 @@
+{
+    "nexinets-charge-action": {
+        "title": "Gesamten Betrag abbuchen",
+        "description": "Buchungsanfrage an Nexi/Nets abschicken"
+    }
+}
