@@ -108,6 +108,16 @@
             <tag name="nexinets.webhook_processor" />
         </service>
 
+        <!-- ### Subscribers ### -->
+        <service id="NexiNets\Subscriber\PaymentCancelSubscriber">
+            <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="order.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
         <!-- ### Flow Builder -->
         <service id="NexiNets\Core\Content\Flow\Dispatching\Action\ChargeAction">
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>

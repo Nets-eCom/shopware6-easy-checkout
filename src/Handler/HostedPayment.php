@@ -10,6 +10,7 @@ use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Request\Payment\IntegrationTypeEnum;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Summary;
 use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\RequestBuilder\PaymentRequest;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
@@ -24,8 +25,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 final readonly class HostedPayment implements AsynchronousPaymentHandlerInterface
 {
-    public const ORDER_TRANSACTION_CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID = 'nexi_nets_payment_id'; // @todo move it because it will be the same for embedded
-
     /**
      * @param EntityRepository<OrderTransactionCollection> $orderTransactionRepository
      */
@@ -65,7 +64,7 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
         $data = [
             'id' => $transactionId,
             'customFields' => [
-                self::ORDER_TRANSACTION_CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => $payment->getPaymentId(),
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => $payment->getPaymentId(),
             ],
         ];
 
@@ -84,7 +83,7 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
         $orderTransaction = $transaction->getOrderTransaction();
         $orderTransactionId = $orderTransaction->getId();
         $paymentId = $orderTransaction->getCustomFieldsValue(
-            self::ORDER_TRANSACTION_CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
         );
 
         try {
