@@ -75,7 +75,7 @@ class PaymentApi
         return RetrievePaymentResult::fromJson($contents);
     }
 
-    public function createCharge(string $paymentId, Charge $charge): ChargeResult
+    public function charge(string $paymentId, Charge $charge): ChargeResult
     {
         try {
             $response = $this->client->post($this->getPaymentChargesUrl($paymentId), json_encode($charge));
