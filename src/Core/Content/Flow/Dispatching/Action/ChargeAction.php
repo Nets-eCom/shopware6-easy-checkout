@@ -5,7 +5,7 @@ namespace NexiNets\Core\Content\Flow\Dispatching\Action;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Handler\HostedPayment;
+use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\RequestBuilder\ChargeRequest;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
@@ -54,7 +54,7 @@ class ChargeAction extends FlowAction
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
             $paymentId = $transaction->getCustomFieldsValue(
-                HostedPayment::ORDER_TRANSACTION_CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
             );
 
             if ($paymentId === null) {
