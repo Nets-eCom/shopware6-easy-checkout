@@ -7,9 +7,11 @@ use Nets\Checkout\Dictionary\CountryPhonePrefixDictionary;
 use Nets\Checkout\Service\Easy\Api\EasyApiService;
 use Nets\Checkout\Service\Easy\Api\Exception\EasyApiException;
 use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\OrderEntity;
@@ -24,6 +26,7 @@ use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMa
 use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Shopware\Core\System\StateMachine\Transition;
 use Shopware\Storefront\Framework\Routing\Router;
+use Swag\CustomizedProducts\Core\Checkout\CustomizedProductsCartDataCollector;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -366,6 +369,43 @@ class CheckoutService
         return $data;
     }
 
+    /**
+     * @param LineItem|OrderLineItemEntity $item
+     */
+    private function isItemFromCustomProductExtension(Struct $item): bool
+    {
+        if (!class_exists(CustomizedProductsCartDataCollector::class)) {
+            return false;
+        }
+
+        return $item->getType() === CustomizedProductsCartDataCollector::CUSTOMIZED_PRODUCTS_TEMPLATE_LINE_ITEM_TYPE;
+    }
+
+    /**
+     * @param LineItem|OrderLineItemEntity $item
+     */
+    private function getReferenceName(Struct $item): string
+    {
+        $defaultReturn = $item->getId();
+        if ($item instanceof OrderLineItemEntity) {
+            $defaultReturn = $item->getProductId() ?? $item->getId();
+        }
+
+        if (!method_exists($item, 'getPayload')) {
+            return $defaultReturn;
+        }
+
+        $payload = $item->getPayload();
+        if (isset($payload['productNumber'])) {
+            return $payload['productNumber'];
+        }
+
+        return $defaultReturn;
+    }
+
+    /**
+     * @param Cart|OrderEntity $cartOrderEntityObject
+     */
     private function getOrderItems(Struct $cartOrderEntityObject, SalesChannelContext $salesChannelContext = null): array
     {
         $display_gross = true;
@@ -380,21 +420,24 @@ class CheckoutService
 
         $items     = [];
         $sumAmount = 0;
+        $parentIds = [];
+
         foreach ($cartOrderEntityObject->getLineItems() as $item) {
+
             $taxes = $this->getRowTaxes($item->getPrice()
                 ->getCalculatedTaxes());
 
             $quantity = $item->getQuantity();
 
             if ($cartOrderEntityObject instanceof Cart) {
-                $ref_name = $item->getId();
 
-                if (method_exists($item, 'getpayload')) {
-                    $payload = $item->getpayload();
+                $ref_name = $this->getReferenceName($item);
+                $name = $this->stringFilter($item->getLabel());
 
-                    if (isset($payload['productNumber'])) {
-                        $ref_name = $payload['productNumber'];
-                    }
+                if ($this->isItemFromCustomProductExtension($item)) {
+                    $customItem = $item->getChildren()->firstWhere(fn(LineItem $lineItem) => $lineItem->getType() === LineItem::PRODUCT_LINE_ITEM_TYPE);
+                    $ref_name = $this->getReferenceName($customItem);
+                    $name = $customItem->getLabel();
                 }
 
                 $product = $item->getPrice()->getUnitPrice();
@@ -413,7 +456,7 @@ class CheckoutService
 
                 $items[] = [
                     'reference'        => $ref_name,
-                    'name'             => $this->stringFilter($item->getLabel()),
+                    'name'             => $name,
                     'quantity'         => $quantity,
                     'unit'             => 'pcs',
                     'unitPrice'        => $unitPrice,
@@ -427,16 +470,23 @@ class CheckoutService
             }
 
             if ($cartOrderEntityObject instanceof OrderEntity) {
+                if ($item->getParentId() === null && $this->isItemFromCustomProductExtension($item)) {
+                    $parentIds[] = $item->getId();
+                }
+
+                if (in_array($item->getParentId(), $parentIds)) {
+                    continue;
+                }
+
                 $product = $item->getUnitPrice();
 
-                $ref_name = $item->getProductId() ?? $item->getId();
+                $ref_name = $this->getReferenceName($item);
+                $name = $this->stringFilter($item->getLabel());
 
-                if (method_exists($item, 'getpayload')) {
-                    $payload = $item->getpayload();
-
-                    if (isset($payload['productNumber'])) {
-                        $ref_name = $payload['productNumber'];
-                    }
+                if ($this->isItemFromCustomProductExtension($item)) {
+                    $customItem = $cartOrderEntityObject->getLineItems()->firstWhere(fn(OrderLineItemEntity $lineItem) => $lineItem->getType() === LineItem::PRODUCT_LINE_ITEM_TYPE && $lineItem->getParentId() === $item->getId());
+                    $ref_name = $this->getReferenceName($customItem);
+                    $name = $customItem->getLabel();
                 }
 
                 if ($display_gross) {
@@ -453,7 +503,7 @@ class CheckoutService
 
                 $items[] = [
                     'reference'        => $ref_name,
-                    'name'             => $this->stringFilter($item->getLabel()),
+                    'name'             => $name,
                     'quantity'         => $quantity,
                     'unit'             => 'pcs',
                     'unitPrice'        => $unitPrice,
