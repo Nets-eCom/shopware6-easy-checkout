@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\Tests\Model\Webhook;
+namespace NexiNets\Tests\CheckoutApi\Model\Webhook;
 
 use NexiNets\CheckoutApi\Model\Webhook\Data\ChargeCreated;
 use NexiNets\CheckoutApi\Model\Webhook\Webhook;
