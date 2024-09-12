@@ -4,7 +4,7 @@ namespace NexiNets\CheckoutApi\Model\Webhook\Data;
 
 use NexiNets\CheckoutApi\Model\Webhook\Data;
 
-class ChargeCreated extends Data
+class ChargeCreatedData extends Data
 {
     /**
      * @param OrderItem[] $orderItems
