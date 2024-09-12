@@ -1,14 +1,12 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace NexiNets\WebhookProcessor\Processor;
 
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
-use NexiNets\CheckoutApi\Model\Webhook\ChargeCreated as ChargeCreatedModel;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
+use NexiNets\CheckoutApi\Model\Webhook\RefundCompleted as RefundCompletedModel;
 use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface as WebhookModelInterface;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
@@ -16,13 +14,12 @@ use NexiNets\WebhookProcessor\WebhookProcessorInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
-use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
-final readonly class ChargeCreated implements WebhookProcessorInterface
+final readonly class RefundCompleted implements WebhookProcessorInterface
 {
     /**
      * @param EntityRepository<OrderTransactionCollection> $orderTransactionEntityRepository
@@ -41,14 +38,14 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
      */
     public function process(WebhookModelInterface $webhook, SalesChannelContext $salesChannelContext): void
     {
-        if (!$webhook instanceof ChargeCreatedModel) {
+        if (!$webhook instanceof RefundCompletedModel) {
             throw new WebhookProcessorException('Invalid Data type');
         }
 
         $data = $webhook->getData();
         $paymentId = $data->getPaymentId();
 
-        $this->logger->info('payment.charge.created.v2 started', [
+        $this->logger->info('payment.refund.completed started', [
             'paymentId' => $paymentId,
         ]);
 
@@ -69,41 +66,27 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
 
         $transaction = $transactions->first();
         $transactionId = $transaction->getId();
-        $transactionState = $transaction->getStateMachineState()->getTechnicalName();
 
-        if ($transactionState === OrderTransactionStates::STATE_CANCELLED) {
-            $this->logger->info('payment.charge.created.v2 order transaction cancelled', [
+        if (!$this->isPaymentFullyRefunded($paymentId, $salesChannelContext->getSalesChannelId())) {
+            $this->orderTransactionStateHandler->refundPartially($transactionId, $context);
+
+            $this->logger->info('payment.refund.completed finished', [
                 'paymentId' => $paymentId,
             ]);
 
             return;
         }
 
-        if (!$this->isPaymentFullyCharged($paymentId, $salesChannelContext->getSalesChannelId())) {
-            $this->orderTransactionStateHandler->payPartially($transactionId, $context);
+        $this->orderTransactionStateHandler->refund($transactionId, $context);
 
-            $this->logger->info('payment.charge.created.v2 finished', [
-                'paymentId' => $paymentId,
-            ]);
-
-            return;
-        }
-
-        // Transaction marked as paid_partially has to be reopened before transition to paid
-        if ($transactionState === OrderTransactionStates::STATE_PARTIALLY_PAID) {
-            $this->orderTransactionStateHandler->reopen($transactionId, $context);
-        }
-
-        $this->orderTransactionStateHandler->paid($transactionId, $context);
-
-        $this->logger->info('payment.charge.created.v2 finished', [
+        $this->logger->info('payment.refund.completed finished', [
             'paymentId' => $paymentId,
         ]);
     }
 
     public function getEvent(): EventNameEnum
     {
-        return EventNameEnum::PAYMENT_CHARGE_CREATED;
+        return EventNameEnum::PAYMENT_REFUND_COMPLETED;
     }
 
     private function createPaymentApi(string $salesChannelId): PaymentApi
@@ -114,9 +97,9 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
         );
     }
 
-    private function isPaymentFullyCharged(string $paymentId, string $salesChannelId): bool
+    private function isPaymentFullyRefunded(string $paymentId, string $salesChannelId): bool
     {
-        return $this->getPayment($salesChannelId, $paymentId)->isFullyCharged();
+        return $this->getPayment($salesChannelId, $paymentId)->isFullyRefunded();
     }
 
     private function getPayment(string $salesChannelId, string $paymentId): Payment

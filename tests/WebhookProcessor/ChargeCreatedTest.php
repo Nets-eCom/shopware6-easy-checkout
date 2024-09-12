@@ -8,8 +8,9 @@ use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
-use NexiNets\CheckoutApi\Model\Webhook\Data\ChargeCreated as DataChargeCreated;
-use NexiNets\CheckoutApi\Model\Webhook\Webhook;
+use NexiNets\CheckoutApi\Model\Webhook\ChargeCreated as ChargeCreatedModel;
+use NexiNets\CheckoutApi\Model\Webhook\Data\ChargeCreatedData;
+use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\WebhookProcessor\Processor\ChargeCreated;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
@@ -46,14 +47,14 @@ final class ChargeCreatedTest extends TestCase
 
         $sut = new ChargeCreated(
             $this->createTransactionRepository(OrderTransactionStates::STATE_OPEN, 'foo'),
-            $logger,
             $orderTransactionStateHandler,
             $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class)
+            $this->createStub(ConfigurationProvider::class),
+            $logger
         );
 
         $sut->process(
-            $this->createChargeCreatedWebhookEvent($this->createDataChargeCreated('foo')),
+            $this->createChargeCreatedWebhookEvent($this->createChargeCreatedData('foo')),
             $salesChannelContext
         );
     }
@@ -67,7 +68,7 @@ final class ChargeCreatedTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects($this->atLeast(2))->method('info')->with($this->isType('string'));
 
-        $webhook = $this->createChargeCreatedWebhookEvent($this->createDataChargeCreated('foo'));
+        $webhook = $this->createChargeCreatedWebhookEvent($this->createChargeCreatedData('foo'));
         $payment = $this->createPayment(false);
         $paymentApi = $this->createPaymentApi($payment);
         $paymentApiFactory = $this->createPaymentApiFactory($paymentApi);
@@ -84,10 +85,10 @@ final class ChargeCreatedTest extends TestCase
 
         $sut = new ChargeCreated(
             $transactionRepository,
-            $logger,
             $orderTransactionStateHandler,
             $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class)
+            $this->createStub(ConfigurationProvider::class),
+            $logger
         );
 
         $sut->process($webhook, $salesChannelContext);
@@ -101,7 +102,7 @@ final class ChargeCreatedTest extends TestCase
         );
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects($this->atLeast(2))->method('info')->with($this->isType('string'));
-        $webhook = $this->createChargeCreatedWebhookEvent($this->createDataChargeCreated('foo'));
+        $webhook = $this->createChargeCreatedWebhookEvent($this->createChargeCreatedData('foo'));
         $paymentApi = $this->createPaymentApi($this->createPayment(true));
         $paymentApiFactory = $this->createPaymentApiFactory($paymentApi);
         $salesChannelContext = Generator::createSalesChannelContext();
@@ -125,10 +126,10 @@ final class ChargeCreatedTest extends TestCase
 
         $sut = new ChargeCreated(
             $transactionRepository,
-            $logger,
             $orderTransactionStateHandler,
             $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class)
+            $this->createStub(ConfigurationProvider::class),
+            $logger
         );
 
         $sut->process($webhook, $salesChannelContext);
@@ -140,16 +141,16 @@ final class ChargeCreatedTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects($this->atLeast(2))->method('info')->with($this->isType('string'));
 
-        $webhook = $this->createChargeCreatedWebhookEvent($this->createDataChargeCreated('123'));
+        $webhook = $this->createChargeCreatedWebhookEvent($this->createChargeCreatedData('123'));
         $paymentApiFactory = $this->createPaymentApiFactory($this->createPaymentApi($this->createPayment(false)));
         $salesChannelContext = Generator::createSalesChannelContext();
 
         $sut = new ChargeCreated(
             $transactionRepository,
-            $logger,
             $this->createMock(OrderTransactionStateHandler::class),
             $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class)
+            $this->createStub(ConfigurationProvider::class),
+            $logger
         );
 
         $sut->process($webhook, $salesChannelContext);
@@ -165,39 +166,38 @@ final class ChargeCreatedTest extends TestCase
         $transactionRepository = $this->createStub(EntityRepository::class);
         $transactionRepository->method('search')->willReturn($searchResult);
 
-        $dataChargeCreated = $this->createStub(DataChargeCreated::class);
-        $dataChargeCreated->method('getPaymentId')->willReturn('123');
+        $chargeCreatedData = $this->createStub(ChargeCreatedData::class);
+        $chargeCreatedData->method('getPaymentId')->willReturn('123');
 
-        $webhook = $this->createStub(Webhook::class);
-        $webhook->method('getData')->willReturn($dataChargeCreated);
+        $chargeCreatedModel = $this->createStub(ChargeCreatedModel::class);
+        $chargeCreatedModel->method('getData')->willReturn($chargeCreatedData);
 
         $sut = new ChargeCreated(
             $transactionRepository,
-            $this->createMock(LoggerInterface::class),
             $this->createMock(OrderTransactionStateHandler::class),
             $this->createStub(PaymentApiFactory::class),
-            $this->createStub(ConfigurationProvider::class)
+            $this->createStub(ConfigurationProvider::class),
+            $this->createMock(LoggerInterface::class)
         );
 
-        $sut->process($webhook, Generator::createSalesChannelContext());
+        $sut->process($chargeCreatedModel, Generator::createSalesChannelContext());
     }
 
     public function testItThrowsExceptionOnProcessInvalidDataType(): void
     {
         $this->expectException(WebhookProcessorException::class);
 
-        $webhook = $this->createMock(Webhook::class);
-        $webhook->method('getData')->willReturn(null);
+        $wrongModel = $this->createMock(WebhookInterface::class);
 
         $sut = new ChargeCreated(
             $this->createStub(EntityRepository::class),
-            $this->createMock(LoggerInterface::class),
             $this->createMock(OrderTransactionStateHandler::class),
             $this->createStub(PaymentApiFactory::class),
-            $this->createStub(ConfigurationProvider::class)
+            $this->createStub(ConfigurationProvider::class),
+            $this->createMock(LoggerInterface::class)
         );
 
-        $sut->process($webhook, Generator::createSalesChannelContext());
+        $sut->process($wrongModel, Generator::createSalesChannelContext());
     }
 
     private function createStateMachineState(string $state): StateMachineStateEntity
@@ -245,18 +245,18 @@ final class ChargeCreatedTest extends TestCase
         return $searchResult;
     }
 
-    private function createDataChargeCreated(string $paymentId): DataChargeCreated
+    private function createChargeCreatedData(string $paymentId): ChargeCreatedData
     {
-        $dataChargeCreated = $this->createMock(DataChargeCreated::class);
-        $dataChargeCreated->method('getPaymentId')->willReturn($paymentId);
+        $chargeCreatedData = $this->createMock(ChargeCreatedData::class);
+        $chargeCreatedData->method('getPaymentId')->willReturn($paymentId);
 
-        return $dataChargeCreated;
+        return $chargeCreatedData;
     }
 
-    private function createChargeCreatedWebhookEvent(DataChargeCreated $dataChargeCreated): Webhook
+    private function createChargeCreatedWebhookEvent(ChargeCreatedData $chargeCreatedData): ChargeCreatedModel
     {
-        $webhook = $this->createMock(Webhook::class);
-        $webhook->method('getData')->willReturn($dataChargeCreated);
+        $webhook = $this->createMock(ChargeCreatedModel::class);
+        $webhook->method('getData')->willReturn($chargeCreatedData);
 
         return $webhook;
     }

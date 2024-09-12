@@ -2,14 +2,14 @@
 
 namespace NexiNets\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Model\Webhook\Webhook;
+use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 final readonly class WebhookProcessor
 {
     public function __construct(
         /**
-         * @var WebhookInterface[]
+         * @var WebhookProcessorInterface[]
          */
         private iterable $webhookProcessors
     ) {
@@ -19,7 +19,7 @@ final readonly class WebhookProcessor
      * @throws WebhookProcessorException
      * @throws \RuntimeException
      */
-    public function process(Webhook $webhook, SalesChannelContext $salesChannelContext): void
+    public function process(WebhookInterface $webhook, SalesChannelContext $salesChannelContext): void
     {
         foreach ($this->webhookProcessors as $webhookProcessor) {
             if ($webhook->getEvent() === $webhookProcessor->getEvent()) {
