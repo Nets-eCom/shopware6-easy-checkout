@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\CheckoutApi\Model\Result;
+namespace NexiNets\CheckoutApi\Model\Shared;
 
-abstract class AbstractResult
+trait JsonDeserializeTrait
 {
-    abstract public static function fromJson(string $string): AbstractResult;
-
     /**
      * @return array<mixed>
      */

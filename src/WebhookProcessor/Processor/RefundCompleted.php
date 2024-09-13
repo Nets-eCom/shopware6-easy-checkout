@@ -18,6 +18,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\StateMachine\StateMachineException;
 
 final readonly class RefundCompleted implements WebhookProcessorInterface
 {
@@ -68,7 +69,13 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
         $transactionId = $transaction->getId();
 
         if (!$this->isPaymentFullyRefunded($paymentId, $salesChannelContext->getSalesChannelId())) {
-            $this->orderTransactionStateHandler->refundPartially($transactionId, $context);
+            try {
+                $this->orderTransactionStateHandler->refundPartially($transactionId, $context);
+            } catch (StateMachineException $stateMachineException) {
+                $this->logStateMachineException($stateMachineException, $paymentId);
+
+                throw $stateMachineException;
+            }
 
             $this->logger->info('payment.refund.completed finished', [
                 'paymentId' => $paymentId,
@@ -77,7 +84,13 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
             return;
         }
 
-        $this->orderTransactionStateHandler->refund($transactionId, $context);
+        try {
+            $this->orderTransactionStateHandler->refund($transactionId, $context);
+        } catch (StateMachineException $stateMachineException) {
+            $this->logStateMachineException($stateMachineException, $paymentId);
+
+            throw $stateMachineException;
+        }
 
         $this->logger->info('payment.refund.completed finished', [
             'paymentId' => $paymentId,
@@ -108,5 +121,16 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
             ->createPaymentApi($salesChannelId)
             ->retrievePayment($paymentId)
             ->getPayment();
+    }
+
+    private function logStateMachineException(StateMachineException $stateMachineException, string $paymentId): void
+    {
+        $this->logger->error(
+            'payment.charge.created.v2 failed: ' . $stateMachineException->getMessage(),
+            [
+                'paymentId' => $paymentId,
+                'exception' => $stateMachineException,
+            ]
+        );
     }
 }

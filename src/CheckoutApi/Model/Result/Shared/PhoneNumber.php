@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\CheckoutApi\Model\Result;
+namespace NexiNets\CheckoutApi\Model\Result\Shared;
 
 class PhoneNumber
 {

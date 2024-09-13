@@ -2,7 +2,7 @@
 
 namespace NexiNets\Storefront\Controller;
 
-use NexiNets\CheckoutApi\Model\Webhook\Webhook;
+use NexiNets\CheckoutApi\Model\Webhook\WebhookBuilder;
 use NexiNets\Security\WebhookVoter;
 use NexiNets\WebhookProcessor\WebhookProcessor;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
@@ -33,7 +33,7 @@ class WebhookController extends AbstractController
         $this->webhookVoter->denyAccessUnlessGranted(WebhookVoter::HEADER_MATCH, $salesChannelContext);
 
         try {
-            $webhook = Webhook::fromJson($request->getContent());
+            $webhook = WebhookBuilder::fromJson($request->getContent());
         } catch (\Throwable $throwable) {
             $this->logger->critical(
                 'Webhook payload parsing failed',
