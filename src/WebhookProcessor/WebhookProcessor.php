@@ -7,10 +7,10 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 final readonly class WebhookProcessor
 {
+    /**
+     * @param WebhookProcessorInterface[] $webhookProcessors
+     */
     public function __construct(
-        /**
-         * @var WebhookProcessorInterface[]
-         */
         private iterable $webhookProcessors
     ) {
     }

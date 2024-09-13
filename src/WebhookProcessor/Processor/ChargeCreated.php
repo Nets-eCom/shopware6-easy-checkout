@@ -21,6 +21,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\StateMachine\StateMachineException;
 
 final readonly class ChargeCreated implements WebhookProcessorInterface
 {
@@ -80,7 +81,13 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
         }
 
         if (!$this->isPaymentFullyCharged($paymentId, $salesChannelContext->getSalesChannelId())) {
-            $this->orderTransactionStateHandler->payPartially($transactionId, $context);
+            try {
+                $this->orderTransactionStateHandler->payPartially($transactionId, $context);
+            } catch (StateMachineException $stateMachineException) {
+                $this->logStateMachineException($stateMachineException, $paymentId);
+
+                throw $stateMachineException;
+            }
 
             $this->logger->info('payment.charge.created.v2 finished', [
                 'paymentId' => $paymentId,
@@ -91,10 +98,22 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
 
         // Transaction marked as paid_partially has to be reopened before transition to paid
         if ($transactionState === OrderTransactionStates::STATE_PARTIALLY_PAID) {
-            $this->orderTransactionStateHandler->reopen($transactionId, $context);
+            try {
+                $this->orderTransactionStateHandler->reopen($transactionId, $context);
+            } catch (StateMachineException $stateMachineException) {
+                $this->logStateMachineException($stateMachineException, $paymentId);
+
+                throw $stateMachineException;
+            }
         }
 
-        $this->orderTransactionStateHandler->paid($transactionId, $context);
+        try {
+            $this->orderTransactionStateHandler->paid($transactionId, $context);
+        } catch (StateMachineException $stateMachineException) {
+            $this->logStateMachineException($stateMachineException, $paymentId);
+
+            throw $stateMachineException;
+        }
 
         $this->logger->info('payment.charge.created.v2 finished', [
             'paymentId' => $paymentId,
@@ -125,5 +144,16 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
             ->createPaymentApi($salesChannelId)
             ->retrievePayment($paymentId)
             ->getPayment();
+    }
+
+    private function logStateMachineException(StateMachineException $stateMachineException, string $paymentId): void
+    {
+        $this->logger->error(
+            'payment.charge.created.v2 failed: ' . $stateMachineException->getMessage(),
+            [
+                'paymentId' => $paymentId,
+                'exception' => $stateMachineException,
+            ]
+        );
     }
 }

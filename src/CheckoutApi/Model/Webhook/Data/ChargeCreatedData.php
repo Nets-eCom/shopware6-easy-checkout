@@ -2,7 +2,7 @@
 
 namespace NexiNets\CheckoutApi\Model\Webhook\Data;
 
-use NexiNets\CheckoutApi\Model\Webhook\Data;
+use NexiNets\CheckoutApi\Model\Webhook\Shared\Data;
 
 class ChargeCreatedData extends Data
 {

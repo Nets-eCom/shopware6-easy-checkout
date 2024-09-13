@@ -2,7 +2,7 @@
 
 namespace NexiNets\CheckoutApi\Model\Result\RetrievePayment\Company;
 
-use NexiNets\CheckoutApi\Model\Result\PhoneNumber;
+use NexiNets\CheckoutApi\Model\Result\Shared\PhoneNumber;
 
 readonly class ContactDetails
 {

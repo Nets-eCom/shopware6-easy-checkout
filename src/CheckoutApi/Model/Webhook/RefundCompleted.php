@@ -2,13 +2,16 @@
 
 namespace NexiNets\CheckoutApi\Model\Webhook;
 
-use NexiNets\CheckoutApi\Model\Result\AbstractResult;
+use NexiNets\CheckoutApi\Model\Shared\JsonDeserializeInterface;
+use NexiNets\CheckoutApi\Model\Shared\JsonDeserializeTrait;
 use NexiNets\CheckoutApi\Model\Webhook\Data\Amount;
 use NexiNets\CheckoutApi\Model\Webhook\Data\InvoiceDetails;
 use NexiNets\CheckoutApi\Model\Webhook\Data\RefundCompletedData;
 
-class RefundCompleted extends AbstractResult implements WebhookInterface
+class RefundCompleted implements WebhookInterface, JsonDeserializeInterface
 {
+    use JsonDeserializeTrait;
+
     public function __construct(
         private readonly string $id,
         private readonly \DateTimeInterface $timestamp,

@@ -2,16 +2,18 @@
 
 namespace NexiNets\CheckoutApi\Model\Webhook;
 
-use NexiNets\CheckoutApi\Model\Result\AbstractResult;
+use NexiNets\CheckoutApi\Model\Shared\JsonDeserializeTrait;
 
-class Webhook extends AbstractResult
+class WebhookBuilder
 {
-    public static function fromJson(string $string): AbstractResult&WebhookInterface
+    use JsonDeserializeTrait;
+
+    public static function fromJson(string $string): WebhookInterface
     {
         $payload = self::jsonDeserialize($string);
-        $event = EventNameEnum::from($payload['event']);
+        $eventName = EventNameEnum::from($payload['event']);
 
-        return match ($event) {
+        return match ($eventName) {
             EventNameEnum::PAYMENT_CREATED => null /* @todo */,
             EventNameEnum::PAYMENT_RESERVATION_CREATED => null /* @todo */,
             EventNameEnum::PAYMENT_RESERVATION_CREATED_V2 => null /* @todo */,
