@@ -16,6 +16,7 @@ class NotificationBuilder
 {
     private const WEBHOOK_NAMES = [
         EventNameEnum::PAYMENT_CHARGE_CREATED,
+        EventNameEnum::PAYMENT_REFUND_COMPLETED,
     ];
 
     public function __construct(

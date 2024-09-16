@@ -105,4 +105,15 @@ class Payment
     {
         return $this->getSummary()->getChargedAmount() > 0;
     }
+
+    public function isFullyRefunded(): bool
+    {
+        $summary = $this->getSummary();
+
+        if ($summary->getRefundedAmount() === 0) {
+            return false;
+        }
+
+        return $summary->getChargedAmount() === $summary->getRefundedAmount();
+    }
 }

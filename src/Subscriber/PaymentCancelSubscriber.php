@@ -24,10 +24,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 final readonly class PaymentCancelSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @param EntityRepository<OrderCollection> $orderRepository
+     */
     public function __construct(
         private PaymentApiFactory $paymentApiFactory,
         private ConfigurationProvider $configurationProvider,
-        /** @var EntityRepository<OrderCollection> */
         private EntityRepository $orderRepository,
         private OrderTransactionStateHandler $orderTransactionStateHandler,
         private FormatHelper $formatHelper

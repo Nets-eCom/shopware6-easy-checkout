@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace NexiNets\CheckoutApi\Model\Result;
 
-abstract class PaymentResult extends AbstractResult
+abstract class PaymentResult
 {
     public function __construct(
         protected string $paymentId,
