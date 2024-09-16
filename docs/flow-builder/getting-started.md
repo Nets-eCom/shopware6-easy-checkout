@@ -35,10 +35,6 @@ Nexi Nets Payment Plugin allows administrators to automate various processes wit
 
 - Send charge request to Nexi/Nets API.
 
-### Make Cancel
-
-- Send cancel payment request to Nexi/Nets API.
-
 ## Managing Flows
 
 ### Auto capture for digital goods
