@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace NexiNets\CheckoutApi\Model\Result\RetrievePayment\Consumer;
 
-use NexiNets\CheckoutApi\Model\Result\PhoneNumber;
+use NexiNets\CheckoutApi\Model\Result\Shared\PhoneNumber;
 
 class PrivatePerson
 {

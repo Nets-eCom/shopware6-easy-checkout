@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace NexiNets\CheckoutApi\Model\Result;
 
 use NexiNets\CheckoutApi\Model\Result\ChargeResult\Invoice;
+use NexiNets\CheckoutApi\Model\Shared\JsonDeserializeInterface;
+use NexiNets\CheckoutApi\Model\Shared\JsonDeserializeTrait;
 
-final class ChargeResult extends AbstractResult
+final readonly class ChargeResult implements JsonDeserializeInterface
 {
+    use JsonDeserializeTrait;
+
     public function __construct(
-        private readonly string $chargeId,
-        private readonly ?Invoice $invoice = null
+        private string $chargeId,
+        private ?Invoice $invoice = null
     ) {
     }
 

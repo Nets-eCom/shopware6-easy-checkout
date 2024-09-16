@@ -21,9 +21,14 @@ use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentDetails\PaymentType
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Refund;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\RefundStateEnum;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Summary;
+use NexiNets\CheckoutApi\Model\Result\Shared\PhoneNumber;
+use NexiNets\CheckoutApi\Model\Shared\JsonDeserializeInterface;
+use NexiNets\CheckoutApi\Model\Shared\JsonDeserializeTrait;
 
-class RetrievePaymentResult extends AbstractResult
+class RetrievePaymentResult implements JsonDeserializeInterface
 {
+    use JsonDeserializeTrait;
+
     public function __construct(private readonly Payment $payment)
     {
     }
@@ -38,7 +43,7 @@ class RetrievePaymentResult extends AbstractResult
      */
     public static function fromJson(string $string): RetrievePaymentResult
     {
-        $payment = parent::jsonDeserialize($string)['payment'];
+        $payment = self::jsonDeserialize($string)['payment'];
 
         return new self(
             self::createPayment($payment)
