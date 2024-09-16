@@ -20,33 +20,36 @@ Nexi Nets Payment Plugin allows administrators to automate various processes wit
 
 ## Add Nexi Nets action into flow
 
-1. Click on event that you want to override.
-2. Navigate to `Flow` tab.
-2. Add `Action (THEN)` or click on `Select action` dropdown
-2. Navigate to `Order` section.
-3. Choose Nexi Nets action that you want to add into flow.
+1. Click on event that you want to override in `My flows` tab.
+2. Navigate to `Flow` tab inside event settings.
+3. Add `Action (THEN)` or click on `Select action` dropdown.
+4. Navigate to `Order` section.
+5. Choose Nexi Nets action that you want to add into flow.
 6. Save the flow.
+
+![Flow Builder Schema](../images/flow-builder-schema.png)
 
 ## List of Nexi Nets actions
 
 ### Make Full Charge
 
-- Send charge request to Nexi/Nets API
+- Send charge request to Nexi/Nets API.
 
-### Make Cancel? 
+### Make Cancel
 
-- Send cancel payment request to Nexi/Nets API
+- Send cancel payment request to Nexi/Nets API.
 
 ## Managing Flows
 
 ### Auto capture for digital goods
 
-- Create a new flow or edit an existing one
-- Add a trigger: Choose an event that will start the workflow, such as `Order placed`
-- Add a condition: `Click on Condition (IF)`
-- Select Order contains digital goods
+- Create a new flow or edit an existing one.
+- Add a condition: `Click on Condition (IF)`.
+- Select `Shopping cart / Order with digital products`.
+- In true `Action(THEN)` select `Make Full Charge` action.
+- In false `Action(THEN)` choose another flow or action.
 
+![Digital Goods Schema](../images/digital-goods-schema.png)
 
 ## Troubleshooting
 
-- Maybe we are going to have some shooting idk
