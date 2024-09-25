@@ -25,6 +25,8 @@ use Shopware\Core\System\StateMachine\StateMachineException;
 
 final readonly class ChargeCreated implements WebhookProcessorInterface
 {
+    use StateMachineExceptionLogTrait;
+
     /**
      * @param EntityRepository<OrderTransactionCollection> $orderTransactionEntityRepository
      */
@@ -144,16 +146,5 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
             ->createPaymentApi($salesChannelId)
             ->retrievePayment($paymentId)
             ->getPayment();
-    }
-
-    private function logStateMachineException(StateMachineException $stateMachineException, string $paymentId): void
-    {
-        $this->logger->error(
-            'payment.charge.created.v2 failed: ' . $stateMachineException->getMessage(),
-            [
-                'paymentId' => $paymentId,
-                'exception' => $stateMachineException,
-            ]
-        );
     }
 }

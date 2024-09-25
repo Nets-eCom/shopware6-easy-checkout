@@ -2,25 +2,22 @@
 
 namespace NexiNets\WebhookProcessor\Processor;
 
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
+use NexiNets\CheckoutApi\Model\Webhook\CancelCreated as CancelCreatedModel;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
-use NexiNets\CheckoutApi\Model\Webhook\RefundCompleted as RefundCompletedModel;
 use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface as WebhookModelInterface;
-use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
 use NexiNets\WebhookProcessor\WebhookProcessorInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\StateMachine\StateMachineException;
 
-final readonly class RefundCompleted implements WebhookProcessorInterface
+final readonly class CancelCreated implements WebhookProcessorInterface
 {
     use StateMachineExceptionLogTrait;
 
@@ -30,8 +27,6 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
     public function __construct(
         private EntityRepository $orderTransactionEntityRepository,
         private OrderTransactionStateHandler $orderTransactionStateHandler,
-        private PaymentApiFactory $paymentApiFactory,
-        private ConfigurationProvider $configurationProvider,
         private LoggerInterface $logger,
     ) {
     }
@@ -41,14 +36,14 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
      */
     public function process(WebhookModelInterface $webhook, SalesChannelContext $salesChannelContext): void
     {
-        if (!$webhook instanceof RefundCompletedModel) {
+        if (!$webhook instanceof CancelCreatedModel) {
             throw new WebhookProcessorException('Invalid Data type');
         }
 
         $data = $webhook->getData();
         $paymentId = $data->getPaymentId();
 
-        $this->logger->info('payment.refund.completed started', [
+        $this->logger->info('payment.cancel.created started', [
             'paymentId' => $paymentId,
         ]);
 
@@ -69,17 +64,10 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
 
         $transaction = $transactions->first();
         $transactionId = $transaction->getId();
+        $transactionState = $transaction->getStateMachineState()->getTechnicalName();
 
-        if (!$this->isPaymentFullyRefunded($paymentId, $salesChannelContext->getSalesChannelId())) {
-            try {
-                $this->orderTransactionStateHandler->refundPartially($transactionId, $context);
-            } catch (StateMachineException $stateMachineException) {
-                $this->logStateMachineException($stateMachineException, $paymentId);
-
-                throw $stateMachineException;
-            }
-
-            $this->logger->info('payment.refund.completed finished', [
+        if ($transactionState === OrderTransactionStates::STATE_CANCELLED) {
+            $this->logger->info('payment.cancel.created order transaction already cancelled', [
                 'paymentId' => $paymentId,
             ]);
 
@@ -87,41 +75,20 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
         }
 
         try {
-            $this->orderTransactionStateHandler->refund($transactionId, $context);
+            $this->orderTransactionStateHandler->cancel($transactionId, $context);
         } catch (StateMachineException $stateMachineException) {
             $this->logStateMachineException($stateMachineException, $paymentId);
 
             throw $stateMachineException;
         }
 
-        $this->logger->info('payment.refund.completed finished', [
+        $this->logger->info('payment.cancel.created finished', [
             'paymentId' => $paymentId,
         ]);
     }
 
     public function getEvent(): EventNameEnum
     {
-        return EventNameEnum::PAYMENT_REFUND_COMPLETED;
-    }
-
-    private function createPaymentApi(string $salesChannelId): PaymentApi
-    {
-        return $this->paymentApiFactory->create(
-            $this->configurationProvider->getSecretKey($salesChannelId),
-            $this->configurationProvider->isLiveMode($salesChannelId),
-        );
-    }
-
-    private function isPaymentFullyRefunded(string $paymentId, string $salesChannelId): bool
-    {
-        return $this->getPayment($salesChannelId, $paymentId)->isFullyRefunded();
-    }
-
-    private function getPayment(string $salesChannelId, string $paymentId): Payment
-    {
-        return $this
-            ->createPaymentApi($salesChannelId)
-            ->retrievePayment($paymentId)
-            ->getPayment();
+        return EventNameEnum::PAYMENT_CANCEL_CREATED;
     }
 }
