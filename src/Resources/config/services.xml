@@ -117,6 +117,13 @@
             <tag name="nexinets.webhook_processor" />
         </service>
 
+        <service id="NexiNets\WebhookProcessor\Processor\CancelCreated">
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="monolog.logger.nexinets_channel"/>
+            <tag name="nexinets.webhook_processor" />
+        </service>
+
         <!-- ### Subscribers ### -->
         <service id="NexiNets\Subscriber\PaymentCancelSubscriber">
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>

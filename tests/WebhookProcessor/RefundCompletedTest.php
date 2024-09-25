@@ -167,7 +167,7 @@ final class RefundCompletedTest extends TestCase
         $logger
             ->expects($this->once())
             ->method('error')
-            ->with($this->stringStartsWith('payment.charge.created.v2 failed:'));
+            ->with($this->stringStartsWith('payment.refund.completed failed:'));
 
         $sut = new RefundCompleted(
             $this->createTransactionRepository(OrderTransactionStates::STATE_OPEN, 'foo'),
