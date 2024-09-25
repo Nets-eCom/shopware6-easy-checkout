@@ -1,0 +1,43 @@
+{% block sw_order_detail_details %}
+  {% block nets_block %}
+    <sw-card title="Nexi Payment">
+      <sw-container columns="1fr 1fr" style="column-gap: 2rem; border-bottom: 1px #d1d9e0 solid">
+        <div>
+          <sw-text-field label="Payment via" value="MasterCard" :disabled="true"></sw-text-field>
+        </div>
+        <div>
+          <sw-text-field label="Nets payment id" value="bc2a7dd29a1042adada7b54d5d343d43"
+                         :disabled="true"></sw-text-field>
+        </div>
+        <div>
+          <sw-text-field label="Order amount" value="$59.97" :disabled="true"></sw-text-field>
+        </div>
+        <div>
+          <sw-text-field label="Time of order" value="27 Aug 2024, 12:23:46" type="datetime-local" :copyable="false"
+                         :disabled="true"></sw-text-field>
+        </div>
+        <div>
+          <sw-text-field label="Charged Amount" value="$00.00" :disabled="true"
+                         helpText="Charge amount is the amount you can collect from the Nets system towards Shopware"></sw-text-field>
+        </div>
+        <div>
+          <sw-text-field label="Refund Amount" value="$00.00" :disabled="true" :copyable="false"
+                         helpText="Refund amount is the amount you can collect from the Nets system towards Shopware"></sw-text-field>
+        </div>
+      </sw-container>
+      <div style="display: flex; justify-content: space-between; margin-top: 1rem; flex-wrap: wrap">
+        <div>
+          <sw-internal-link :routerLink="undefined" icon="regular-long-arrow-right" :inline="false" :disabled="false"
+                            :hideIcon="true">Show Payment history
+          </sw-internal-link>
+        </div>
+        <div>
+          <sw-button @click="" :isLoading="captureButtonLoading">Cancel</sw-button>
+          <sw-button @click="" :isLoading="refundButtonLoading" :disabled="true">Refund</sw-button>
+          <sw-button @click="" :isLoading="refundButtonLoading">Charge</sw-button>
+        </div>
+      </div>
+    </sw-card>
+  {% endblock %}
+  {% parent %}
+{% endblock %}
