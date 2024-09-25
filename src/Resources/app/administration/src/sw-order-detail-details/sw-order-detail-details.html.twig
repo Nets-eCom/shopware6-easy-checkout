@@ -25,7 +25,7 @@
                          helpText="Refund amount is the amount you can collect from the Nets system towards Shopware"></sw-text-field>
         </div>
       </sw-container>
-      <div style="display: flex; justify-content: space-between; margin-top: 1rem; flex-wrap: wrap">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap">
         <div>
           <sw-internal-link :routerLink="undefined" icon="regular-long-arrow-right" :inline="false" :disabled="false"
                             :hideIcon="true">Show Payment history
@@ -34,9 +34,22 @@
         <div>
           <sw-button @click="" :isLoading="captureButtonLoading">Cancel</sw-button>
           <sw-button @click="" :isLoading="refundButtonLoading" :disabled="true">Refund</sw-button>
-          <sw-button @click="" :isLoading="refundButtonLoading">Charge</sw-button>
+          <sw-button @click="toggleCaptureModal" :isLoading="refundButtonLoading">Charge</sw-button>
         </div>
       </div>
+
+      {#Modal#}
+      <sw-modal
+              v-if="isCaptureModalVisible"
+              title="Nets Capture"
+              @modal-close="toggleCaptureModal"
+      >
+        <p>Are you sure you want to charge this amount?</p>
+        <template #modal-footer>
+          <sw-button @click="toggleCaptureModal">Cancel</sw-button>
+          <sw-button @click="" :isLoading="true" variant="primary">Confirm</sw-button>
+        </template>
+      </sw-modal>
     </sw-card>
   {% endblock %}
   {% parent %}

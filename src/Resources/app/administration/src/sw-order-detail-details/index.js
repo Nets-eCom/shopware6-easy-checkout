@@ -7,14 +7,12 @@ Shopware.Component.override("sw-order-detail-details", {
   data() {
     return {
       isLoading: true,
-      amountAvailableForCapturing: 0,
-      amountAvailableForRefunding: 0,
-      captureButtonLoading: false,
-      refundButtonLoading: false,
-      orderState: null,
-      refundPendingStatus: false,
-      paymentMethod: null,
+      isCaptureModalVisible: false,
     };
   },
-  beforeMount() {},
+  methods: {
+    toggleCaptureModal() {
+      this.isCaptureModalVisible = !this.isCaptureModalVisible;
+    },
+  },
 });
