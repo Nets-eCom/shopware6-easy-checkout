@@ -1,0 +1,27 @@
+{
+    "id": "df7f9346097842bdb90c869b5c9ccfa9",
+    "merchantId": 100017120,
+    "timestamp": "2021-05-04T22:33:33.5969+02:00",
+    "event": "payment.cancel.created",
+    "data": {
+        "cancelId": "df7f9346097842bdb90c869b5c9ccfa9",
+        "orderItems": [
+            {
+                "reference": "Sneaky NE2816-82",
+                "name": "Sneaky",
+                "quantity": 2,
+                "unit": "pcs",
+                "unitPrice": 2500,
+                "taxRate": 1000,
+                "taxAmount": 500,
+                "netTotalAmount": 5000,
+                "grossTotalAmount": 5500
+            }
+        ],
+        "amount": {
+            "amount": 5500,
+            "currency": "SEK"
+        },
+        "paymentId": "025400006091b1ef6937598058c4e487"
+    }
+}
