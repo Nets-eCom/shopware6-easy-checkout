@@ -7,9 +7,8 @@ namespace NexiNets\WebhookProcessor\Processor;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
-use NexiNets\CheckoutApi\Model\Webhook\ChargeCreated as ChargeCreatedModel;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
-use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface as WebhookModelInterface;
+use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
 use NexiNets\WebhookProcessor\WebhookProcessorInterface;
@@ -25,7 +24,7 @@ use Shopware\Core\System\StateMachine\StateMachineException;
 
 final readonly class ChargeCreated implements WebhookProcessorInterface
 {
-    use StateMachineExceptionLogTrait;
+    use ProcessorLogTrait;
 
     /**
      * @param EntityRepository<OrderTransactionCollection> $orderTransactionEntityRepository
@@ -42,18 +41,12 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
     /**
      * @throws WebhookProcessorException
      */
-    public function process(WebhookModelInterface $webhook, SalesChannelContext $salesChannelContext): void
+    public function process(WebhookInterface $webhook, SalesChannelContext $salesChannelContext): void
     {
-        if (!$webhook instanceof ChargeCreatedModel) {
-            throw new WebhookProcessorException('Invalid Data type');
-        }
+        $paymentId = $webhook->getData()->getPaymentId();
 
-        $data = $webhook->getData();
-        $paymentId = $data->getPaymentId();
-
-        $this->logger->info('payment.charge.created.v2 started', [
-            'paymentId' => $paymentId,
-        ]);
+        $event = $webhook->getEvent();
+        $this->logProcessMessage($event, 'started', $paymentId);
 
         $context = $salesChannelContext->getContext();
 
@@ -75,25 +68,22 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
         $transactionState = $transaction->getStateMachineState()->getTechnicalName();
 
         if ($transactionState === OrderTransactionStates::STATE_CANCELLED) {
-            $this->logger->info('payment.charge.created.v2 order transaction cancelled', [
-                'paymentId' => $paymentId,
-            ]);
+            $this->logProcessMessage($event, 'cancelled', $paymentId);
 
             return;
         }
+
 
         if (!$this->isPaymentFullyCharged($paymentId, $salesChannelContext->getSalesChannelId())) {
             try {
                 $this->orderTransactionStateHandler->payPartially($transactionId, $context);
             } catch (StateMachineException $stateMachineException) {
-                $this->logStateMachineException($stateMachineException, $paymentId);
+                $this->logStateMachineException($stateMachineException, $event, $paymentId);
 
                 throw $stateMachineException;
             }
 
-            $this->logger->info('payment.charge.created.v2 finished', [
-                'paymentId' => $paymentId,
-            ]);
+            $this->logProcessMessage($event, 'finished', $paymentId);
 
             return;
         }
@@ -103,7 +93,7 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
             try {
                 $this->orderTransactionStateHandler->reopen($transactionId, $context);
             } catch (StateMachineException $stateMachineException) {
-                $this->logStateMachineException($stateMachineException, $paymentId);
+                $this->logStateMachineException($stateMachineException, $event, $paymentId);
 
                 throw $stateMachineException;
             }
@@ -112,19 +102,17 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
         try {
             $this->orderTransactionStateHandler->paid($transactionId, $context);
         } catch (StateMachineException $stateMachineException) {
-            $this->logStateMachineException($stateMachineException, $paymentId);
+            $this->logStateMachineException($stateMachineException, $event, $paymentId);
 
             throw $stateMachineException;
         }
 
-        $this->logger->info('payment.charge.created.v2 finished', [
-            'paymentId' => $paymentId,
-        ]);
+        $this->logProcessMessage($event, 'finished', $paymentId);
     }
 
-    public function getEvent(): EventNameEnum
+    public function supports(WebhookInterface $webhook): bool
     {
-        return EventNameEnum::PAYMENT_CHARGE_CREATED;
+        return $webhook->getEvent() === EventNameEnum::PAYMENT_CHARGE_CREATED;
     }
 
     private function createPaymentApi(string $salesChannelId): PaymentApi

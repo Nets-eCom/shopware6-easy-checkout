@@ -18,7 +18,7 @@ class WebhookBuilder
             EventNameEnum::PAYMENT_RESERVATION_CREATED => null /* @todo */,
             EventNameEnum::PAYMENT_RESERVATION_CREATED_V2 => null /* @todo */,
             EventNameEnum::PAYMENT_RESERVATION_FAILED => null /* @todo */,
-            EventNameEnum::PAYMENT_CHECKOUT_COMPLETED => null /* @todo */,
+            EventNameEnum::PAYMENT_CHECKOUT_COMPLETED => CheckoutCompleted::fromJson($string),
             EventNameEnum::PAYMENT_CHARGE_CREATED => ChargeCreated::fromJson($string),
             EventNameEnum::PAYMENT_CHARGE_FAILED => null /* @todo */,
             EventNameEnum::PAYMENT_REFUND_INITIATED => null /* @todo */,
