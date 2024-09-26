@@ -4,6 +4,7 @@ namespace NexiNets\Tests\CheckoutApi\Model\Webhook;
 
 use NexiNets\CheckoutApi\Model\Webhook\CancelCreated;
 use NexiNets\CheckoutApi\Model\Webhook\ChargeCreated;
+use NexiNets\CheckoutApi\Model\Webhook\CheckoutCompleted;
 use NexiNets\CheckoutApi\Model\Webhook\RefundCompleted;
 use NexiNets\CheckoutApi\Model\Webhook\WebhookBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -44,6 +45,13 @@ final class WebhookBuilderTest extends TestCase
             file_get_contents(__DIR__ . '/payloads/payment.cancel.created.json'),
             'payment.cancel.created',
             CancelCreated::class,
+            '025400006091b1ef6937598058c4e487',
+        ];
+
+        yield [
+            file_get_contents(__DIR__ . '/payloads/payment.checkout.completed.json'),
+            'payment.checkout.completed',
+            CheckoutCompleted::class,
             '025400006091b1ef6937598058c4e487',
         ];
     }

@@ -6,6 +6,7 @@ namespace NexiNets\Tests\WebhookProcessor;
 
 use NexiNets\CheckoutApi\Model\Webhook\CancelCreated as CancelCreatedModel;
 use NexiNets\CheckoutApi\Model\Webhook\Data\CancelCreatedData;
+use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\WebhookProcessor\Processor\CancelCreated;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
 use PHPUnit\Framework\TestCase;
@@ -90,6 +91,7 @@ final class CancelCreatedTest extends TestCase
 
         $cancelCreatedModel = $this->createStub(CancelCreatedModel::class);
         $cancelCreatedModel->method('getData')->willReturn($cancelCreatedData);
+        $cancelCreatedModel->method('getEvent')->willReturn(EventNameEnum::PAYMENT_CANCEL_CREATED);
 
         $sut = new CancelCreated(
             $transactionRepository,
@@ -98,6 +100,20 @@ final class CancelCreatedTest extends TestCase
         );
 
         $sut->process($cancelCreatedModel, Generator::createSalesChannelContext());
+    }
+
+    public function testItSupportsCancelCreatedWebhook(): void
+    {
+        $sut = new CancelCreated(
+            $this->createStub(EntityRepository::class),
+            $this->createStub(OrderTransactionStateHandler::class),
+            $this->createStub(LoggerInterface::class)
+        );
+
+        $webhook = $this->createMock(CancelCreatedModel::class);
+        $webhook->method('getEvent')->willReturn(EventNameEnum::PAYMENT_CANCEL_CREATED);
+
+        $this->assertTrue($sut->supports($webhook));
     }
 
     private function createStateMachineState(string $state): StateMachineStateEntity
@@ -147,16 +163,17 @@ final class CancelCreatedTest extends TestCase
 
     private function createCancelCreatedData(string $paymentId): CancelCreatedData
     {
-        $chargeCreatedData = $this->createMock(CancelCreatedData::class);
-        $chargeCreatedData->method('getPaymentId')->willReturn($paymentId);
+        $cancelCreatedData = $this->createMock(CancelCreatedData::class);
+        $cancelCreatedData->method('getPaymentId')->willReturn($paymentId);
 
-        return $chargeCreatedData;
+        return $cancelCreatedData;
     }
 
     private function createCancelCreatedWebhookEvent(CancelCreatedData $chargeCreatedData): CancelCreatedModel
     {
         $webhook = $this->createMock(CancelCreatedModel::class);
         $webhook->method('getData')->willReturn($chargeCreatedData);
+        $webhook->method('getEvent')->willReturn(EventNameEnum::PAYMENT_CANCEL_CREATED);
 
         return $webhook;
     }

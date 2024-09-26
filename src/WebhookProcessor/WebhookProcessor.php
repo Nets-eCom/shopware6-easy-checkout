@@ -22,7 +22,7 @@ final readonly class WebhookProcessor
     public function process(WebhookInterface $webhook, SalesChannelContext $salesChannelContext): void
     {
         foreach ($this->webhookProcessors as $webhookProcessor) {
-            if ($webhook->getEvent() === $webhookProcessor->getEvent()) {
+            if ($webhookProcessor->supports($webhook)) {
                 $webhookProcessor->process($webhook, $salesChannelContext);
 
                 return;

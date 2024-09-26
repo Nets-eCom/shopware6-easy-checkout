@@ -2,8 +2,7 @@
 
 namespace NexiNets\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
-use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface as WebhookModelInterface;
+use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 interface WebhookProcessorInterface
@@ -11,7 +10,7 @@ interface WebhookProcessorInterface
     /**
      * @throws WebhookProcessorException
      */
-    public function process(WebhookModelInterface $webhook, SalesChannelContext $salesChannelContext): void;
+    public function process(WebhookInterface $webhook, SalesChannelContext $salesChannelContext): void;
 
-    public function getEvent(): EventNameEnum;
+    public function supports(WebhookInterface $webhook): bool;
 }

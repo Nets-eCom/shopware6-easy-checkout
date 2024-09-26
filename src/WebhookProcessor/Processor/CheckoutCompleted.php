@@ -1,9 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace NexiNets\WebhookProcessor\Processor;
 
+use NexiNets\CheckoutApi\Api\PaymentApi;
+use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
+use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
 use NexiNets\WebhookProcessor\WebhookProcessorInterface;
 use Psr\Log\LoggerInterface;
@@ -16,9 +22,11 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\StateMachine\StateMachineException;
 
-final readonly class CancelCreated implements WebhookProcessorInterface
+final readonly class CheckoutCompleted implements WebhookProcessorInterface
 {
     use ProcessorLogTrait;
+
+    private const SUPPORTED_PAYMENT_METHODS = ['Swish'];
 
     /**
      * @param EntityRepository<OrderTransactionCollection> $orderTransactionEntityRepository
@@ -26,21 +34,26 @@ final readonly class CancelCreated implements WebhookProcessorInterface
     public function __construct(
         private EntityRepository $orderTransactionEntityRepository,
         private OrderTransactionStateHandler $orderTransactionStateHandler,
+        private PaymentApiFactory $paymentApiFactory,
+        private ConfigurationProvider $configurationProvider,
         private LoggerInterface $logger,
     ) {
     }
 
-    /**
-     * @throws WebhookProcessorException
-     */
     public function process(WebhookInterface $webhook, SalesChannelContext $salesChannelContext): void
     {
-        $paymentId = $webhook->getData()->getPaymentId();
+        $data = $webhook->getData();
+        $paymentId = $data->getPaymentId();
+        $payment = $this->getPayment($salesChannelContext->getSalesChannelId(), $paymentId);
 
-        $event = $webhook->getEvent();
-        $this->logProcessMessage($event, 'payment.cancel.created started', $paymentId);
+        if (!$this->shouldProcess($payment)) {
+            return;
+        }
 
         $context = $salesChannelContext->getContext();
+        $event = $webhook->getEvent();
+
+        $this->logProcessMessage($event, 'start', $paymentId);
 
         $criteria = (new Criteria())
             ->addAssociation('stateMachineState')
@@ -60,25 +73,45 @@ final readonly class CancelCreated implements WebhookProcessorInterface
         $transactionState = $transaction->getStateMachineState()->getTechnicalName();
 
         if ($transactionState === OrderTransactionStates::STATE_CANCELLED) {
-            $this->logProcessMessage($event, 'order transaction already cancelled', $paymentId);
+            $this->logProcessMessage($event, 'order transaction cancelled', $paymentId);
 
             return;
         }
 
         try {
-            $this->orderTransactionStateHandler->cancel($transactionId, $context);
+            $this->orderTransactionStateHandler->authorize($transactionId, $context);
         } catch (StateMachineException $stateMachineException) {
             $this->logStateMachineException($stateMachineException, $event, $paymentId);
 
             throw $stateMachineException;
         }
 
-
         $this->logProcessMessage($event, 'finished', $paymentId);
     }
 
     public function supports(WebhookInterface $webhook): bool
     {
-        return $webhook->getEvent() === EventNameEnum::PAYMENT_CANCEL_CREATED;
+        return $webhook->getEvent() === EventNameEnum::PAYMENT_CHECKOUT_COMPLETED;
+    }
+
+    private function createPaymentApi(string $salesChannelId): PaymentApi
+    {
+        return $this->paymentApiFactory->create(
+            $this->configurationProvider->getSecretKey($salesChannelId),
+            $this->configurationProvider->isLiveMode($salesChannelId),
+        );
+    }
+
+    private function getPayment(string $salesChannelId, string $paymentId): Payment
+    {
+        return $this
+            ->createPaymentApi($salesChannelId)
+            ->retrievePayment($paymentId)
+            ->getPayment();
+    }
+
+    private function shouldProcess(Payment $payment): bool
+    {
+        return \in_array($payment->getPaymentDetails()->getPaymentMethod(), self::SUPPORTED_PAYMENT_METHODS, true);
     }
 }

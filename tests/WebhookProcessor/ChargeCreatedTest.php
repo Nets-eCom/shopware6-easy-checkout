@@ -10,7 +10,7 @@ use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 use NexiNets\CheckoutApi\Model\Webhook\ChargeCreated as ChargeCreatedModel;
 use NexiNets\CheckoutApi\Model\Webhook\Data\ChargeCreatedData;
-use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
+use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\WebhookProcessor\Processor\ChargeCreated;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
@@ -171,6 +171,7 @@ final class ChargeCreatedTest extends TestCase
 
         $chargeCreatedModel = $this->createStub(ChargeCreatedModel::class);
         $chargeCreatedModel->method('getData')->willReturn($chargeCreatedData);
+        $chargeCreatedModel->method('getEvent')->willReturn(EventNameEnum::PAYMENT_CHARGE_CREATED);
 
         $sut = new ChargeCreated(
             $transactionRepository,
@@ -183,21 +184,20 @@ final class ChargeCreatedTest extends TestCase
         $sut->process($chargeCreatedModel, Generator::createSalesChannelContext());
     }
 
-    public function testItThrowsExceptionOnProcessInvalidDataType(): void
+    public function testItSupportsChargeCreatedWebhook(): void
     {
-        $this->expectException(WebhookProcessorException::class);
-
-        $wrongModel = $this->createMock(WebhookInterface::class);
-
         $sut = new ChargeCreated(
             $this->createStub(EntityRepository::class),
-            $this->createMock(OrderTransactionStateHandler::class),
+            $this->createStub(OrderTransactionStateHandler::class),
             $this->createStub(PaymentApiFactory::class),
             $this->createStub(ConfigurationProvider::class),
-            $this->createMock(LoggerInterface::class)
+            $this->createStub(LoggerInterface::class)
         );
 
-        $sut->process($wrongModel, Generator::createSalesChannelContext());
+        $webhook = $this->createStub(ChargeCreatedModel::class);
+        $webhook->method('getEvent')->willReturn(EventNameEnum::PAYMENT_CHARGE_CREATED);
+
+        $this->assertTrue($sut->supports($webhook));
     }
 
     private function createStateMachineState(string $state): StateMachineStateEntity
@@ -257,6 +257,7 @@ final class ChargeCreatedTest extends TestCase
     {
         $webhook = $this->createMock(ChargeCreatedModel::class);
         $webhook->method('getData')->willReturn($chargeCreatedData);
+        $webhook->method('getEvent')->willReturn(EventNameEnum::PAYMENT_CHARGE_CREATED);
 
         return $webhook;
     }

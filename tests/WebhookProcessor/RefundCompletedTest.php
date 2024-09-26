@@ -12,7 +12,6 @@ use NexiNets\CheckoutApi\Model\Webhook\Data\Amount;
 use NexiNets\CheckoutApi\Model\Webhook\Data\RefundCompletedData;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\CheckoutApi\Model\Webhook\RefundCompleted as RefundCompletedModel;
-use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\WebhookProcessor\Processor\RefundCompleted;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
@@ -112,6 +111,7 @@ final class RefundCompletedTest extends TestCase
 
         $refundCompletedModel = $this->createStub(RefundCompletedModel::class);
         $refundCompletedModel->method('getData')->willReturn($refundCompletedData);
+        $refundCompletedModel->method('getEvent')->willReturn(EventNameEnum::PAYMENT_REFUND_COMPLETED);
 
         $sut = new RefundCompleted(
             $transactionRepository,
@@ -124,21 +124,20 @@ final class RefundCompletedTest extends TestCase
         $sut->process($refundCompletedModel, Generator::createSalesChannelContext());
     }
 
-    public function testItThrowsExceptionOnProcessInvalidDataType(): void
+    public function testItSupportsRefundCompletedWebhook(): void
     {
-        $this->expectException(WebhookProcessorException::class);
-
-        $wrongModel = $this->createMock(WebhookInterface::class);
-
         $sut = new RefundCompleted(
             $this->createStub(EntityRepository::class),
-            $this->createMock(OrderTransactionStateHandler::class),
+            $this->createStub(OrderTransactionStateHandler::class),
             $this->createStub(PaymentApiFactory::class),
             $this->createStub(ConfigurationProvider::class),
-            $this->createMock(LoggerInterface::class)
+            $this->createStub(LoggerInterface::class)
         );
 
-        $sut->process($wrongModel, Generator::createSalesChannelContext());
+        $webhook = $this->createStub(RefundCompletedModel::class);
+        $webhook->method('getEvent')->willReturn(EventNameEnum::PAYMENT_REFUND_COMPLETED);
+
+        $this->assertTrue($sut->supports($webhook));
     }
 
     public function testItLogsStateMachineException(): void
