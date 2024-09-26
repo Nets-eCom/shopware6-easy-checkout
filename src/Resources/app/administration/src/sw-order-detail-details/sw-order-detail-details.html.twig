@@ -1,7 +1,41 @@
-{% block sw_order_detail_details %}
+{% block sw_order_detail_details_payment %}
   {% block nets_block %}
-    <sw-card title="Nexi Payment">
+    <sw-card>
+      <template #title>
+        <div style="display: flex; justify-content: space-between">
+          <div>
+            Nexi Payment
+          </div>
+          <div>
+            <span>Custom</span>
+          </div>
+        </div>
+      </template>
       <sw-container columns="1fr 1fr" style="column-gap: 2rem; border-bottom: 1px #d1d9e0 solid">
+        {% block sw_order_detail_details_payment_billing_address %}
+          <sw-order-address-selection
+                  class="sw-order-detail-details__billing-address"
+                  type="billing"
+                  :address="billingAddress"
+                  :address-id="selectedBillingAddressId"
+                  :disabled="!acl.can('order.editor') || undefined"
+                  :label="$tc('sw-order.createBase.detailsBody.labelBillingAddress')"
+                  @change-address="onChangeOrderAddress"
+          />
+        {% endblock %}
+
+        {% block sw_order_detail_details_payment_method_select %}
+          <sw-entity-single-select
+                  v-model:value="transaction.paymentMethodId"
+                  entity="payment_method"
+                  label-property="distinguishableName"
+                  disabled
+                  :criteria="paymentMethodCriteria"
+                  :label="$tc('sw-order.createBase.detailsFooter.labelPaymentMethod')"
+                  :placeholder="$tc('sw-order.createBase.detailsFooter.placeholderPaymentMethod')"
+                  show-clearable-button
+          />
+        {% endblock %}
         <div>
           <sw-text-field label="Payment via" value="MasterCard" :disabled="true"></sw-text-field>
         </div>
@@ -13,16 +47,18 @@
           <sw-text-field label="Order amount" value="$59.97" :disabled="true"></sw-text-field>
         </div>
         <div>
-          <sw-text-field label="Time of order" value="27 Aug 2024, 12:23:46" type="datetime-local" :copyable="false"
+          <sw-text-field label="Time of order" value="27 Aug 2024, 12:23:46" type="datetime-local"
                          :disabled="true"></sw-text-field>
         </div>
         <div>
           <sw-text-field label="Charged Amount" value="$00.00" :disabled="true"
-                         helpText="Charge amount is the amount you can collect from the Nets system towards Shopware"></sw-text-field>
+                         helpText="Charge amount is the amount you can collect from the Nets system towards Shopware">
+          </sw-text-field>
         </div>
         <div>
-          <sw-text-field label="Refund Amount" value="$00.00" :disabled="true" :copyable="false"
-                         helpText="Refund amount is the amount you can collect from the Nets system towards Shopware"></sw-text-field>
+          <sw-text-field label="Refund Amount" value="$00.00" :disabled="true"
+                         helpText="Refund amount is the amount you can collect from the Nets system towards Shopware">
+          </sw-text-field>
         </div>
       </sw-container>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap">
@@ -33,12 +69,12 @@
         </div>
         <div>
           <sw-button @click="" :isLoading="captureButtonLoading">Cancel</sw-button>
-          <sw-button @click="" :isLoading="refundButtonLoading" :disabled="true">Refund</sw-button>
-          <sw-button @click="toggleCaptureModal" :isLoading="refundButtonLoading">Charge</sw-button>
+          <sw-button @click="" :isLoading="refundButtonLoading" :disabled>Refund</sw-button>
+          <sw-button @click="toggleCaptureModal">Charge</sw-button>
         </div>
       </div>
 
-      {#Modal#}
+      {# Modal #}
       <sw-modal
               v-if="isCaptureModalVisible"
               title="Nets Capture"
@@ -47,10 +83,10 @@
         <p>Are you sure you want to charge this amount?</p>
         <template #modal-footer>
           <sw-button @click="toggleCaptureModal">Cancel</sw-button>
-          <sw-button @click="" :isLoading="true" variant="primary">Confirm</sw-button>
+          <sw-button @click="" :isLoading variant="primary">Confirm</sw-button>
         </template>
       </sw-modal>
     </sw-card>
   {% endblock %}
-  {% parent %}
+  {#  {% parent %} #}
 {% endblock %}

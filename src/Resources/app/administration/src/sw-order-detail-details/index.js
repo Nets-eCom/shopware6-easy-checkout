@@ -6,13 +6,15 @@ Shopware.Component.override("sw-order-detail-details", {
   mixins: [],
   data() {
     return {
-      isLoading: true,
+      isLoading: false,
+      disabled: true,
       isCaptureModalVisible: false,
     };
   },
   methods: {
     toggleCaptureModal() {
       this.isCaptureModalVisible = !this.isCaptureModalVisible;
+      this.disabled = !this.disabled;
     },
   },
 });
