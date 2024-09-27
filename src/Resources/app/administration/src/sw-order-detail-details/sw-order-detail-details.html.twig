@@ -1,105 +1,110 @@
-{% block sw_order_detail_details_payment %} {% block nets_block %}
-  <sw-card>
-    <template #title>
-      <div style="display: flex; justify-content: space-between">
-        <div>Nexi Payment</div>
-        <div>
-          <span>Custom</span>
-        </div>
-      </div>
-    </template>
-    <sw-container columns="1fr 1fr" style="column-gap: 2rem; border-bottom: 1px #d1d9e0 solid">
-      {% block sw_order_detail_details_payment_billing_address %}
-        <sw-order-address-selection
-                class="sw-order-detail-details__billing-address"
-                type="billing"
-                :address="billingAddress"
-                :address-id="selectedBillingAddressId"
-                :disabled="!acl.can('order.editor') || undefined"
-                :label="$tc('sw-order.createBase.detailsBody.labelBillingAddress')"
-                @change-address="onChangeOrderAddress" />
-      {% endblock %}
-
-      {% block sw_order_detail_details_payment_method_select %}
-        <sw-entity-single-select
-                v-model:value="transaction.paymentMethodId"
-                entity="payment_method"
-                label-property="distinguishableName"
-                disabled
-                :criteria="paymentMethodCriteria"
-                :label="$tc('sw-order.createBase.detailsFooter.labelPaymentMethod')"
-                :placeholder="$tc('sw-order.createBase.detailsFooter.placeholderPaymentMethod')"
-                show-clearable-button />
-      {% endblock %}
-      <div>
-        <sw-text-field label="Payment via" value="MasterCard" :disabled="true"></sw-text-field>
-      </div>
-      <div>
-        <sw-text-field
-                label="Nets payment id"
-                value="bc2a7dd29a1042adada7b54d5d343d43"
-                :disabled="true"></sw-text-field>
-      </div>
-      <div>
-        <sw-text-field label="Order amount" value="$59.97" :disabled="true"></sw-text-field>
-      </div>
-      <div>
-        <sw-text-field
-                label="Time of order"
-                value="27 Aug 2024, 12:23:46"
-                type="datetime-local"
-                :disabled="true"></sw-text-field>
-      </div>
-      <div>
-        <sw-text-field
-                label="Charged Amount"
-                value="$00.00"
-                :disabled="true"
-                helpText="Charge amount is the amount you can collect from the Nets system towards Shopware">
-        </sw-text-field>
-      </div>
-      <div>
-        <sw-text-field
-                label="Refund Amount"
-                value="$00.00"
-                :disabled="true"
-                helpText="Refund amount is the amount you can collect from the Nets system towards Shopware">
-        </sw-text-field>
-      </div>
-    </sw-container>
-    <div
+{% block sw_order_detail_details_payment %}
+{#  @TODO Create if statement that will work on twig level, and display Nets component || {% parent %} #}
+{#{% if {{ transaction.paymentMethod.name }} is defined %}#}
+  {% block nexi_payment_component%}
+      <sw-card title="Payment">
+        <sw-container columns="1fr 1fr" style="column-gap: 2rem; border-bottom: 1px #d1d9e0 solid">
+          {% block nexi_payment_component_payment_details %}
+          <div>
+            <sw-text-field
+                    label="Payment status"
+                    value="Reserved"
+                    :disabled="true"/>
+{#            <sw-label variant="success" size="medium" appearance="pill" label="Payment status">#}
+{#              Paid#}
+{#            </sw-label>#}
+          </div>
+          <div style="align-self: center">
+            <sw-internal-link
+                    :routerLink="undefined"
+                    :inline="false"
+                    :hideIcon="true"
+                    @click="showStateHistoryModal = true">
+              Show Nets Payment history
+            </sw-internal-link>
+          </div>
+          {% block sw_order_detail_details_payment_billing_address %}
+            <sw-order-address-selection
+              class="sw-order-detail-details__billing-address"
+              type="billing"
+              :address="billingAddress"
+              :address-id="selectedBillingAddressId"
+              :disabled="!acl.can('order.editor') || undefined"
+              :label="$tc('sw-order.createBase.detailsBody.labelBillingAddress')"
+              @change-address="onChangeOrderAddress" />
+          {% endblock %}
+          {% block sw_order_detail_details_payment_method_select %}
+            <sw-entity-single-select
+              v-model:value="transaction.paymentMethodId"
+              entity="payment_method"
+              label-property="distinguishableName"
+              disabled
+              :criteria="paymentMethodCriteria"
+              :label="$tc('sw-order.createBase.detailsFooter.labelPaymentMethod')"
+              :placeholder="$tc('sw-order.createBase.detailsFooter.placeholderPaymentMethod')"
+              show-clearable-button />
+          {% endblock %}
+            <template>
+              <div>
+                <sw-text-field
+                        label="Payment via"
+                        value="MasterCard"
+                        :disabled="true"/>
+              </div>
+              <div>
+                <sw-text-field
+                  label="Nets payment id"
+                  value="bc2a7dd29a1042adada7b54d5d343d43"
+                  :disabled="true"/>
+              </div>
+              <div>
+                <sw-text-field
+                        label="Order amount"
+                        value="$59.97"
+                        :disabled="true"/>
+              </div>
+              <div>
+                <sw-text-field
+                  label="Time of order"
+                  value="27 Aug 2024, 12:23:46"
+                  type="date"
+                  :disabled="true"/>
+              </div>
+              <div>
+                <sw-text-field
+                  label="Charged Amount"
+                  value="$00.00"
+                  :disabled="true"
+                  helpText="Charge amount is what you've already collected to your Nets account."/>
+              </div>
+            </template>
+          {% endblock %}
+        </sw-container>
+        <template #footer>
+          <div
             style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 1rem;
-          flex-wrap: wrap;
-        ">
-      <div>
-        <sw-internal-link
-                :routerLink="undefined"
-                icon="regular-long-arrow-right"
-                :inline="false"
-                :disabled="false"
-                :hideIcon="true"
-        >Show Payment history
-        </sw-internal-link>
-      </div>
-      <div>
-        <sw-button @click="" :isLoading="captureButtonLoading">Cancel</sw-button>
-        <sw-button @click="" :isLoading="refundButtonLoading" :disabled>Refund</sw-button>
-        <sw-button @click="toggleCaptureModal">Charge</sw-button>
-      </div>
-    </div>
-
-    {# Modal #}
-    <sw-modal v-if="isCaptureModalVisible" title="Nets Capture" @modal-close="toggleCaptureModal">
-      <p>Are you sure you want to charge this amount?</p>
-      <template #modal-footer>
-        <sw-button @click="toggleCaptureModal">Cancel</sw-button>
-        <sw-button @click="" :isLoading variant="primary">Confirm</sw-button>
-      </template>
-    </sw-modal>
-  </sw-card>
-  {% endblock %}
+              display: flex;
+              justify-content: flex-end;
+              align-items: center;
+              margin-top: 1rem;
+              flex-wrap: wrap;"
+          >
+            <div>
+              <sw-button @click="">Cancel payment</sw-button>
+              <sw-button @click="toggleCaptureModal">Charge</sw-button>
+            </div>
+          </div>
+        </template>
+        <sw-modal v-if="isCaptureModalVisible" title="Nets Capture" @modal-close="toggleCaptureModal">
+          <p>Are you sure you want to charge this amount?</p>
+          <template #modal-footer>
+            <sw-button @click="toggleCaptureModal">Cancel</sw-button>
+            <sw-button @click="" :isLoading variant="primary">Confirm</sw-button>
+          </template>
+        </sw-modal>
+      </sw-card>
+    {% endblock %}
+{#  {% else %}#}
+{#    {% parent %}#}
+{#  {% endif %}#}
 {% endblock %}

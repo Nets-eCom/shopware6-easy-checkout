@@ -14,7 +14,6 @@ Shopware.Component.override("sw-order-detail-details", {
   methods: {
     toggleCaptureModal() {
       this.isCaptureModalVisible = !this.isCaptureModalVisible;
-      this.disabled = !this.disabled;
     },
   },
 });
