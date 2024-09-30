@@ -1,20 +1,20 @@
 {% block sw_order_detail_details_payment %}
-{#  @TODO Create if statement that will work on twig level, and display Nets component || {% parent %} #}
-{#{% if {{ transaction.paymentMethod.name }} is defined %}#}
   {% block nexi_payment_component%}
       <sw-card title="Payment">
-        <sw-container columns="1fr 1fr" style="column-gap: 2rem; border-bottom: 1px #d1d9e0 solid">
-          {% block nexi_payment_component_payment_details %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; column-gap: 2rem; margin-bottom: 2rem;">
           <div>
-            <sw-text-field
-                    label="Payment status"
-                    value="Reserved"
-                    :disabled="true"/>
-{#            <sw-label variant="success" size="medium" appearance="pill" label="Payment status">#}
-{#              Paid#}
-{#            </sw-label>#}
+            <p style="font-size: 14px; margin-bottom: 0.4rem;">
+              Payment status
+            </p>
+            <sw-label
+                    variant="info"
+                    size="default"
+                    appearance="pill"
+                    style="width: 100%">
+              Reserved
+            </sw-label>
           </div>
-          <div style="align-self: center">
+          <div style="align-self: center; margin-top: 1rem;">
             <sw-internal-link
                     :routerLink="undefined"
                     :inline="false"
@@ -23,6 +23,11 @@
               Show Nets Payment history
             </sw-internal-link>
           </div>
+        </div>
+        <sw-container
+                columns="1fr 1fr"
+                style="column-gap: 2rem; padding-top:2.5rem; border-top: 1px #d1d9e0 solid; border-bottom: 1px #d1d9e0 solid">
+          {% block nexi_payment_component_payment_details %}
           {% block sw_order_detail_details_payment_billing_address %}
             <sw-order-address-selection
               class="sw-order-detail-details__billing-address"
@@ -48,7 +53,7 @@
               <div>
                 <sw-text-field
                         label="Payment via"
-                        value="MasterCard"
+                        :value="transaction.paymentMethodId"
                         :disabled="true"/>
               </div>
               <div>
@@ -104,7 +109,4 @@
         </sw-modal>
       </sw-card>
     {% endblock %}
-{#  {% else %}#}
-{#    {% parent %}#}
-{#  {% endif %}#}
 {% endblock %}
