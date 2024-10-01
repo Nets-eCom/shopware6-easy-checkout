@@ -5,7 +5,7 @@
 
   {% block nexinets_payment_component%}
     <template v-else>
-      <sw-card title="Payment">
+      <sw-card :title="$tc('nexinets-payment-component.payment-details.title')">
         <div class="nexinets-status-container">
           <div>
             <p class="nexinets-status-text">

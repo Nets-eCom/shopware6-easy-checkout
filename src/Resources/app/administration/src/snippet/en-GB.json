@@ -5,6 +5,7 @@
     },
     "nexinets-payment-component": {
         "payment-details": {
+            "title": "Payment",
             "status": "Payment status",
             "history-link": "Show Nets Payment history",
             "payment-via": "Payment via",
