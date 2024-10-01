@@ -3,7 +3,7 @@
         "title": "Make Full Charge",
         "description": "Send charge request to Nexi/Nets"
     },
-    "nexi-payment-component": {
+    "nexinets-payment-component": {
         "payment-details": {
             "status": "Payment status",
             "history-link": "Show Nets Payment history",
