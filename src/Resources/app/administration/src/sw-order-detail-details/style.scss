@@ -1,0 +1,35 @@
+.nexinets-status-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.nexinets-status-text {
+  font-size: 14px;
+  margin-bottom: 0.4rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.payment-history-link {
+  align-self: center;
+  margin-top: 1rem;
+}
+
+.nexinets-payment-container {
+  column-gap: 2rem;
+  padding-top: 2.5rem;
+  border-top: 1px #d1d9e0 solid;
+  border-bottom: 1px #d1d9e0 solid;
+}
+
+.nexinets-action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}

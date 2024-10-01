@@ -1,20 +1,20 @@
 {% block sw_order_detail_details_payment %}
-  {% block nexi_payment_component%}
+  {% block nexinets_payment_component%}
       <sw-card title="Payment">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; column-gap: 2rem; margin-bottom: 2rem;">
+        <div class="nexinets-status-container">
           <div>
-            <p style="font-size: 14px; margin-bottom: 0.4rem;">
+            <p class="nexinets-status-text">
               Payment status
             </p>
             <sw-label
                     variant="info"
                     size="default"
                     appearance="pill"
-                    style="width: 100%">
+                    class="full-width">
               Reserved
             </sw-label>
           </div>
-          <div style="align-self: center; margin-top: 1rem;">
+          <div class="payment-history-link">
             <sw-internal-link
                     :routerLink="undefined"
                     :inline="false"
@@ -26,29 +26,29 @@
         </div>
         <sw-container
                 columns="1fr 1fr"
-                style="column-gap: 2rem; padding-top:2.5rem; border-top: 1px #d1d9e0 solid; border-bottom: 1px #d1d9e0 solid">
-          {% block nexi_payment_component_payment_details %}
-          {% block sw_order_detail_details_payment_billing_address %}
-            <sw-order-address-selection
-              class="sw-order-detail-details__billing-address"
-              type="billing"
-              :address="billingAddress"
-              :address-id="selectedBillingAddressId"
-              :disabled="!acl.can('order.editor') || undefined"
-              :label="$tc('sw-order.createBase.detailsBody.labelBillingAddress')"
-              @change-address="onChangeOrderAddress" />
-          {% endblock %}
-          {% block sw_order_detail_details_payment_method_select %}
-            <sw-entity-single-select
-              v-model:value="transaction.paymentMethodId"
-              entity="payment_method"
-              label-property="distinguishableName"
-              disabled
-              :criteria="paymentMethodCriteria"
-              :label="$tc('sw-order.createBase.detailsFooter.labelPaymentMethod')"
-              :placeholder="$tc('sw-order.createBase.detailsFooter.placeholderPaymentMethod')"
-              show-clearable-button />
-          {% endblock %}
+                class="nexinets-payment-container">
+          {% block nexinets_payment_component_payment_details %}
+            {% block sw_order_detail_details_payment_billing_address %}
+              <sw-order-address-selection
+                class="sw-order-detail-details__billing-address"
+                type="billing"
+                :address="billingAddress"
+                :address-id="selectedBillingAddressId"
+                :disabled="!acl.can('order.editor') || undefined"
+                :label="$tc('sw-order.createBase.detailsBody.labelBillingAddress')"
+                @change-address="onChangeOrderAddress" />
+            {% endblock %}
+            {% block sw_order_detail_details_payment_method_select %}
+              <sw-entity-single-select
+                v-model:value="transaction.paymentMethodId"
+                entity="payment_method"
+                label-property="distinguishableName"
+                disabled
+                :criteria="paymentMethodCriteria"
+                :label="$tc('sw-order.createBase.detailsFooter.labelPaymentMethod')"
+                :placeholder="$tc('sw-order.createBase.detailsFooter.placeholderPaymentMethod')"
+                show-clearable-button />
+            {% endblock %}
             <template>
               <div>
                 <sw-text-field
@@ -85,21 +85,17 @@
             </template>
           {% endblock %}
         </sw-container>
+      {% block nexinets_payment_component_footer %}
         <template #footer>
-          <div
-            style="
-              display: flex;
-              justify-content: flex-end;
-              align-items: center;
-              margin-top: 1rem;
-              flex-wrap: wrap;"
-          >
+          <div class="nexinets-action-buttons">
             <div>
               <sw-button @click="">Cancel payment</sw-button>
               <sw-button @click="toggleCaptureModal">Charge</sw-button>
             </div>
           </div>
         </template>
+      {% endblock %}
+      {% block nexinets_payment_modal %}
         <sw-modal v-if="isCaptureModalVisible" title="Nets Capture" @modal-close="toggleCaptureModal">
           <p>Are you sure you want to charge this amount?</p>
           <template #modal-footer>
@@ -107,6 +103,7 @@
             <sw-button @click="" :isLoading variant="primary">Confirm</sw-button>
           </template>
         </sw-modal>
+        {% endblock %}
       </sw-card>
     {% endblock %}
 {% endblock %}
