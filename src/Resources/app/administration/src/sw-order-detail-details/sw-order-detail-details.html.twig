@@ -2,6 +2,7 @@
   <template v-if="!getPaymentMethod(transaction)">
     {% parent %}
   </template>
+
   {% block nexinets_payment_component%}
     <template v-else>
       <sw-card title="Payment">
@@ -25,6 +26,7 @@
           </div>
         </div>
         <sw-container columns="1fr 1fr" class="nexinets-payment-container">
+
           {% block sw_order_detail_details_payment_billing_address %}
             <sw-order-address-selection
                     class="sw-order-detail-details__billing-address"
@@ -35,6 +37,7 @@
                     :label="$tc('sw-order.createBase.detailsBody.labelBillingAddress')"
                     @change-address="onChangeOrderAddress" />
           {% endblock %}
+
           {% block sw_order_detail_details_payment_method_select %}
             <sw-entity-single-select
                     v-model:value="transaction.paymentMethodId"
@@ -46,6 +49,7 @@
                     :placeholder="$tc('sw-order.createBase.detailsFooter.placeholderPaymentMethod')"
                     show-clearable-button />
           {% endblock %}
+
           {% block nexinets_payment_component_payment_details %}
             <template>
               <div>
@@ -83,6 +87,7 @@
             </template>
           {% endblock %}
         </sw-container>
+
         {% block nexinets_payment_component_footer %}
           <template #footer>
             <div class="nexinets-action-buttons">
@@ -93,6 +98,7 @@
             </div>
           </template>
         {% endblock %}
+
         {% block nexinets_payment_modal %}
           <sw-modal v-if="isCaptureModalVisible" :title="$tc('nexinets-payment-component.charge.title')" @modal-close="toggleCaptureModal">
             <p>{{ $tc('nexinets-payment-component.charge.info') }}</p>
@@ -102,6 +108,7 @@
             </template>
           </sw-modal>
         {% endblock %}
+
       </sw-card>
     </template>
   {% endblock %}
