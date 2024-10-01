@@ -27,7 +27,6 @@
         <sw-container
                 columns="1fr 1fr"
                 class="nexinets-payment-container">
-          {% block nexinets_payment_component_payment_details %}
             {% block sw_order_detail_details_payment_billing_address %}
               <sw-order-address-selection
                 class="sw-order-detail-details__billing-address"
@@ -49,6 +48,7 @@
                 :placeholder="$tc('sw-order.createBase.detailsFooter.placeholderPaymentMethod')"
                 show-clearable-button />
             {% endblock %}
+          {% block nexinets_payment_component_payment_details %}
             <template>
               <div>
                 <sw-text-field
