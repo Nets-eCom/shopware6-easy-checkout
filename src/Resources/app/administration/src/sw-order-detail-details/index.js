@@ -1,4 +1,5 @@
 import template from "./sw-order-detail-details.html.twig";
+import "./style.scss";
 
 Shopware.Component.override("sw-order-detail-details", {
   template,
