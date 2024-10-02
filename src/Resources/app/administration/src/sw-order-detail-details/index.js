@@ -13,8 +13,8 @@ Shopware.Component.override("sw-order-detail-details", {
     };
   },
   methods: {
-    getPaymentMethod(paymentDetails) {
-      return paymentDetails?.customFields?.hasOwnProperty("nexi_nets_payment_id") ?? false;
+    isNexiNetsPayment(transaction) {
+      return transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id") ?? false;
     },
     toggleCaptureModal() {
       this.isCaptureModalVisible = !this.isCaptureModalVisible;
