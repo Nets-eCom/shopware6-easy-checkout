@@ -3,8 +3,8 @@
     {% parent %}
   </template>
 
-  {% block nexinets_payment_component%}
-    <template v-else>
+  <template v-else>
+    {% block nexinets_payment_component%}
       <sw-card :title="$tc('nexinets-payment-component.payment-details.title')">
         <div class="nexinets-status-container">
           <div>
@@ -110,6 +110,6 @@
         {% endblock %}
 
       </sw-card>
-    </template>
-  {% endblock %}
+    {% endblock %}
+  </template>
 {% endblock %}
