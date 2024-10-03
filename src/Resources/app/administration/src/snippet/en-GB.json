@@ -2,5 +2,38 @@
     "nexinets-charge-action": {
         "title": "Make Full Charge",
         "description": "Send charge request to Nexi/Nets"
+    },
+    "nexinets-payment-component": {
+        "payment-details": {
+            "title": "Payment",
+            "status": "Payment status",
+            "history-link": "Show Nets Payment history",
+            "payment-via": "Payment via",
+            "payment-id": "Nets payment id",
+            "order-amount": "Order amount",
+            "time-order": "Time of order",
+            "charged-amount": "Charged amount",
+            "refund-amount": "Refunded amount",
+            "charge-help-text": "Charge amount is what you've already collected to your Nets account.",
+            "refund-help-text": ""
+        },
+        "charge": {
+            "button-title": "Charge",
+            "title": "Charge (Nets payment plugin)",
+            "info": "You're about to charge. This means the payment will be collected and processed.",
+            "items-list": "Select items to charge",
+            "max-charge-info": "Max. possible Charge amount:"
+        },
+        "refund": {
+            "button-title": "Refund",
+            "title": "Refund (Nets payment plugin)",
+            "info": "You're about to initiate Refund.",
+            "items-list": "Select items to refund",
+            "max-charge-info": "Max. refundable amount is:"
+        },
+        "cancel":  {
+            "button-title": "Cancel payment",
+            "button-modal": "Close"
+        }
     }
 }

@@ -1,0 +1,115 @@
+{% block sw_order_detail_details_payment %}
+  <template v-if="!isNexiNetsPayment(transaction)">
+    {% parent %}
+  </template>
+
+  <template v-else>
+    {% block nexinets_payment_component%}
+      <sw-card :title="$tc('nexinets-payment-component.payment-details.title')">
+        <div class="nexinets-status-container">
+          <div>
+            <p class="nexinets-status-text">
+              {{ $tc('nexinets-payment-component.payment-details.status') }}
+            </p>
+            <sw-label variant="info" size="default" appearance="pill" class="full-width">
+              Reserved
+            </sw-label>
+          </div>
+          <div class="payment-history-link">
+            <sw-internal-link
+                    :routerLink="undefined"
+                    :inline="false"
+                    :hideIcon="true"
+                    @click="showStateHistoryModal = true">
+              {{ $tc('nexinets-payment-component.payment-details.history-link') }}
+            </sw-internal-link>
+          </div>
+        </div>
+        <sw-container columns="1fr 1fr" class="nexinets-payment-container">
+
+          {% block sw_order_detail_details_payment_billing_address %}
+            <sw-order-address-selection
+                    class="sw-order-detail-details__billing-address"
+                    type="billing"
+                    :address="billingAddress"
+                    :address-id="selectedBillingAddressId"
+                    :disabled="!acl.can('order.editor') || undefined"
+                    :label="$tc('sw-order.createBase.detailsBody.labelBillingAddress')"
+                    @change-address="onChangeOrderAddress" />
+          {% endblock %}
+
+          {% block sw_order_detail_details_payment_method_select %}
+            <sw-entity-single-select
+                    v-model:value="transaction.paymentMethodId"
+                    entity="payment_method"
+                    label-property="distinguishableName"
+                    disabled
+                    :criteria="paymentMethodCriteria"
+                    :label="$tc('sw-order.createBase.detailsFooter.labelPaymentMethod')"
+                    :placeholder="$tc('sw-order.createBase.detailsFooter.placeholderPaymentMethod')"
+                    show-clearable-button />
+          {% endblock %}
+
+          {% block nexinets_payment_component_payment_details %}
+            <template>
+              <div>
+                <sw-text-field
+                    :label="$tc('nexinets-payment-component.payment-details.payment-via')"
+                    :value="transaction.paymentMethodId"
+                    :disabled="true"/>
+              </div>
+              <div>
+                <sw-text-field
+                    :label="$tc('nexinets-payment-component.payment-details.payment-id')"
+                    value="bc2a7dd29a1042adada7b54d5d343d43"
+                    :disabled="true"/>
+              </div>
+              <div>
+                <sw-text-field
+                    :label="$tc('nexinets-payment-component.payment-details.order-amount')"
+                    value="$59.97"
+                    :disabled="true"/>
+              </div>
+              <div>
+                <sw-text-field
+                    :label="$tc('nexinets-payment-component.payment-details.time-order')"
+                    value="27 Aug 2024, 12:23:46"
+                    type="date"
+                    :disabled="true"/>
+              </div>
+              <div>
+                <sw-text-field
+                    :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
+                    value="$00.00"
+                    :disabled="true"
+                    :helpText="$tc('nexinets-payment-component.pasyment-details.charged-help-text')"/>
+              </div>
+            </template>
+          {% endblock %}
+        </sw-container>
+
+        {% block nexinets_payment_component_footer %}
+          <template #footer>
+            <div class="nexinets-action-buttons">
+              <div>
+                <sw-button @click="">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
+                <sw-button @click="toggleCaptureModal">{{ $tc('nexinets-payment-component.charge.button-title') }}</sw-button>
+              </div>
+            </div>
+          </template>
+        {% endblock %}
+
+        {% block nexinets_payment_modal %}
+          <sw-modal v-if="isCaptureModalVisible" :title="$tc('nexinets-payment-component.charge.title')" @modal-close="toggleCaptureModal">
+            <p>{{ $tc('nexinets-payment-component.charge.info') }}</p>
+            <template #modal-footer>
+              <sw-button @click="toggleCaptureModal">{{ $tc('nexinets-payment-component.cancel.button-modal') }}</sw-button>
+              <sw-button @click="" :isLoading variant="primary">{{ $tc('nexinets-payment-component.charge.button-title') }}</sw-button>
+            </template>
+          </sw-modal>
+        {% endblock %}
+
+      </sw-card>
+    {% endblock %}
+  </template>
+{% endblock %}
