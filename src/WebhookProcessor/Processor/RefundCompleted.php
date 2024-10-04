@@ -5,6 +5,7 @@ namespace NexiNets\WebhookProcessor\Processor;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
 use NexiNets\Configuration\ConfigurationProvider;
@@ -104,7 +105,7 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
 
     private function isPaymentFullyRefunded(string $paymentId, string $salesChannelId): bool
     {
-        return $this->getPayment($salesChannelId, $paymentId)->isFullyRefunded();
+        return $this->getPayment($salesChannelId, $paymentId)->getStatus() === PaymentStatusEnum::REFUNDED;
     }
 
     private function getPayment(string $salesChannelId, string $paymentId): Payment

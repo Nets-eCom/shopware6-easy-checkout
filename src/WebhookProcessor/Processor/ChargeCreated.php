@@ -7,6 +7,7 @@ namespace NexiNets\WebhookProcessor\Processor;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
 use NexiNets\Configuration\ConfigurationProvider;
@@ -73,7 +74,6 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
             return;
         }
 
-
         if (!$this->isPaymentFullyCharged($paymentId, $salesChannelContext->getSalesChannelId())) {
             try {
                 $this->orderTransactionStateHandler->payPartially($transactionId, $context);
@@ -125,7 +125,7 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
 
     private function isPaymentFullyCharged(string $paymentId, string $salesChannelId): bool
     {
-        return $this->getPayment($salesChannelId, $paymentId)->isFullyCharged();
+        return $this->getPayment($salesChannelId, $paymentId)->getStatus() === PaymentStatusEnum::CHARGED;
     }
 
     private function getPayment(string $salesChannelId, string $paymentId): Payment
