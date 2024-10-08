@@ -7,6 +7,7 @@ namespace NexiNets\Tests\WebhookProcessor;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 use NexiNets\CheckoutApi\Model\Webhook\Data\Amount;
 use NexiNets\CheckoutApi\Model\Webhook\Data\RefundCompletedData;
@@ -245,7 +246,7 @@ final class RefundCompletedTest extends TestCase
     private function createPayment(bool $isFullyRefunded): Payment
     {
         $payment = $this->createStub(Payment::class);
-        $payment->method('isFullyRefunded')->willReturn($isFullyRefunded);
+        $payment->method('getStatus')->willReturn($isFullyRefunded ? PaymentStatusEnum::REFUNDED : PaymentStatusEnum::PARTIALLY_REFUNDED);
 
         return $payment;
     }

@@ -7,6 +7,7 @@ namespace NexiNets\Tests\WebhookProcessor;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 use NexiNets\CheckoutApi\Model\Webhook\ChargeCreated as ChargeCreatedModel;
 use NexiNets\CheckoutApi\Model\Webhook\Data\ChargeCreatedData;
@@ -265,7 +266,7 @@ final class ChargeCreatedTest extends TestCase
     private function createPayment(bool $isFullyCharged): Payment
     {
         $payment = $this->createStub(Payment::class);
-        $payment->method('isFullyCharged')->willReturn($isFullyCharged);
+        $payment->method('getStatus')->willReturn($isFullyCharged ? PaymentStatusEnum::CHARGED : PaymentStatusEnum::RESERVED);
 
         return $payment;
     }

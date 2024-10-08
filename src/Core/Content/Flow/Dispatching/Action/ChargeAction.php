@@ -4,6 +4,7 @@ namespace NexiNets\Core\Content\Flow\Dispatching\Action;
 
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\RequestBuilder\ChargeRequest;
@@ -63,7 +64,7 @@ class ChargeAction extends FlowAction
 
             $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
             $payment = $paymentApi->retrievePayment($paymentId)->getPayment();
-            if ($payment->isCharged()) { // we only allow to charge full amount
+            if ($payment->getStatus() !== PaymentStatusEnum::RESERVED) { // we only allow to charge full amount
                 continue;
             }
 
