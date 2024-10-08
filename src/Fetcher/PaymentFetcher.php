@@ -7,7 +7,7 @@ use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\Configuration\ConfigurationProvider;
 
-class PaymentFetcher implements PaymentFetcherInterface
+class PaymentFetcher implements PaymentFetcherInterface, CachablePaymentFetcherInterface
 {
     public function __construct(
         private readonly PaymentApiFactory $paymentApiFactory,
