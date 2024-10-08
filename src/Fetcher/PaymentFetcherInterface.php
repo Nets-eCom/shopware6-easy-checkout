@@ -7,6 +7,4 @@ use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 interface PaymentFetcherInterface
 {
     public function fetchPayment(string $salesChannelId, string $paymentId): Payment;
-
-    public function getCachedPayment(string $salesChannelId, string $paymentId): Payment;
 }

@@ -31,9 +31,14 @@ class PaymentDetailController extends AbstractController
     ) {
     }
 
-    #[Route(path: '/api/order/{orderId}/nexinets-payment-detail', name: 'api.nexinets.payment.detail', defaults: [
-        '_acl' => ['order:read'],
-    ], methods: ['GET'])]
+    #[Route(
+        path: '/api/order/{orderId}/nexinets-payment-detail',
+        name: 'api.nexinets.payment.detail',
+        defaults: [
+            '_acl' => ['order:read'],
+        ],
+        methods: ['GET']
+    )]
     public function getPaymentDetail(string $orderId, Request $request, Context $context): Response
     {
         $criteria = (new Criteria([$orderId]))
@@ -75,8 +80,8 @@ class PaymentDetailController extends AbstractController
         ]);
     }
 
-    private function formatAmount(?int $amount): string
+    private function formatAmount(int $amount): string
     {
-        return number_format((int) $amount / 100, 2);
+        return number_format($amount / 100, 2);
     }
 }
