@@ -27,7 +27,7 @@ Shopware.Component.override("sw-order-detail-details", {
       const status = this.paymentDetails.status;
 
       if (!status) {
-        return 'Unknown';
+        return 'undefined';
       }
 
       return 'nexinets-payment-component.payment-details.status.' + status;
