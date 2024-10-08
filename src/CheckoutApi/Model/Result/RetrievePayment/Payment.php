@@ -6,6 +6,8 @@ namespace NexiNets\CheckoutApi\Model\Result\RetrievePayment;
 
 class Payment
 {
+    private readonly PaymentStatusEnum $status;
+
     /**
      * @param list<Refund>|null $refunds
      * @param list<Charge>|null $charges
@@ -23,6 +25,7 @@ class Payment
         private readonly ?array $charges = null,
         private readonly ?string $myReference = null,
     ) {
+        $this->status = $this->specifyStatus();
     }
 
     public function getPaymentId(): string
@@ -80,7 +83,7 @@ class Payment
         return $this->charges;
     }
 
-    public function getTerminated(): \DateTimeInterface
+    public function getTerminated(): ?\DateTimeInterface
     {
         return $this->terminated;
     }
@@ -90,23 +93,47 @@ class Payment
         return $this->myReference;
     }
 
-    public function isFullyCharged(): bool
+    public function getStatus(): PaymentStatusEnum
+    {
+        return $this->status;
+    }
+
+    private function specifyStatus(): PaymentStatusEnum
+    {
+        return match (true) {
+            $this->isCancelled() => PaymentStatusEnum::CANCELLED,
+            $this->isFullyRefunded() => PaymentStatusEnum::REFUNDED,
+            $this->isRefunded() => PaymentStatusEnum::PARTIALLY_REFUNDED,
+            $this->isFullyCharged() => PaymentStatusEnum::CHARGED,
+            $this->isCharged() => PaymentStatusEnum::PARTIALLY_CHARGED,
+            $this->isReserved() => PaymentStatusEnum::RESERVED,
+            $this->terminated instanceof \DateTimeInterface => PaymentStatusEnum::TERMINATED,
+            default => PaymentStatusEnum::NEW,
+        };
+    }
+
+    private function isReserved(): bool
+    {
+        return $this->getSummary()->getReservedAmount() > 0;
+    }
+
+    private function isFullyCharged(): bool
     {
         $summary = $this->getSummary();
 
-        if (!$this->isCharged()) {
+        if ($this->isRefunded() || !$this->isCharged()) {
             return false;
         }
 
         return $summary->getChargedAmount() === $summary->getReservedAmount();
     }
 
-    public function isCharged(): bool
+    private function isCharged(): bool
     {
         return $this->getSummary()->getChargedAmount() > 0;
     }
 
-    public function isFullyRefunded(): bool
+    private function isFullyRefunded(): bool
     {
         $summary = $this->getSummary();
 
@@ -115,5 +142,15 @@ class Payment
         }
 
         return $summary->getChargedAmount() === $summary->getRefundedAmount();
+    }
+
+    private function isRefunded(): bool
+    {
+        return $this->getSummary()->getRefundedAmount() > 0;
+    }
+
+    private function isCancelled(): bool
+    {
+        return $this->getSummary()->getCancelledAmount() > 0;
     }
 }

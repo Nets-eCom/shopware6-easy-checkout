@@ -79,6 +79,11 @@
             <argument>%kernel.shopware_version%</argument>
         </service>
 
+        <service id="NexiNets\Fetcher\PaymentFetcher">
+            <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+        </service>
+
         <!-- ### Webhooks ### -->
         <service id="NexiNets\Storefront\Controller\WebhookController" public="true">
             <argument type="service" id="NexiNets\Security\WebhookVoter"/>
@@ -140,6 +145,15 @@
             <argument type="service" id="NexiNets\RequestBuilder\ChargeRequest"/>
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <tag name="flow.action" priority="600" key="action.nexinets.charge"/>
+        </service>
+
+        <!-- ### Admin Controller ### -->
+        <service id="NexiNets\Administration\Controller\PaymentDetailController" public="true">
+            <argument type="service" id="order.repository"/>
+            <argument type="service" id="NexiNets\Fetcher\PaymentFetcher"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
         </service>
     </services>
 </container>

@@ -6,16 +6,26 @@
     "nexinets-payment-component": {
         "payment-details": {
             "title": "Payment",
-            "status": "Payment status",
+            "status-label": "Payment status",
             "history-link": "Show Nets Payment history",
             "payment-via": "Payment via",
             "payment-id": "Nets payment id",
             "order-amount": "Order amount",
             "time-order": "Time of order",
             "charged-amount": "Charged amount",
-            "refund-amount": "Refunded amount",
-            "charge-help-text": "Charge amount is what you've already collected to your Nets account.",
-            "refund-help-text": ""
+            "refunded-amount": "Refunded amount",
+            "charged-help-text": "Charge amount is what you've already collected to your Nets account.",
+            "refunded-help-text": "",
+            "status": {
+                "new": "New",
+                "reserved": "Reserved",
+                "charged": "Charged",
+                "partially_charged": "Partially Charged",
+                "refunded": "Refunded",
+                "partially_refunded": "Partially Refunded",
+                "cancelled": "Canceled",
+                "terminated": "Terminated"
+            }
         },
         "charge": {
             "button-title": "Charge",
