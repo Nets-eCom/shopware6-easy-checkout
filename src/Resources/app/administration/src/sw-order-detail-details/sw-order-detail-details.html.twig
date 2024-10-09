@@ -5,13 +5,13 @@
 
   <template v-else>
     {% block nexinets_payment_component%}
-      <sw-card :title="$tc('nexinets-payment-component.payment-details.title')">
+      <sw-card :title="$tc('nexinets-payment-component.payment-details.title')" :isLoading>
         <div class="nexinets-status-container">
           <div>
             <p class="nexinets-status-text">
               {{ $tc('nexinets-payment-component.payment-details.status-label') }}
             </p>
-            <sw-label variant="info" size="default" appearance="pill" class="full-width">
+            <sw-label :variant size="default" appearance="pill" class="full-width">
               {{ $tc(statusTcString) }}
             </sw-label>
           </div>
