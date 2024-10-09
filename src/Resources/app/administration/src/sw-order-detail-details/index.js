@@ -3,13 +3,14 @@ import "./style.scss";
 
 Shopware.Component.override("sw-order-detail-details", {
   template,
-  inject: ['nexiNetsPaymentDetailService'],
+  inject: ["nexiNetsPaymentDetailService"],
   mixins: [],
   data() {
     return {
       isLoading: false,
       disabled: true,
       isCaptureModalVisible: false,
+      variant: "info",
       paymentDetails: {},
     };
   },
@@ -20,17 +21,17 @@ Shopware.Component.override("sw-order-detail-details", {
     refunded() {
       const status = this.paymentDetails.status;
 
-      return status === 'refunded' || status === 'partially_refunded'; // @todo use PaymentStatusEnum
+      return status === "refunded" || status === "partially_refunded"; // @todo use PaymentStatusEnum
     },
 
     statusTcString() {
       const status = this.paymentDetails.status;
 
       if (!status) {
-        return 'undefined';
+        return "Undefined";
       }
 
-      return 'nexinets-payment-component.payment-details.status.' + status;
+      return `nexinets-payment-component.payment-details.status.${status}`;
     },
   },
   methods: {
@@ -40,13 +41,28 @@ Shopware.Component.override("sw-order-detail-details", {
     toggleCaptureModal() {
       this.isCaptureModalVisible = !this.isCaptureModalVisible;
     },
+    setPaymentStatusVariant() {
+      const status = this.paymentDetails.status;
+      const variantMapping = {
+        charged: "success",
+        partially_charged: "warning",
+        refunded: "warning",
+        partially_refunded: "warning",
+        cancelled: "danger",
+      };
+      this.variant = variantMapping[status] || "info";
+    },
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
-      await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId)
+      await this.nexiNetsPaymentDetailService
+        .getPaymentDetails(orderId)
         .then((data) => {
           this.paymentDetails = data;
         })
-        .finally(() => {this.isLoading = false});
+        .finally(() => {
+          this.setPaymentStatusVariant();
+          this.isLoading = false;
+        });
     },
   },
 });
