@@ -77,16 +77,15 @@
                     type="date"
                     :disabled="true"/>
               </div>
-              <div>
+              <div v-if="!refunded">
                 <sw-text-field
-                    v-if="!refunded"
                     :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
                     :value="paymentDetails.chargedAmount"
                     :disabled="true"
                     :helpText="$tc('nexinets-payment-component.payment-details.charged-help-text')"/>
-
+              </div>
+              <div v-if="refunded">
                 <sw-text-field
-                    v-if="refunded"
                     :label="$tc('nexinets-payment-component.payment-details.refunded-amount')"
                     :value="paymentDetails.refundedAmount"
                     :disabled="true"

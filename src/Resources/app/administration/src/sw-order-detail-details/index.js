@@ -38,9 +38,11 @@ Shopware.Component.override("sw-order-detail-details", {
     isNexiNetsPayment(transaction) {
       return transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id") ?? false;
     },
+
     toggleCaptureModal() {
       this.isCaptureModalVisible = !this.isCaptureModalVisible;
     },
+
     setPaymentStatusVariant() {
       const status = this.paymentDetails.status;
       const variantMapping = {
@@ -52,6 +54,7 @@ Shopware.Component.override("sw-order-detail-details", {
       };
       this.variant = variantMapping[status] || "info";
     },
+
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
       await this.nexiNetsPaymentDetailService
