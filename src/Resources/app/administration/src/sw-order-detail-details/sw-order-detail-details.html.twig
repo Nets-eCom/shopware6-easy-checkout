@@ -97,7 +97,7 @@
 
         {% block nexinets_payment_component_footer %}
           <template #footer>
-            <div class="nexinets-action-buttons">
+            <div class="nexinets-action-buttons" v-if="shouldDisplayButtonsSection">
               <div>
                 <sw-button v-if="shouldDisplayCancel" :isLoading @click="">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
                 <sw-button v-if="shouldDisplayRefundBtn" :isLoading @click="toggleRefundModal">{{ $tc('nexinets-payment-component.refund.button-title') }}</sw-button>
