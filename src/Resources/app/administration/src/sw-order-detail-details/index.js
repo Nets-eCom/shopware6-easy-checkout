@@ -35,6 +35,10 @@ Shopware.Component.override("sw-order-detail-details", {
       return this.paymentDetails.remainingCharge > 0;
     },
 
+    shouldDisplayButtonsSection() {
+      return this.shouldDisplayCancel || this.shouldDisplayRefundBtn || this.shouldDisplayChargeBtn;
+    },
+
     statusTcString() {
       const status = this.paymentDetails.status;
 

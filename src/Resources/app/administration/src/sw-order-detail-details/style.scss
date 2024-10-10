@@ -40,17 +40,17 @@ $border-color: #d1d9e0;
   column-gap: $column-gap;
   padding-top: 2.5rem;
   border-top: 1px $border-color solid;
-  border-bottom: 1px $border-color solid;
 }
 
 .nexinets-action-buttons {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-top: 0.95rem;
   flex-wrap: wrap;
+  padding-top: 0.95rem;
+  border-top: 1px $border-color solid;
 
   @include respond-to(lg) {
-    margin-top: 1.85rem;
+    padding-top: 1.85rem;
   }
 }
