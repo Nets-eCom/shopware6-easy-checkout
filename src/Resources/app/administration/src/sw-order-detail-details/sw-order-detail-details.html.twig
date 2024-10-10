@@ -56,39 +56,39 @@
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.payment-via')"
                     :value="paymentDetails.paymentVia"
-                    :disabled="true"/>
+                    disabled/>
               </div>
               <div>
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.payment-id')"
                     :value="paymentDetails.paymentId"
-                    :disabled="true"/>
+                    disabled/>
               </div>
               <div>
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.order-amount')"
                     :value="paymentDetails.orderAmount"
-                    :disabled="true"/>
+                    disabled/>
               </div>
               <div>
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.time-order')"
                     :value="paymentDetails.orderTime"
                     type="date"
-                    :disabled="true"/>
+                    disabled/>
               </div>
               <div>
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
                     :value="paymentDetails.chargedAmount"
-                    :disabled="true"
+                    disabled
                     :helpText="$tc('nexinets-payment-component.payment-details.charged-help-text')"/>
               </div>
               <div v-if="shouldDisplayRefund">
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.refunded-amount')"
                     :value="paymentDetails.refundedAmount"
-                    :disabled="true"
+                    disabled
                     :helpText="$tc('nexinets-payment-component.payment-details.refunded-help-text')"/>
               </div>
             </template>
