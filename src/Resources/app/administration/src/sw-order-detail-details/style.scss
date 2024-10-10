@@ -30,6 +30,10 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: 0.95rem;
   flex-wrap: wrap;
+
+  @media (min-width: 961px) {
+    margin-top: 1.85rem;
+  }
 }
