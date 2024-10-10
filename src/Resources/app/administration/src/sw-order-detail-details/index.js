@@ -18,10 +18,21 @@ Shopware.Component.override("sw-order-detail-details", {
     this.fetchPaymentDetails(this.orderId);
   },
   computed: {
-    refunded() {
-      const status = this.paymentDetails.status;
+    // @todo use PaymentStatusEnum
+    shouldDisplayCancel() {
+      return this.paymentDetails.status === "reserved";
+    },
 
-      return status === "refunded" || status === "partially_refunded"; // @todo use PaymentStatusEnum
+    shouldDisplayRefund() {
+      return this.paymentDetails.refundedAmount > 0;
+    },
+
+    shouldDisplayRefundBtn() {
+      return this.paymentDetails.remainingRefund > 0;
+    },
+
+    shouldDisplayChargeBtn() {
+      return this.paymentDetails.remainingCharge > 0;
     },
 
     statusTcString() {
@@ -65,6 +76,7 @@ Shopware.Component.override("sw-order-detail-details", {
         .finally(() => {
           this.setPaymentStatusVariant();
           this.isLoading = false;
+          console.log(this.paymentDetails);
         });
     },
   },
