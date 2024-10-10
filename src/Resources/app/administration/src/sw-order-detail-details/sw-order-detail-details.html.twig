@@ -77,14 +77,14 @@
                     type="date"
                     :disabled="true"/>
               </div>
-              <div v-if="!refunded">
+              <div>
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
                     :value="paymentDetails.chargedAmount"
                     :disabled="true"
                     :helpText="$tc('nexinets-payment-component.payment-details.charged-help-text')"/>
               </div>
-              <div v-if="refunded">
+              <div v-if="shouldDisplayRefund">
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.refunded-amount')"
                     :value="paymentDetails.refundedAmount"
@@ -99,8 +99,9 @@
           <template #footer>
             <div class="nexinets-action-buttons">
               <div>
-                <sw-button :isLoading="isLoading" @click="">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
-                <sw-button :isLoading="isLoading" @click="toggleCaptureModal">{{ $tc('nexinets-payment-component.charge.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayCancel" :isLoading @click="">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayRefundBtn" :isLoading @click="toggleRefundModal">{{ $tc('nexinets-payment-component.refund.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayChargeBtn" :isLoading @click="toggleCaptureModal">{{ $tc('nexinets-payment-component.charge.button-title') }}</sw-button>
               </div>
             </div>
           </template>
