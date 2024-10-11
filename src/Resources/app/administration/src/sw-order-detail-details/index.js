@@ -35,7 +35,15 @@ Shopware.Component.override("sw-order-detail-details", {
       return this.paymentDetails.remainingCharge > 0;
     },
 
+    isNewPayment() {
+      return this.paymentDetails.status === "new";
+    },
+
     shouldDisplayButtonsSection() {
+      if (this.isNewPayment) {
+        return;
+      }
+
       return this.shouldDisplayCancel || this.shouldDisplayRefundBtn || this.shouldDisplayChargeBtn;
     },
 
@@ -76,6 +84,7 @@ Shopware.Component.override("sw-order-detail-details", {
         console.error("Error while fetching NexiNets payment details:", error);
       } finally {
         this.isLoading = false;
+        console.log(this.paymentDetails);
       }
     },
 
