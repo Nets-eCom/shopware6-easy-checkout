@@ -54,10 +54,6 @@ Shopware.Component.override("sw-order-detail-details", {
       return transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id") ?? false;
     },
 
-    toggleCaptureModal() {
-      this.isCaptureModalVisible = !this.isCaptureModalVisible;
-    },
-
     setPaymentStatusVariant() {
       const status = this.paymentDetails.status;
       const variantMapping = {
@@ -72,16 +68,19 @@ Shopware.Component.override("sw-order-detail-details", {
 
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
-      await this.nexiNetsPaymentDetailService
-        .getPaymentDetails(orderId)
-        .then((data) => {
-          this.paymentDetails = data;
-        })
-        .finally(() => {
-          this.setPaymentStatusVariant();
-          this.isLoading = false;
-          console.log(this.paymentDetails);
-        });
+      try {
+        this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
+        this.setPaymentStatusVariant();
+      } catch (error) {
+        this.variant = "danger";
+        console.error("Error while fetching NexiNets payment details:", error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    toggleCaptureModal() {
+      this.isCaptureModalVisible = !this.isCaptureModalVisible;
     },
   },
 });
