@@ -5,13 +5,13 @@
 
   <template v-else>
     {% block nexinets_payment_component%}
-      <sw-card :title="$tc('nexinets-payment-component.payment-details.title')" :isLoading>
+      <sw-card :title="$tc('nexinets-payment-component.payment-details.title')" :isLoading="isLoading">
         <div class="nexinets-status-container">
           <div>
             <p class="nexinets-status-text">
               {{ $tc('nexinets-payment-component.payment-details.status-label') }}
             </p>
-            <sw-label :variant size="default" appearance="pill" class="full-width">
+            <sw-label :variant="variant" size="default" appearance="pill" class="full-width">
               {{ $tc(statusTcString) }}
             </sw-label>
           </div>
@@ -99,9 +99,9 @@
           <template #footer>
             <div class="nexinets-action-buttons" v-if="shouldDisplayButtonsSection">
               <div>
-                <sw-button v-if="shouldDisplayCancel" :isLoading @click="">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
-                <sw-button v-if="shouldDisplayRefundBtn" :isLoading @click="toggleRefundModal">{{ $tc('nexinets-payment-component.refund.button-title') }}</sw-button>
-                <sw-button v-if="shouldDisplayChargeBtn" :isLoading @click="toggleCaptureModal">{{ $tc('nexinets-payment-component.charge.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayCancel" :isLoading="isLoading" @click="">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayRefundBtn" :isLoading="isLoading" @click="toggleRefundModal">{{ $tc('nexinets-payment-component.refund.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayChargeBtn" :isLoading="isLoading" @click="toggleCaptureModal">{{ $tc('nexinets-payment-component.charge.button-title') }}</sw-button>
               </div>
             </div>
           </template>
