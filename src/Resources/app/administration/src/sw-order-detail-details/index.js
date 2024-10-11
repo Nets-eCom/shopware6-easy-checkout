@@ -11,11 +11,14 @@ Shopware.Component.override("sw-order-detail-details", {
       disabled: true,
       isCaptureModalVisible: false,
       variant: "info",
+      netsPaymentId: null,
       paymentDetails: {},
     };
   },
   created() {
-    this.fetchPaymentDetails(this.orderId);
+    if (this.isNexiNetsPayment(this.transaction)) {
+      this.fetchPaymentDetails(this.orderId);
+    }
   },
   computed: {
     // @todo use PaymentStatusEnum
@@ -43,7 +46,6 @@ Shopware.Component.override("sw-order-detail-details", {
       if (this.isNewPayment) {
         return;
       }
-
       return this.shouldDisplayCancel || this.shouldDisplayRefundBtn || this.shouldDisplayChargeBtn;
     },
 
@@ -59,7 +61,11 @@ Shopware.Component.override("sw-order-detail-details", {
   },
   methods: {
     isNexiNetsPayment(transaction) {
-      return transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id") ?? false;
+      if (!transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id")) {
+        return;
+      }
+      this.netsPaymentId = transaction.customFields["nexi_nets_payment_id"];
+      return true;
     },
 
     setPaymentStatusVariant() {
@@ -81,10 +87,12 @@ Shopware.Component.override("sw-order-detail-details", {
         this.setPaymentStatusVariant();
       } catch (error) {
         this.variant = "danger";
-        console.error("Error while fetching NexiNets payment details:", error);
+        console.error(
+          `Error while fetching NexiNets payment details for paymentID: ${this.netsPaymentId}`,
+          error,
+        );
       } finally {
         this.isLoading = false;
-        console.log(this.paymentDetails);
       }
     },
 
