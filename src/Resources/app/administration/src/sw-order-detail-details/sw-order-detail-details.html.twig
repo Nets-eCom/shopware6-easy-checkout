@@ -77,7 +77,7 @@
                     type="date"
                     disabled/>
               </div>
-              <div>
+              <div v-if="!isNewPayment">
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
                     :value="paymentDetails.chargedAmount"
