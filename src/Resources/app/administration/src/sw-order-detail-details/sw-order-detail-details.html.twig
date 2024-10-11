@@ -51,7 +51,7 @@
           {% endblock %}
 
           {% block nexinets_payment_component_payment_details %}
-            <template>
+            <template v-if="!hasFetchError">
               <div>
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.payment-via')"

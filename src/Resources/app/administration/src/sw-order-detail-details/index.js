@@ -11,6 +11,7 @@ Shopware.Component.override("sw-order-detail-details", {
       disabled: true,
       isCaptureModalVisible: false,
       variant: "info",
+      hasFetchError: false,
       netsPaymentId: null,
       paymentDetails: {},
     };
@@ -86,6 +87,7 @@ Shopware.Component.override("sw-order-detail-details", {
         this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
         this.setPaymentStatusVariant();
       } catch (error) {
+        this.hasFetchError = true;
         this.variant = "danger";
         console.error(
           `Error while fetching NexiNets payment details for paymentID: ${this.netsPaymentId}`,
