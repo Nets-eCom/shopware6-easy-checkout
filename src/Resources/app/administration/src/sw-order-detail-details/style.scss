@@ -57,3 +57,28 @@ $border-color: #d1d9e0;
 }
 
 // Modal styling
+
+.amount-wrapper {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  align-items: end;
+}
+
+.amount-input {
+  margin-top: 1.6rem;
+  margin-bottom: 0.2rem;
+}
+
+.modal-checkbox {
+  margin-left: 1rem;
+}
+
+.modal-full-charge {
+  color: #c6cfd9;
+  font-size: $font-size;
+
+  span {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
