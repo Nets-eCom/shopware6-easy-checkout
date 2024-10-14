@@ -5,13 +5,13 @@
 
   <template v-else>
     {% block nexinets_payment_component%}
-      <sw-card :title="$tc('nexinets-payment-component.payment-details.title')">
+      <sw-card :title="$tc('nexinets-payment-component.payment-details.title')" :isLoading="isLoading">
         <div class="nexinets-status-container">
           <div>
             <p class="nexinets-status-text">
               {{ $tc('nexinets-payment-component.payment-details.status-label') }}
             </p>
-            <sw-label variant="info" size="default" appearance="pill" class="full-width">
+            <sw-label :variant="variant" size="default" appearance="pill" class="full-width">
               {{ $tc(statusTcString) }}
             </sw-label>
           </div>
@@ -51,45 +51,44 @@
           {% endblock %}
 
           {% block nexinets_payment_component_payment_details %}
-            <template>
+            <template v-if="!hasFetchError">
               <div>
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.payment-via')"
                     :value="paymentDetails.paymentVia"
-                    :disabled="true"/>
+                    disabled/>
               </div>
               <div>
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.payment-id')"
                     :value="paymentDetails.paymentId"
-                    :disabled="true"/>
+                    disabled/>
               </div>
               <div>
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.order-amount')"
                     :value="paymentDetails.orderAmount"
-                    :disabled="true"/>
+                    disabled/>
               </div>
               <div>
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.time-order')"
                     :value="paymentDetails.orderTime"
                     type="date"
-                    :disabled="true"/>
+                    disabled/>
               </div>
-              <div>
+              <div v-if="!isNewPayment">
                 <sw-text-field
-                    v-if="!refunded"
                     :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
                     :value="paymentDetails.chargedAmount"
-                    :disabled="true"
+                    disabled
                     :helpText="$tc('nexinets-payment-component.payment-details.charged-help-text')"/>
-
+              </div>
+              <div v-if="shouldDisplayRefundField">
                 <sw-text-field
-                    v-if="refunded"
                     :label="$tc('nexinets-payment-component.payment-details.refunded-amount')"
                     :value="paymentDetails.refundedAmount"
-                    :disabled="true"
+                    disabled
                     :helpText="$tc('nexinets-payment-component.payment-details.refunded-help-text')"/>
               </div>
             </template>
@@ -98,10 +97,11 @@
 
         {% block nexinets_payment_component_footer %}
           <template #footer>
-            <div class="nexinets-action-buttons">
+            <div class="nexinets-action-buttons" v-if="shouldDisplayButtonsSection">
               <div>
-                <sw-button :isLoading="isLoading" @click="">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
-                <sw-button :isLoading="isLoading" @click="toggleCaptureModal">{{ $tc('nexinets-payment-component.charge.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayCancelBtn" :isLoading="isLoading" @click="">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayRefundBtn" :isLoading="isLoading" @click="toggleRefundModal">{{ $tc('nexinets-payment-component.refund.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayChargeBtn" :isLoading="isLoading" @click="toggleCaptureModal">{{ $tc('nexinets-payment-component.charge.button-title') }}</sw-button>
               </div>
             </div>
           </template>

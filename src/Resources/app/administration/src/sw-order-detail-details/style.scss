@@ -1,12 +1,30 @@
+// Variables
+$column-gap: 2rem;
+$font-size: 14px;
+$border-color: #d1d9e0;
+
+// Mixin for Shopware breakpoint
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == lg {
+    @media (min-width: 961px) { @content; }
+  }
+}
+
+// Payment details styling
 .nexinets-status-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 2rem;
+  column-gap: $column-gap;
   margin-bottom: 2rem;
+  margin-top: 0.6rem;
+
+  @include respond-to(lg) {
+    margin-top: 0;
+  }
 }
 
 .nexinets-status-text {
-  font-size: 14px;
+  font-size: $font-size;
   margin-bottom: 0.4rem;
 }
 
@@ -20,16 +38,22 @@
 }
 
 .nexinets-payment-container {
-  column-gap: 2rem;
+  column-gap: $column-gap;
   padding-top: 2.5rem;
-  border-top: 1px #d1d9e0 solid;
-  border-bottom: 1px #d1d9e0 solid;
+  border-top: 1px $border-color solid;
 }
 
 .nexinets-action-buttons {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-top: 1rem;
   flex-wrap: wrap;
+  padding-top: 0.95rem;
+  border-top: 1px $border-color solid;
+
+  @include respond-to(lg) {
+    padding-top: 1.85rem;
+  }
 }
+
+// Modal styling
