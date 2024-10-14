@@ -23,12 +23,12 @@ Shopware.Component.override("sw-order-detail-details", {
   },
   computed: {
     // @todo use PaymentStatusEnum
-    shouldDisplayCancel() {
-      return this.paymentDetails.status === "reserved";
+    shouldDisplayRefundField() {
+      return this.paymentDetails.refundedAmount > 0;
     },
 
-    shouldDisplayRefund() {
-      return this.paymentDetails.refundedAmount > 0;
+    shouldDisplayCancelBtn() {
+      return this.paymentDetails.status === "reserved";
     },
 
     shouldDisplayRefundBtn() {

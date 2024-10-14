@@ -84,7 +84,7 @@
                     disabled
                     :helpText="$tc('nexinets-payment-component.payment-details.charged-help-text')"/>
               </div>
-              <div v-if="shouldDisplayRefund">
+              <div v-if="shouldDisplayRefundField">
                 <sw-text-field
                     :label="$tc('nexinets-payment-component.payment-details.refunded-amount')"
                     :value="paymentDetails.refundedAmount"
@@ -99,7 +99,7 @@
           <template #footer>
             <div class="nexinets-action-buttons" v-if="shouldDisplayButtonsSection">
               <div>
-                <sw-button v-if="shouldDisplayCancel" :isLoading="isLoading" @click="">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayCancelBtn" :isLoading="isLoading" @click="">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
                 <sw-button v-if="shouldDisplayRefundBtn" :isLoading="isLoading" @click="toggleRefundModal">{{ $tc('nexinets-payment-component.refund.button-title') }}</sw-button>
                 <sw-button v-if="shouldDisplayChargeBtn" :isLoading="isLoading" @click="toggleCaptureModal">{{ $tc('nexinets-payment-component.charge.button-title') }}</sw-button>
               </div>
