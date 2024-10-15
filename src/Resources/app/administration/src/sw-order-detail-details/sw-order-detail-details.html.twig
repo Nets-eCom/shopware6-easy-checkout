@@ -115,7 +115,7 @@
 
         {% block nexinets_payment_modal %}
           <sw-modal v-if="isCaptureModalVisible" :title="$tc('nexinets-payment-component.charge.title')" @modal-close="toggleCaptureModal">
-            <p>{{ $tc('nexinets-payment-component.charge.info', { orderNumber: "test" }) }}</p>
+            <p>{{ $tc('nexinets-payment-component.charge.info', { orderNumber: order.orderNumber }) }}</p>
             <div class="amount-wrapper">
               <sw-number-field class="amount-input" :label="$tc('nexinets-payment-component.payment-details.charged-amount')" v-model="maxChargeAmount" :allowEmpty="false" :prefix="$">
                 <template v-slot:prefix>{{ order.currency.symbol }}</template>
