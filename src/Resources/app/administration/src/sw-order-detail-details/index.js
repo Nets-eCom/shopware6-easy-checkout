@@ -18,11 +18,19 @@ Shopware.Component.override("sw-order-detail-details", {
     };
   },
   created() {
-    if (this.isNexiNetsPayment(this.transaction)) {
+    if (this.isNexiNetsPayment) {
       this.fetchPaymentDetails(this.orderId);
     }
   },
   computed: {
+    isNexiNetsPayment() {
+      if (!this.transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id")) {
+        return false;
+      }
+      console.log(this.order);
+      this.netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
+      return true;
+    },
     // @todo use PaymentStatusEnum
     shouldDisplayRefundField() {
       return this.paymentDetails.refundedAmount > 0;
@@ -64,15 +72,6 @@ Shopware.Component.override("sw-order-detail-details", {
     },
   },
   methods: {
-    isNexiNetsPayment(transaction) {
-      if (!transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id")) {
-        return;
-      }
-      console.log(transaction);
-      this.netsPaymentId = transaction.customFields["nexi_nets_payment_id"];
-      return true;
-    },
-
     setPaymentStatusVariant() {
       const status = this.paymentDetails.status;
       const variantMapping = {
