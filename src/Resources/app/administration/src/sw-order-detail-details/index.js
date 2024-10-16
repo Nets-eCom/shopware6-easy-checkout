@@ -101,6 +101,10 @@ Shopware.Component.override("sw-order-detail-details", {
       }
     },
 
+    handleCharge() {
+      // Implement charge handling logic here
+    },
+
     toggleCaptureModal() {
       this.isCaptureModalVisible = !this.isCaptureModalVisible;
     },
