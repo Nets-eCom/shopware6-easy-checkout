@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace NexiNets\Tests\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
-use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 use NexiNets\CheckoutApi\Model\Webhook\Data\Amount;
 use NexiNets\CheckoutApi\Model\Webhook\Data\RefundCompletedData;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\CheckoutApi\Model\Webhook\RefundCompleted as RefundCompletedModel;
-use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Fetcher\CachablePaymentFetcherInterface;
 use NexiNets\WebhookProcessor\Processor\RefundCompleted;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
 use PHPUnit\Framework\TestCase;
@@ -34,8 +31,8 @@ final class RefundCompletedTest extends TestCase
     {
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects($this->atLeast(2))->method('info')->with($this->isType('string'));
-        $paymentApiFactory = $this->createPaymentApiFactory(
-            $this->createPaymentApi($this->createPayment(true))
+        $paymentFetcher = $this->createPaymentFetcher(
+            $this->createPayment(true)
         );
         $salesChannelContext = Generator::createSalesChannelContext();
 
@@ -51,8 +48,7 @@ final class RefundCompletedTest extends TestCase
         $sut = new RefundCompleted(
             $this->createTransactionRepository(OrderTransactionStates::STATE_PAID, 'foo'),
             $orderTransactionStateHandler,
-            $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class),
+            $paymentFetcher,
             $logger
         );
 
@@ -73,8 +69,7 @@ final class RefundCompletedTest extends TestCase
 
         $webhook = $this->createRefundCompletedWebhookEvent('foo');
         $payment = $this->createPayment(false);
-        $paymentApi = $this->createPaymentApi($payment);
-        $paymentApiFactory = $this->createPaymentApiFactory($paymentApi);
+        $paymentFetcher = $this->createPaymentFetcher($payment);
         $salesChannelContext = Generator::createSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
@@ -89,8 +84,7 @@ final class RefundCompletedTest extends TestCase
         $sut = new RefundCompleted(
             $transactionRepository,
             $orderTransactionStateHandler,
-            $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class),
+            $paymentFetcher,
             $logger
         );
 
@@ -117,8 +111,7 @@ final class RefundCompletedTest extends TestCase
         $sut = new RefundCompleted(
             $transactionRepository,
             $this->createMock(OrderTransactionStateHandler::class),
-            $this->createStub(PaymentApiFactory::class),
-            $this->createStub(ConfigurationProvider::class),
+            $this->createStub(CachablePaymentFetcherInterface::class),
             $this->createMock(LoggerInterface::class)
         );
 
@@ -130,8 +123,7 @@ final class RefundCompletedTest extends TestCase
         $sut = new RefundCompleted(
             $this->createStub(EntityRepository::class),
             $this->createStub(OrderTransactionStateHandler::class),
-            $this->createStub(PaymentApiFactory::class),
-            $this->createStub(ConfigurationProvider::class),
+            $this->createStub(CachablePaymentFetcherInterface::class),
             $this->createStub(LoggerInterface::class)
         );
 
@@ -147,8 +139,8 @@ final class RefundCompletedTest extends TestCase
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects($this->once())->method('info')->with($this->isType('string'));
-        $paymentApiFactory = $this->createPaymentApiFactory(
-            $this->createPaymentApi($this->createPayment(true))
+        $paymentFetcher = $this->createPaymentFetcher(
+            $this->createPayment(true)
         );
         $salesChannelContext = Generator::createSalesChannelContext();
 
@@ -172,8 +164,7 @@ final class RefundCompletedTest extends TestCase
         $sut = new RefundCompleted(
             $this->createTransactionRepository(OrderTransactionStates::STATE_OPEN, 'foo'),
             $orderTransactionStateHandler,
-            $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class),
+            $paymentFetcher,
             $logger
         );
 
@@ -251,19 +242,14 @@ final class RefundCompletedTest extends TestCase
         return $payment;
     }
 
-    private function createPaymentApi(Payment $payment): PaymentApi
+    private function createPaymentFetcher(Payment $payment): CachablePaymentFetcherInterface
     {
-        $paymentApi = $this->createStub(PaymentApi::class);
-        $paymentApi->method('retrievePayment')->willReturn(new RetrievePaymentResult($payment));
+        $paymentFetcher = $this->createMock(CachablePaymentFetcherInterface::class);
+        \assert($paymentFetcher instanceof CachablePaymentFetcherInterface);
+        $paymentFetcher
+            ->method('getCachedPayment')
+            ->willReturn($payment);
 
-        return $paymentApi;
-    }
-
-    private function createPaymentApiFactory(PaymentApi $paymentApi): PaymentApiFactory
-    {
-        $paymentApiFactory = $this->createMock(PaymentApiFactory::class);
-        $paymentApiFactory->method('create')->willReturn($paymentApi);
-
-        return $paymentApiFactory;
+        return $paymentFetcher;
     }
 }
