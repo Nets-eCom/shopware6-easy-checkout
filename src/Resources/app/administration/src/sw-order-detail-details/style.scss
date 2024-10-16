@@ -57,11 +57,14 @@ $border-color: #d1d9e0;
 }
 
 // Modal styling
-
 .nexinets-amount-wrapper {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  align-items: end;
+  grid-template-columns: 1fr;
+  align-items: center;
+
+  @include respond-to(lg) {
+    grid-template-columns: 5fr 3fr;
+  }
 }
 
 .nexinets-amount-input {
@@ -70,7 +73,12 @@ $border-color: #d1d9e0;
 }
 
 .nexinets-modal-checkbox {
-  margin-left: 1rem;
+  margin-top: 1rem;
+
+  @include respond-to(lg) {
+    margin-top: 3rem;
+    margin-left: 1rem;
+  }
 }
 
 .nexinets-modal-full-charge {
