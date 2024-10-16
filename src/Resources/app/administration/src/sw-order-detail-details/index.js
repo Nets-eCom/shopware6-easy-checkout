@@ -14,7 +14,7 @@ Shopware.Component.override("sw-order-detail-details", {
       hasFetchError: false,
       netsPaymentId: null,
       paymentDetails: {},
-      maxChargeAmount: "00.00",
+      chargeAmount: 0,
     };
   },
   created() {
@@ -27,7 +27,6 @@ Shopware.Component.override("sw-order-detail-details", {
       if (!this.transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id")) {
         return false;
       }
-      console.log(this.order);
       this.netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
       return true;
     },
@@ -103,6 +102,7 @@ Shopware.Component.override("sw-order-detail-details", {
 
     handleCharge() {
       // Implement charge handling logic here
+      console.log(this.chargeAmount);
     },
 
     toggleCaptureModal() {
@@ -110,7 +110,7 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     addMaxCharge() {
-      this.maxChargeAmount = this.paymentDetails.remainingCharge;
+      this.chargeAmount = this.paymentDetails.remainingCharge;
     },
   },
 });

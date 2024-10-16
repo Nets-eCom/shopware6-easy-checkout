@@ -120,24 +120,28 @@
                   @modal-close="toggleCaptureModal">
             <p>{{ $tc('nexinets-payment-component.charge.info', { orderNumber: order.orderNumber }) }}</p>
             <div class="nexinets-amount-wrapper">
-              <sw-number-field
-                      class="nexinets-amount-input"
-                      :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
-                      v-model="maxChargeAmount"
-                      :allowEmpty="false"
-                      :prefix="$">
-                <template v-slot:suffix>{{ order.currency.symbol }}</template>
-              </sw-number-field>
+              <div>
+                <sw-number-field
+                        class="nexinets-amount-input"
+                        :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
+                        v-model:value="chargeAmount"
+                        :min="0"
+                        :max="paymentDetails.remainingCharge"
+                        numberType="float"
+                        :allowEmpty="false">
+                  <template v-slot:suffix>{{ order.currency.symbol }}</template>
+                </sw-number-field>
+                <p class="nexinets-modal-full-charge">
+                  {{ $tc('nexinets-payment-component.charge.max-charge-info') }}
+                  <span @click="addMaxCharge">{{ order.currency.symbol + paymentDetails.remainingCharge }}</span>
+                </p>
+              </div>
               <sw-checkbox-field
                       class="nexinets-modal-checkbox"
                       :label="$tc('nexinets-payment-component.charge.items-list')"
                       label="Select items to charge">
               </sw-checkbox-field>
             </div>
-            <p class="nexinets-modal-full-charge">
-              {{ $tc('nexinets-payment-component.charge.max-charge-info') }}
-              <span @click="addMaxCharge">{{ order.currency.symbol + paymentDetails.remainingCharge }}</span>
-            </p>
             <template #modal-footer>
               <sw-button @click="toggleCaptureModal">
                 {{ $tc('nexinets-payment-component.cancel.button-modal') }}
