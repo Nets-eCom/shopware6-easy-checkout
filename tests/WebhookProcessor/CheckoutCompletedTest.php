@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace NexiNets\Tests\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentDetails;
-use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 use NexiNets\CheckoutApi\Model\Webhook\CheckoutCompleted as CheckoutCompletedModel;
 use NexiNets\CheckoutApi\Model\Webhook\Data\CheckoutCompletedData;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
-use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Fetcher\CachablePaymentFetcherInterface;
 use NexiNets\WebhookProcessor\Processor\CheckoutCompleted;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -38,8 +35,7 @@ final class CheckoutCompletedTest extends TestCase
         $payment = $this->createStub(Payment::class);
         $payment->method('getPaymentDetails')->willReturn($paymentDetails);
 
-        $paymentApi = $this->createPaymentApi($payment);
-        $paymentApiFactory = $this->createPaymentApiFactory($paymentApi);
+        $paymentFetcher = $this->createPaymentFetcher($payment);
         $salesChannelContext = Generator::createSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
@@ -54,8 +50,7 @@ final class CheckoutCompletedTest extends TestCase
         $sut = new CheckoutCompleted(
             $this->createTransactionRepository(OrderTransactionStates::STATE_OPEN, 'foo'),
             $orderTransactionStateHandler,
-            $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class),
+            $paymentFetcher,
             $logger
         );
 
@@ -76,8 +71,7 @@ final class CheckoutCompletedTest extends TestCase
         $payment = $this->createStub(Payment::class);
         $payment->method('getPaymentDetails')->willReturn($paymentDetails);
 
-        $paymentApi = $this->createPaymentApi($payment);
-        $paymentApiFactory = $this->createPaymentApiFactory($paymentApi);
+        $paymentFetcher = $this->createPaymentFetcher($payment);
         $salesChannelContext = Generator::createSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
@@ -92,8 +86,7 @@ final class CheckoutCompletedTest extends TestCase
         $sut = new CheckoutCompleted(
             $this->createTransactionRepository(OrderTransactionStates::STATE_OPEN, 'foo'),
             $orderTransactionStateHandler,
-            $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class),
+            $paymentFetcher,
             $logger
         );
 
@@ -108,8 +101,7 @@ final class CheckoutCompletedTest extends TestCase
         $sut = new CheckoutCompleted(
             $this->createTransactionRepository(OrderTransactionStates::STATE_OPEN, 'foo'),
             $this->createStub(OrderTransactionStateHandler::class),
-            $this->createStub(PaymentApiFactory::class),
-            $this->createStub(ConfigurationProvider::class),
+            $this->createStub(CachablePaymentFetcherInterface::class),
             $this->createStub(LoggerInterface::class)
         );
 
@@ -181,19 +173,14 @@ final class CheckoutCompletedTest extends TestCase
         return $webhook;
     }
 
-    private function createPaymentApi(Payment $payment): PaymentApi
+    private function createPaymentFetcher(Payment $payment): CachablePaymentFetcherInterface
     {
-        $paymentApi = $this->createStub(PaymentApi::class);
-        $paymentApi->method('retrievePayment')->willReturn(new RetrievePaymentResult($payment));
+        $paymentFetcher = $this->createMock(CachablePaymentFetcherInterface::class);
+        \assert($paymentFetcher instanceof CachablePaymentFetcherInterface);
+        $paymentFetcher
+            ->method('getCachedPayment')
+            ->willReturn($payment);
 
-        return $paymentApi;
-    }
-
-    private function createPaymentApiFactory(PaymentApi $paymentApi): PaymentApiFactory
-    {
-        $paymentApiFactory = $this->createMock(PaymentApiFactory::class);
-        $paymentApiFactory->method('create')->willReturn($paymentApi);
-
-        return $paymentApiFactory;
+        return $paymentFetcher;
     }
 }

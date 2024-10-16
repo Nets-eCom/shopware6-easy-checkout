@@ -2,13 +2,11 @@
 
 namespace NexiNets\WebhookProcessor\Processor;
 
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
-use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Fetcher\CachablePaymentFetcherInterface;
 use NexiNets\WebhookProcessor\WebhookProcessorException;
 use NexiNets\WebhookProcessor\WebhookProcessorInterface;
 use Psr\Log\LoggerInterface;
@@ -30,8 +28,7 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
     public function __construct(
         private EntityRepository $orderTransactionEntityRepository,
         private OrderTransactionStateHandler $orderTransactionStateHandler,
-        private PaymentApiFactory $paymentApiFactory,
-        private ConfigurationProvider $configurationProvider,
+        private CachablePaymentFetcherInterface $paymentFetcher,
         private LoggerInterface $logger,
     ) {
     }
@@ -95,14 +92,6 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
         return $webhook->getEvent() === EventNameEnum::PAYMENT_REFUND_COMPLETED;
     }
 
-    private function createPaymentApi(string $salesChannelId): PaymentApi
-    {
-        return $this->paymentApiFactory->create(
-            $this->configurationProvider->getSecretKey($salesChannelId),
-            $this->configurationProvider->isLiveMode($salesChannelId),
-        );
-    }
-
     private function isPaymentFullyRefunded(string $paymentId, string $salesChannelId): bool
     {
         return $this->getPayment($salesChannelId, $paymentId)->getStatus() === PaymentStatusEnum::REFUNDED;
@@ -110,9 +99,6 @@ final readonly class RefundCompleted implements WebhookProcessorInterface
 
     private function getPayment(string $salesChannelId, string $paymentId): Payment
     {
-        return $this
-            ->createPaymentApi($salesChannelId)
-            ->retrievePayment($paymentId)
-            ->getPayment();
+        return $this->paymentFetcher->getCachedPayment($salesChannelId, $paymentId);
     }
 }
