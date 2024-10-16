@@ -93,7 +93,8 @@
                         :label="$tc('nexinets-payment-component.payment-details.refunded-amount')"
                         :value="paymentDetails.refundedAmount"
                         disabled
-                        :helpText="$tc('nexinets-payment-component.payment-details.refunded-help-text')">
+                        :helpText="$tc('nexinets-payment-component.payment-details.refunded-help-text')"
+                >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
                 </sw-text-field>
               </div>
@@ -117,7 +118,8 @@
           <sw-modal
                   v-if="isCaptureModalVisible"
                   :title="$tc('nexinets-payment-component.charge.title')"
-                  @modal-close="toggleCaptureModal">
+                  @modal-close="toggleCaptureModal"
+          >
             <p>{{ $tc('nexinets-payment-component.charge.info', { orderNumber: order.orderNumber }) }}</p>
             <div class="nexinets-amount-wrapper">
               <div>
@@ -152,7 +154,6 @@
             </template>
           </sw-modal>
         {% endblock %}
-
       </sw-card>
     {% endblock %}
   </template>
