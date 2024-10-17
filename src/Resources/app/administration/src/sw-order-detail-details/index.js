@@ -12,7 +12,6 @@ Shopware.Component.override("sw-order-detail-details", {
       isCaptureModalVisible: false,
       variant: "info",
       hasFetchError: false,
-      netsPaymentId: null,
       paymentDetails: {},
       chargeAmount: 0,
     };
@@ -24,10 +23,7 @@ Shopware.Component.override("sw-order-detail-details", {
   },
   computed: {
     isNexiNetsPayment() {
-      if (!this.transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id")) {
-        return false;
-      }
-      return true;
+      return !!this.transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id");
     },
 
     // @todo use PaymentStatusEnum
@@ -83,21 +79,17 @@ Shopware.Component.override("sw-order-detail-details", {
       this.variant = variantMapping[status] || "info";
     },
 
-    getNetsPaymentId() {
-      this.netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
-    },
-
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
       try {
         this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
         this.setPaymentStatusVariant();
       } catch (error) {
-        this.getNetsPaymentId();
+        const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
         this.hasFetchError = true;
         this.variant = "danger";
         console.error(
-          `Error while fetching NexiNets payment details for paymentID: ${this.netsPaymentId}`,
+          `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
           error,
         );
       } finally {
