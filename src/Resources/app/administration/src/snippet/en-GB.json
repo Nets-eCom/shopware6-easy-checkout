@@ -30,9 +30,9 @@
         "charge": {
             "button-title": "Charge",
             "title": "Charge (Nets payment plugin)",
-            "info": "You're about to charge. This means the payment will be collected and processed.",
+            "info": "You're about to charge Order {orderNumber}. This means the payment will be collected and processed.",
             "items-list": "Select items to charge",
-            "max-charge-info": "Max. possible Charge amount:"
+            "max-charge-info": "Max. chargable amount is "
         },
         "refund": {
             "button-title": "Refund",

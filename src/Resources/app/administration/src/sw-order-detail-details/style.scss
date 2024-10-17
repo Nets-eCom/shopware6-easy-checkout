@@ -11,7 +11,7 @@ $border-color: #d1d9e0;
 }
 
 // Payment details styling
-.nexinets-status-container {
+.nexinets-payment-status-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: $column-gap;
@@ -23,7 +23,7 @@ $border-color: #d1d9e0;
   }
 }
 
-.nexinets-status-text {
+.nexinets-payment-status-text {
   font-size: $font-size;
   margin-bottom: 0.4rem;
 }
@@ -32,7 +32,7 @@ $border-color: #d1d9e0;
   width: 100%;
 }
 
-.payment-history-link {
+.nexinets-payment-history-link {
   align-self: center;
   margin-top: 1rem;
 }
@@ -43,7 +43,7 @@ $border-color: #d1d9e0;
   border-top: 1px $border-color solid;
 }
 
-.nexinets-action-buttons {
+.nexinets-payment-action-buttons {
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -57,3 +57,36 @@ $border-color: #d1d9e0;
 }
 
 // Modal styling
+.nexinets-amount-wrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+
+  @include respond-to(lg) {
+    grid-template-columns: 5fr 3fr;
+  }
+}
+
+.nexinets-amount-input {
+  margin-top: 1.6rem;
+  margin-bottom: 0.2rem;
+}
+
+.nexinets-modal-checkbox {
+  margin-top: 1rem;
+
+  @include respond-to(lg) {
+    margin-top: 3rem;
+    margin-left: 1rem;
+  }
+}
+
+.nexinets-modal-full-charge {
+  color: #c6cfd9;
+  font-size: $font-size;
+
+  span {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
