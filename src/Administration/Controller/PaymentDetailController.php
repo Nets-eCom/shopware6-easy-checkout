@@ -13,7 +13,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -39,7 +38,7 @@ class PaymentDetailController extends AbstractController
         ],
         methods: ['GET']
     )]
-    public function getPaymentDetail(string $orderId, Request $request, Context $context): Response
+    public function getPaymentDetail(string $orderId, Context $context): Response
     {
         $criteria = (new Criteria([$orderId]))
             ->addAssociation('transactions')
