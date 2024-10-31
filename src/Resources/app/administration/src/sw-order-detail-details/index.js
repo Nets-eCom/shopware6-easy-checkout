@@ -3,17 +3,19 @@ import "./style.scss";
 
 Shopware.Component.override("sw-order-detail-details", {
   template,
-  inject: ["nexiNetsPaymentDetailService"],
+  inject: ["nexiNetsPaymentDetailService", "nexiNetsPaymentActionsService"],
   mixins: [],
   data() {
     return {
       isLoading: false,
       disabled: true,
       isCaptureModalVisible: false,
+      isRefundModalVisible: false,
       variant: "info",
       hasFetchError: false,
       paymentDetails: {},
       chargeAmount: 0,
+      refundAmount: 0,
     };
   },
   created() {
@@ -52,7 +54,7 @@ Shopware.Component.override("sw-order-detail-details", {
         return;
       }
       return (
-        this.shouldDisplayCancelBtn || this.shouldDisplayRefundBtn || this.shouldDisplayChargeBtn
+          this.shouldDisplayCancelBtn || this.shouldDisplayRefundBtn || this.shouldDisplayChargeBtn
       );
     },
 
@@ -89,8 +91,8 @@ Shopware.Component.override("sw-order-detail-details", {
         this.hasFetchError = true;
         this.variant = "danger";
         console.error(
-          `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
-          error,
+            `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
+            error,
         );
       } finally {
         this.isLoading = false;
@@ -98,16 +100,36 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     handleCharge() {
-      // Implement charge handling logic here
-      console.log(this.chargeAmount);
+      this.isLoading = true;
+      try {
+        this.nexiNetsPaymentActionsService.charge(this.order.id, this.chargeAmount);
+      } catch (error) {
+        console.error("index.js error:", error);
+      } finally {
+        window.location.reload();
+        this.isLoading = false;
+      }
+    },
+
+    handleRefund() {
+      // Implement refund handling logic here
+      console.log(this.refundAmount);
     },
 
     toggleCaptureModal() {
       this.isCaptureModalVisible = !this.isCaptureModalVisible;
     },
 
+    toggleRefundModal() {
+      this.isRefundModalVisible = !this.isRefundModalVisible;
+    },
+
     addMaxCharge() {
       this.chargeAmount = this.paymentDetails.remainingCharge;
+    },
+
+    addMaxRefund() {
+      this.refundAmount = this.paymentDetails.remainingRefund;
     },
   },
 });
