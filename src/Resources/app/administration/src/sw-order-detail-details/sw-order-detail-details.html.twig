@@ -130,7 +130,8 @@
                         :min="0"
                         :max="paymentDetails.remainingCharge"
                         numberType="float"
-                        :allowEmpty="false">
+                        :allowEmpty="false"
+                >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
                 </sw-number-field>
                 <p class="nexinets-modal__full-amount">
@@ -171,7 +172,8 @@
                         :min="0"
                         :max="paymentDetails.remainingRefund"
                         numberType="float"
-                        :allowEmpty="false">
+                        :allowEmpty="false"
+                >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
                 </sw-number-field>
                 <p class="nexinets-modal__full-amount">
