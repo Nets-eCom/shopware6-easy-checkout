@@ -11,82 +11,89 @@ $border-color: #d1d9e0;
 }
 
 // Payment details styling
-.nexinets-payment-status-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: $column-gap;
-  margin-bottom: 2rem;
-  margin-top: 0.6rem;
-
+.nexinets-details {
+  &__header-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: $column-gap;
+    margin-bottom: 2rem;
+    margin-top: 0.6rem;
+  }
   @include respond-to(lg) {
     margin-top: 0;
   }
+
+  &__status-text {
+    font-size: $font-size;
+    margin-bottom: 0.4rem;
+  }
+
+  &__status-label {
+    width: 100%;
+  }
+
+  &__history-link {
+    align-self: center;
+    margin-top: 1rem;
+  }
 }
 
-.nexinets-payment-status-text {
-  font-size: $font-size;
-  margin-bottom: 0.4rem;
+.nexinets-details {
+  &__main-wrapper {
+    column-gap: $column-gap;
+    padding-top: 2.5rem;
+    border-top: 1px $border-color solid;
+  }
 }
 
-.full-width {
-  width: 100%;
-}
+.nexinets-details {
+  &__action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 0.95rem;
+    border-top: 1px $border-color solid;
 
-.nexinets-payment-history-link {
-  align-self: center;
-  margin-top: 1rem;
-}
-
-.nexinets-payment-container {
-  column-gap: $column-gap;
-  padding-top: 2.5rem;
-  border-top: 1px $border-color solid;
-}
-
-.nexinets-payment-action-buttons {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex-wrap: wrap;
-  padding-top: 0.95rem;
-  border-top: 1px $border-color solid;
-
-  @include respond-to(lg) {
-    padding-top: 1.85rem;
+    @include respond-to(lg) {
+      padding-top: 1.85rem;
+    }
   }
 }
 
 // Modal styling
-.nexinets-amount-wrapper {
-  display: grid;
-  grid-template-columns: 1fr;
-  align-items: center;
+.nexinets-modal {
+  &__wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
 
-  @include respond-to(lg) {
-    grid-template-columns: 5fr 3fr;
+    @include respond-to(lg) {
+      grid-template-columns: 5fr 3fr;
+    }
   }
-}
 
-.nexinets-amount-input {
-  margin-top: 1.6rem;
-  margin-bottom: 0.2rem;
-}
-
-.nexinets-modal-checkbox {
-  margin-top: 1rem;
-
-  @include respond-to(lg) {
-    margin-top: 3rem;
-    margin-left: 1rem;
+  &__input {
+    margin-top: 1.6rem;
+    margin-bottom: 0.2rem;
   }
-}
 
-.nexinets-modal-full-charge {
-  color: #c6cfd9;
-  font-size: $font-size;
+  &__checkbox {
+    margin-top: 1rem;
 
-  span {
-    text-decoration: underline;
-    cursor: pointer;
+    @include respond-to(lg) {
+      margin-top: 3rem;
+      margin-left: 1rem;
+    }
+  }
+
+  &__full-amount {
+    color: #c6cfd9;
+    font-size: $font-size;
+
+    span {
+      text-decoration: underline;
+      cursor: pointer;
+    }
   }
 }
