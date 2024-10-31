@@ -65,14 +65,8 @@
 
         <service id="NexiNets\CheckoutApi\Factory\HttpClientFactory">
             <argument type="service" id="Psr\Http\Client\ClientInterface"/>
-            <argument type="service" id="nyholm.psr7.psr17_factory"/>
-            <argument type="service" id="nyholm.psr7.psr17_factory"/>
-        </service>
-
-        <service id="NexiNets\CheckoutApi\Http\HttpClient">
-            <argument type="service" id="Psr\Http\Client\ClientInterface"/>
-            <argument type="service" id="nyholm.psr7.psr17_factory"/>
-            <argument type="service" id="nyholm.psr7.psr17_factory"/>
+            <argument type="service" id="Psr\Http\Message\RequestFactoryInterface"/>
+            <argument type="service" id="Psr\Http\Message\StreamFactoryInterface"/>
         </service>
 
         <service id="NexiNets\Http\HttpClientConfigurationProvider">
@@ -82,6 +76,12 @@
         <service id="NexiNets\Fetcher\PaymentFetcher">
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+        </service>
+
+        <service id="NexiNets\Order\OrderCharge">
+            <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="NexiNets\RequestBuilder\ChargeRequest"/>
         </service>
 
         <!-- ### Webhooks ### -->
@@ -141,13 +141,19 @@
 
         <!-- ### Flow Builder -->
         <service id="NexiNets\Core\Content\Flow\Dispatching\Action\ChargeAction">
-            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
-            <argument type="service" id="NexiNets\RequestBuilder\ChargeRequest"/>
-            <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
+            <argument type="service" id="NexiNets\Order\OrderCharge"/>
             <tag name="flow.action" priority="600" key="action.nexinets.charge"/>
         </service>
 
         <!-- ### Admin Controller ### -->
+        <service id="NexiNets\Administration\Controller\OrderActionController" public="true">
+            <argument type="service" id="order.repository"/>
+            <argument type="service" id="NexiNets\Order\OrderCharge"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
         <service id="NexiNets\Administration\Controller\PaymentDetailController" public="true">
             <argument type="service" id="order.repository"/>
             <argument type="service" id="NexiNets\Fetcher\PaymentFetcher"/>
