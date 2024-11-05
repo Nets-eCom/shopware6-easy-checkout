@@ -146,10 +146,10 @@
               </sw-checkbox-field>
             </div>
             <template #modal-footer>
-              <sw-button @click="toggleCaptureModal">
+              <sw-button @click="toggleCaptureModal" class="nexinets-modal__btn">
                 {{ $tc('nexinets-payment-component.cancel.button-modal') }}
               </sw-button>
-              <sw-button @click="handleCharge" :isLoading="isLoading" variant="primary">
+              <sw-button @click="handleCharge" class="nexinets-modal__btn" :isLoading="isLoading" variant="primary">
                 {{ $tc('nexinets-payment-component.charge.button-title') }}
               </sw-button>
             </template>
@@ -188,10 +188,10 @@
               </sw-checkbox-field>
             </div>
             <template #modal-footer>
-              <sw-button @click="toggleRefundModal">
+              <sw-button @click="toggleRefundModal" class="nexinets-modal__btn">
                 {{ $tc('nexinets-payment-component.cancel.button-modal') }}
               </sw-button>
-              <sw-button @click="handleRefund" :isLoading="isLoading" variant="primary">
+              <sw-button @click="handleRefund" class="nexinets-modal__btn" :isLoading="isLoading" variant="primary">
                 {{ $tc('nexinets-payment-component.refund.button-title') }}
               </sw-button>
             </template>
