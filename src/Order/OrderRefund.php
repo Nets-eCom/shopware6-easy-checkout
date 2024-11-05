@@ -1,0 +1,75 @@
+<?php
+
+declare(strict_types=1);
+
+namespace NexiNets\Order;
+
+use NexiNets\Administration\Model\RefundData;
+use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
+use NexiNets\CheckoutApi\Api\PaymentApi;
+use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
+use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Dictionary\OrderTransactionDictionary;
+use NexiNets\RequestBuilder\RefundRequest;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
+use Shopware\Core\Checkout\Order\OrderEntity;
+
+class OrderRefund
+{
+    public function __construct(
+        private readonly PaymentApiFactory $apiFactory,
+        private readonly ConfigurationProvider $configurationProvider,
+        private readonly RefundRequest $refundRequest
+    ) {
+    }
+
+    /**
+     * @throws PaymentApiException
+     */
+    public function fullRefund(OrderEntity $order): void
+    {
+        $transactions = $order->getTransactions();
+
+        if (!$transactions instanceof OrderTransactionCollection) {
+            throw new \LogicException('No order transactions found');
+        }
+
+        /** @var OrderTransactionEntity $transaction */
+        foreach ($transactions as $transaction) {
+            $paymentId = $transaction->getCustomFieldsValue(
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+            );
+
+            if ($paymentId === null) {
+                continue;
+            }
+
+            $api = $this->createPaymentApi($order->getSalesChannelId());
+            $payment = $api->retrievePayment($paymentId)->getPayment();
+
+            if ($payment->getStatus() !== PaymentStatusEnum::CHARGED) {
+                continue;
+            }
+
+            $api->refundCharge(
+                $payment->getCharges()[0]->getChargeId(),
+                $this->refundRequest->build($transaction)
+            );
+        }
+    }
+
+    public function partialRefund(OrderEntity $order, RefundData $refundData): void
+    {
+        // TODO: implement
+    }
+
+    private function createPaymentApi(string $salesChannelId): PaymentApi
+    {
+        return $this->apiFactory->create(
+            $this->configurationProvider->getSecretKey($salesChannelId),
+            $this->configurationProvider->isLiveMode($salesChannelId)
+        );
+    }
+}
