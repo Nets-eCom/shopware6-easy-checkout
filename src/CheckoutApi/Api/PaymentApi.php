@@ -10,8 +10,10 @@ use NexiNets\CheckoutApi\Http\HttpClientException;
 use NexiNets\CheckoutApi\Model\Request\Cancel;
 use NexiNets\CheckoutApi\Model\Request\Charge;
 use NexiNets\CheckoutApi\Model\Request\Payment;
+use NexiNets\CheckoutApi\Model\Request\RefundCharge;
 use NexiNets\CheckoutApi\Model\Result\ChargeResult;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
+use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 
 class PaymentApi
@@ -21,6 +23,10 @@ class PaymentApi
     private const PAYMENT_CHARGES = '/charges';
 
     private const PAYMENT_CANCELS = '/cancels';
+
+    private const CHARGES_ENDPOINT = '/v1/charges';
+
+    private const CHARGE_REFUNDS = '/refunds';
 
     public function __construct(
         private readonly HttpClient $client,
@@ -120,6 +126,34 @@ class PaymentApi
         }
     }
 
+    /**
+     * @throws PaymentApiException
+     */
+    public function refundCharge(string $chargeId, RefundCharge $refund): RefundChargeResult
+    {
+        try {
+            $response = $this->client->post(
+                $this->getChargesOperationEndpoint($chargeId, self::CHARGE_REFUNDS),
+                json_encode($refund)
+            );
+        } catch (HttpClientException $httpClientException) {
+            throw new PaymentApiException(
+                \sprintf('Couldn\'t refund charge with id: %s', $chargeId),
+                $httpClientException->getCode(),
+                $httpClientException
+            );
+        }
+
+        $code = $response->getStatusCode();
+        $contents = $response->getBody()->getContents();
+
+        if (!$this->isSuccessCode($code)) {
+            throw $this->createPaymentApiException($code, $contents);
+        }
+
+        return RefundChargeResult::fromJson($contents);
+    }
+
     private function getPaymentOperationEndpoint(string $paymentId, string $operation): string
     {
         return \sprintf('%s/%s%s', $this->getPaymentsUrl(), $paymentId, $operation);
@@ -128,6 +162,16 @@ class PaymentApi
     private function getPaymentsUrl(): string
     {
         return \sprintf('%s%s', $this->baseUrl, self::PAYMENTS_ENDPOINT);
+    }
+
+    private function getChargesOperationEndpoint(string $paymentId, string $operation): string
+    {
+        return \sprintf('%s/%s%s', $this->getChargesUrl(), $paymentId, $operation);
+    }
+
+    private function getChargesUrl(): string
+    {
+        return \sprintf('%s%s', $this->baseUrl, self::CHARGES_ENDPOINT);
     }
 
     private function isSuccessCode(int $code): bool

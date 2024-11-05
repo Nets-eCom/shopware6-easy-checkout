@@ -8,11 +8,11 @@ use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Request\FullCharge;
 use NexiNets\CheckoutApi\Model\Result\ChargeResult;
-use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Order\OrderCharge;
 use NexiNets\RequestBuilder\ChargeRequest;
+use NexiNets\Tests\Order\Mother\RetrievePaymentResultMother;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
@@ -41,7 +41,7 @@ final class OrderChargeTest extends TestCase
         $paymentApi->expects($this->once())
             ->method('retrievePayment')
             ->with('025400006091b1ef6937598058c4e487')
-            ->willReturn($this->createNotChargedRetrievePaymentResult());
+            ->willReturn(RetrievePaymentResultMother::reserved());
         $paymentApiFactory = $this->createPaymentApiFactoryMock($paymentApi);
 
         $charge = new FullCharge(100);
@@ -144,7 +144,7 @@ final class OrderChargeTest extends TestCase
         $paymentApi->expects($this->once())
             ->method('retrievePayment')
             ->with('025400006091b1ef6937598058c4e487')
-            ->willReturn($this->createAlreadyChargedRetrievePaymentResult());
+            ->willReturn(RetrievePaymentResultMother::fullyCharged());
         $paymentApiFactory = $this->createPaymentApiFactoryMock($paymentApi);
 
         $chargeRequestBuilder = $this->createMock(ChargeRequest::class);
@@ -171,74 +171,6 @@ final class OrderChargeTest extends TestCase
         $order->setTransactions(new OrderTransactionCollection([]));
 
         return $order;
-    }
-
-    private function createNotChargedRetrievePaymentResult(): RetrievePaymentResult
-    {
-        return RetrievePaymentResult::fromJson('{
-            "payment": {
-                "paymentId": "025400006091b1ef6937598058c4e487",
-                "summary": {
-                    "reservedAmount": 100
-                },
-                "consumer": {
-                    "shippingAddress": {},
-                    "billingAddress": {},
-                    "privatePerson": {},
-                    "company": {}
-                },
-                "paymentDetails": {},
-                "orderDetails": {
-                    "amount": 100,
-                    "currency": "EUR"
-                },
-                "checkout": {
-                    "url": "https://example.com/checkout",
-                    "cancelUrl": null
-                },
-                "created": "2019-08-24T14:15:22Z",
-                "refunds": [],
-                "charges": []
-            }
-        }');
-    }
-
-    private function createAlreadyChargedRetrievePaymentResult(): RetrievePaymentResult
-    {
-        return RetrievePaymentResult::fromJson('{
-            "payment": {
-                "paymentId": "025400006091b1ef6937598058c4e487",
-                "summary": {
-                    "reservedAmount": 100,
-                    "chargedAmount": 50
-                },
-                "consumer": {
-                    "shippingAddress": {},
-                    "billingAddress": {},
-                    "privatePerson": {},
-                    "company": {}
-                },
-                "paymentDetails": {},
-                "orderDetails": {
-                    "amount": 100,
-                    "currency": "EUR"
-                },
-                "checkout": {
-                    "url": "https://example.com/checkout",
-                    "cancelUrl": null
-                },
-                "created": "2019-08-24T14:15:22Z",
-                "refunds": [],
-                "charges": [
-                    {
-                        "chargeId": "test_charge_id",
-                        "amount": 50,
-                        "created": "2019-08-24T14:15:22Z",
-                        "orderItems": []
-                    }
-                ]
-            }
-        }');
     }
 
     private function createConfigurationProviderMock(): ConfigurationProvider|MockObject
