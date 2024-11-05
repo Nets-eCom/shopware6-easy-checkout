@@ -13,6 +13,7 @@ Shopware.Component.override("sw-order-detail-details", {
       isRefundModalVisible: false,
       variant: "info",
       hasFetchError: false,
+      toggleItemsList: false,
       paymentDetails: {},
       chargeAmount: 0,
       refundAmount: 0,
@@ -54,7 +55,7 @@ Shopware.Component.override("sw-order-detail-details", {
         return;
       }
       return (
-          this.shouldDisplayCancelBtn || this.shouldDisplayRefundBtn || this.shouldDisplayChargeBtn
+        this.shouldDisplayCancelBtn || this.shouldDisplayRefundBtn || this.shouldDisplayChargeBtn
       );
     },
 
@@ -68,6 +69,13 @@ Shopware.Component.override("sw-order-detail-details", {
       return `nexinets-payment-component.payment-details.status.${status}`;
     },
   },
+
+  watch: {
+    toggleItemsList(newValue) {
+      this.printConsole();
+    },
+  },
+
   methods: {
     setPaymentStatusVariant() {
       const status = this.paymentDetails.status;
@@ -91,8 +99,8 @@ Shopware.Component.override("sw-order-detail-details", {
         this.hasFetchError = true;
         this.variant = "danger";
         console.error(
-            `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
-            error,
+          `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
+          error,
         );
       } finally {
         this.isLoading = false;
@@ -130,6 +138,10 @@ Shopware.Component.override("sw-order-detail-details", {
 
     addMaxRefund() {
       this.refundAmount = this.paymentDetails.remainingRefund;
+    },
+
+    printConsole() {
+      console.log(this.toggleItemsList);
     },
   },
 });
