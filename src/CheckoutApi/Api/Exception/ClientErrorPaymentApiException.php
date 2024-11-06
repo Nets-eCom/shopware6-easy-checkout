@@ -4,6 +4,9 @@ namespace NexiNets\CheckoutApi\Api\Exception;
 
 class ClientErrorPaymentApiException extends PaymentApiException
 {
+    /**
+     * @var array<string, string[]>
+     */
     private readonly array $errors;
 
     public function __construct(
@@ -17,6 +20,9 @@ class ClientErrorPaymentApiException extends PaymentApiException
         $this->errors = json_decode($errors, true, 512, \JSON_THROW_ON_ERROR)['errors'];
     }
 
+    /**
+     * @return array<string, string[]>
+     */
     public function getErrors(): array
     {
         return $this->errors;
