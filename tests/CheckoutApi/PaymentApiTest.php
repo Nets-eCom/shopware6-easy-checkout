@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NexiNets\Tests\CheckoutApi;
 
+use NexiNets\CheckoutApi\Api\Exception\ClientErrorPaymentApiException;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Http\Configuration;
@@ -17,6 +18,7 @@ use NexiNets\CheckoutApi\Model\Request\Payment\HostedCheckout;
 use NexiNets\CheckoutApi\Model\Request\Payment\Notification;
 use NexiNets\CheckoutApi\Model\Request\Payment\Order;
 use NexiNets\CheckoutApi\Model\Request\Payment\Webhook;
+use NexiNets\CheckoutApi\Model\Request\ReferenceInformation;
 use NexiNets\CheckoutApi\Model\Request\RefundCharge;
 use NexiNets\CheckoutApi\Model\Result\ChargeResult;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
@@ -78,12 +80,37 @@ final class PaymentApiTest extends TestCase
         $sut->createPayment($this->createPaymentRequest());
     }
 
+    public function testItThrowsExceptionOnClientErrorCreatePayment(): void
+    {
+        $this->expectException(ClientErrorPaymentApiException::class);
+
+        $stream = $this->createStub(StreamInterface::class);
+        $stream
+            ->method('getContents')
+            ->willReturn('{
+                "errors": {
+                    "property1": [
+                        "string"
+                    ],
+                    "property2": [
+                        "string"
+                    ]
+                }
+            }');
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(400);
+        $response->method('getBody')->willReturn($stream);
+
+        $sut = $this->createPaymentApi($response, $this->createStub(StreamFactoryInterface::class));
+        $sut->createPayment($this->createPaymentRequest());
+    }
+
     public function testItThrowsExceptionOnUnsuccessfulCreatePayment(): void
     {
         $this->expectException(PaymentApiException::class);
 
         $response = $this->createStub(ResponseInterface::class);
-        $response->method('getStatusCode')->willReturn(400);
+        $response->method('getStatusCode')->willReturn(500);
 
         $sut = $this->createPaymentApi($response, $this->createStub(StreamFactoryInterface::class));
         $sut->createPayment($this->createPaymentRequest());
@@ -114,8 +141,8 @@ final class PaymentApiTest extends TestCase
                             'invoiceDetails' => [],
                         ],
                         'checkout' => [
-                            'url' => 'https://api.example.com',
-                            'cancelUrl' => 'https://api.example.com/cancelUrl',
+                            'url' => 'https://shop.example.com/checkout/1000',
+                            'cancelUrl' => 'https://shop.example.com/cancelUrl',
                         ],
                     ],
                 ])
@@ -169,6 +196,25 @@ final class PaymentApiTest extends TestCase
 
         $this->assertInstanceOf(ChargeResult::class, $result);
         $this->assertSame('1234', $result->getChargeId());
+    }
+
+    public function testItUpdatesReferenceInformation(): void
+    {
+        $stream = $this->createStub(StreamInterface::class);
+        $stream
+            ->method('getContents')
+            ->willReturn('');
+
+        $streamFactory = $this->createStub(StreamFactoryInterface::class);
+        $streamFactory->method('createStream')->willReturn($stream);
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())->method('getStatusCode')->willReturn(200);
+        $response->expects($this->once())->method('getBody')->willReturn($stream);
+
+        $sut = $this->createPaymentApi($response, $streamFactory);
+
+        $sut->updateReferenceInformation('1234', $this->createReferenceInformationRequest());
     }
 
     public function testItRefundsCharge(): void
@@ -245,9 +291,9 @@ final class PaymentApiTest extends TestCase
                 100
             ),
             new HostedCheckout(
-                'https://api.example.com/returnUrl',
-                'https://api.example.com/cancelUrl',
-                'https://api.example.com/termsUrl',
+                'https://shop.example.com/returnUrl',
+                'https://shop.example.com/cancelUrl',
+                'https://shop.example.com/termsUrl',
             ),
             new Notification(
                 [
@@ -260,6 +306,11 @@ final class PaymentApiTest extends TestCase
     private function createChargeRequest(): Charge
     {
         return new FullCharge(1);
+    }
+
+    private function createReferenceInformationRequest(): ReferenceInformation
+    {
+        return new ReferenceInformation('https://shop.example.com/checkout/1000', 'ref1234');
     }
 
     private function createRefundRequest(): RefundCharge
