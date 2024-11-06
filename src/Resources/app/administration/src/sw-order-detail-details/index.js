@@ -71,8 +71,8 @@ Shopware.Component.override("sw-order-detail-details", {
   },
 
   watch: {
-    toggleItemsList(newValue) {
-      this.printConsole();
+    toggleItemsList() {
+      this.resetChargeAmount();
     },
   },
 
@@ -92,8 +92,15 @@ Shopware.Component.override("sw-order-detail-details", {
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
       try {
-        this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
-        this.setPaymentStatusVariant();
+        const details = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
+        if (details && typeof details === "object") {
+          this.paymentDetails = details;
+          this.setPaymentStatusVariant();
+        } else {
+          console.error("Invalid payment details received:", details);
+          this.hasFetchError = true;
+          this.variant = "danger";
+        }
       } catch (error) {
         const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
         this.hasFetchError = true;
@@ -133,15 +140,19 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     addMaxCharge() {
-      this.chargeAmount = this.paymentDetails.remainingCharge;
+      if (!this.toggleItemsList) {
+        this.chargeAmount = this.paymentDetails.remainingCharge;
+      }
     },
 
     addMaxRefund() {
-      this.refundAmount = this.paymentDetails.remainingRefund;
+      if (!this.toggleItemsList) {
+        this.refundAmount = this.paymentDetails.remainingRefund;
+      }
     },
 
-    printConsole() {
-      console.log(this.toggleItemsList);
+    resetChargeAmount() {
+      this.chargeAmount = 0;
     },
   },
 });
