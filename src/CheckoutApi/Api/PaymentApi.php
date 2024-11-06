@@ -24,7 +24,7 @@ class PaymentApi
 
     private const PAYMENT_CANCELS = '/cancels';
 
-    private const REFERENCE_INFORMATION_ENDPOINT = '/referenceinformation';
+    private const PAYMENT_UPDATE_REFERENCE_INFORMATION = '/referenceinformation';
 
     public function __construct(
         private readonly HttpClient $client,
@@ -128,7 +128,7 @@ class PaymentApi
     {
         try {
             $response = $this->client->put(
-                $this->getPaymentOperationEndpoint($paymentId, self::REFERENCE_INFORMATION_ENDPOINT),
+                $this->getPaymentOperationEndpoint($paymentId, self::PAYMENT_UPDATE_REFERENCE_INFORMATION),
                 json_encode($referenceInformation)
             );
         } catch (HttpClientException $httpClientException) {
