@@ -42,7 +42,7 @@
             "items-list": "Select items to refund",
             "max-refund-info": "Max. refundable amount is:"
         },
-        "cancel":  {
+        "cancel": {
             "button-title": "Cancel payment",
             "button-modal": "Close"
         }

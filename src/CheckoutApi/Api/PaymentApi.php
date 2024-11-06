@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace NexiNets\CheckoutApi\Api;
 
+use NexiNets\CheckoutApi\Api\Exception\ClientErrorPaymentApiException;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Http\HttpClient;
 use NexiNets\CheckoutApi\Http\HttpClientException;
 use NexiNets\CheckoutApi\Model\Request\Cancel;
 use NexiNets\CheckoutApi\Model\Request\Charge;
 use NexiNets\CheckoutApi\Model\Request\Payment;
+use NexiNets\CheckoutApi\Model\Request\ReferenceInformation;
 use NexiNets\CheckoutApi\Model\Request\RefundCharge;
 use NexiNets\CheckoutApi\Model\Result\ChargeResult;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
@@ -23,6 +25,8 @@ class PaymentApi
     private const PAYMENT_CHARGES = '/charges';
 
     private const PAYMENT_CANCELS = '/cancels';
+
+    private const PAYMENT_UPDATE_REFERENCE_INFORMATION = '/referenceinformation';
 
     private const CHARGES_ENDPOINT = '/v1/charges';
 
@@ -90,7 +94,7 @@ class PaymentApi
             $response = $this->client->post($this->getPaymentOperationEndpoint($paymentId, self::PAYMENT_CHARGES), json_encode($charge));
         } catch (HttpClientException $httpClientException) {
             throw new PaymentApiException(
-                \sprintf('Couldn\'t create charge for a given payment with id: %s', $paymentId),
+                \sprintf('Couldn\'t create charge for a given payment id: %s', $paymentId),
                 $httpClientException->getCode(),
                 $httpClientException
             );
@@ -112,7 +116,30 @@ class PaymentApi
             $response = $this->client->post($this->getPaymentOperationEndpoint($paymentId, self::PAYMENT_CANCELS), json_encode($cancel));
         } catch (HttpClientException $httpClientException) {
             throw new PaymentApiException(
-                \sprintf('Couldn\'t cancel payment with id: %s', $paymentId),
+                \sprintf('Couldn\'t cancel for a given payment id: %s', $paymentId),
+                $httpClientException->getCode(),
+                $httpClientException
+            );
+        }
+
+        $code = $response->getStatusCode();
+        $contents = $response->getBody()->getContents();
+
+        if (!$this->isSuccessCode($code)) {
+            throw $this->createPaymentApiException($code, $contents);
+        }
+    }
+
+    public function updateReferenceInformation(string $paymentId, ReferenceInformation $referenceInformation): void
+    {
+        try {
+            $response = $this->client->put(
+                $this->getPaymentOperationEndpoint($paymentId, self::PAYMENT_UPDATE_REFERENCE_INFORMATION),
+                json_encode($referenceInformation)
+            );
+        } catch (HttpClientException $httpClientException) {
+            throw new PaymentApiException(
+                \sprintf('Couldn\'t update reference information for a given payment id: %s', $paymentId),
                 $httpClientException->getCode(),
                 $httpClientException
             );
@@ -183,9 +210,10 @@ class PaymentApi
     {
         return match (true) {
             $code >= 300 && $code < 400 => new PaymentApiException('Redirection not supported'),
-            $code >= 400 && $code < 500 => new PaymentApiException(\sprintf('Client error: %s', $contents)),
-            $code >= 500 && $code < 600 => new PaymentApiException('Server error occurred'),
-            default => new PaymentApiException('Unexpected status code'),
+            $code === 400 => new ClientErrorPaymentApiException(\sprintf('Client error: %s', $contents), $contents),
+            $code >= 401 && $code < 500 => new PaymentApiException(\sprintf('Client error: %s', $contents)),
+            $code >= 500 && $code < 600 => new PaymentApiException(\sprintf('Server error occurred: %s', $contents)),
+            default => new PaymentApiException(\sprintf('Unexpected status code: %d', $code)),
         };
     }
 }

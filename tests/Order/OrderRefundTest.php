@@ -42,15 +42,9 @@ final class OrderRefundTest extends TestCase
             )
             ->willReturn(new RefundChargeResult('foo'));
 
-        $configurationProvider = $this->createConfigurationProvider();
-        $configurationProvider
-            ->method('isAutoCharge')
-            ->with('test_sales_channel_id')
-            ->willReturn(false);
-
         $sut = new OrderRefund(
             $this->createPaymentApiFactory($api),
-            $configurationProvider,
+            $this->createConfigurationProvider(),
             new RefundRequest(),
         );
 
@@ -70,15 +64,9 @@ final class OrderRefundTest extends TestCase
             ->expects($this->never())
             ->method('refundCharge');
 
-        $configurationProvider = $this->createConfigurationProvider();
-        $configurationProvider
-            ->method('isAutoCharge')
-            ->with('test_sales_channel_id')
-            ->willReturn(false);
-
         $sut = new OrderRefund(
             $this->createPaymentApiFactory($api),
-            $configurationProvider,
+            $this->createConfigurationProvider(),
             new RefundRequest(),
         );
 
@@ -98,15 +86,9 @@ final class OrderRefundTest extends TestCase
             ->expects($this->never())
             ->method('refundCharge');
 
-        $configurationProvider = $this->createConfigurationProvider();
-        $configurationProvider
-            ->method('isAutoCharge')
-            ->with('test_sales_channel_id')
-            ->willReturn(false);
-
         $sut = new OrderRefund(
             $this->createPaymentApiFactory($api),
-            $configurationProvider,
+            $this->createConfigurationProvider(),
             new RefundRequest(),
         );
 
