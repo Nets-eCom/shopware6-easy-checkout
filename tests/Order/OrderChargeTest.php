@@ -13,6 +13,7 @@ use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\Order\OrderCharge;
 use NexiNets\RequestBuilder\ChargeRequest;
+use NexiNets\RequestBuilder\Helper\FormatHelper;
 use NexiNets\Tests\Order\Mother\RetrievePaymentResultMother;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -49,7 +50,7 @@ final class OrderChargeTest extends TestCase
             $fetcher,
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
-            new ChargeRequest(),
+            $this->createChargeRequestBuilder(),
         );
 
         $sut->fullCharge($this->createOrderEntity());
@@ -70,7 +71,7 @@ final class OrderChargeTest extends TestCase
             $this->createMock(PaymentFetcherInterface::class),
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
-            new ChargeRequest(),
+            $this->createChargeRequestBuilder(),
         );
 
         $sut->fullCharge($this->createOrderEntity());
@@ -97,7 +98,7 @@ final class OrderChargeTest extends TestCase
             $fetcher,
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
-            new ChargeRequest(),
+            $this->createChargeRequestBuilder(),
         );
 
         $sut->fullCharge($order);
@@ -124,7 +125,7 @@ final class OrderChargeTest extends TestCase
             $fetcher,
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
-            new ChargeRequest(),
+            $this->createChargeRequestBuilder(),
         );
 
         $sut->fullCharge($this->createOrderEntity());
@@ -169,5 +170,10 @@ final class OrderChargeTest extends TestCase
             ->willReturn($paymentApi);
 
         return $paymentApiFactory;
+    }
+
+    private function createChargeRequestBuilder(): ChargeRequest
+    {
+        return new ChargeRequest(new FormatHelper());
     }
 }

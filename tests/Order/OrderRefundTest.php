@@ -12,6 +12,7 @@ use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\Order\OrderRefund;
+use NexiNets\RequestBuilder\Helper\FormatHelper;
 use NexiNets\RequestBuilder\RefundRequest;
 use NexiNets\Tests\Order\Mother\RetrievePaymentResultMother;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -49,7 +50,7 @@ final class OrderRefundTest extends TestCase
             $fetcher,
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
-            new RefundRequest(),
+            $this->createRefundChargeRequestBuilder(),
         );
 
         $sut->fullRefund($order);
@@ -74,7 +75,7 @@ final class OrderRefundTest extends TestCase
             $fetcher,
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
-            new RefundRequest(),
+            $this->createRefundChargeRequestBuilder(),
         );
 
         $sut->fullRefund($order);
@@ -99,7 +100,7 @@ final class OrderRefundTest extends TestCase
             $fetcher,
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
-            new RefundRequest(),
+            $this->createRefundChargeRequestBuilder(),
         );
 
         $sut->fullRefund($order);
@@ -144,5 +145,10 @@ final class OrderRefundTest extends TestCase
             ->willReturn($paymentApi);
 
         return $paymentApiFactory;
+    }
+
+    private function createRefundChargeRequestBuilder(): RefundRequest
+    {
+        return new RefundRequest(new FormatHelper());
     }
 }
