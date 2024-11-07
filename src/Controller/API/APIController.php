@@ -164,7 +164,7 @@ class APIController extends StorefrontController
                 }
             }
 
-            if ($refundedAmount == 0) {
+            if ($chargedAmount > 0 && $refundedAmount == 0) {
                 if ($reservedAmount == $chargedAmount) {
                     if ($transactionStateTechnicalName === OrderTransactionStates::STATE_PARTIALLY_PAID) {
                         $this->transHandler->reopen($transactionId, $context);
@@ -172,7 +172,7 @@ class APIController extends StorefrontController
                     } elseif ($transactionStateTechnicalName !== OrderTransactionStates::STATE_CANCELLED) {
                         $this->transHandler->paid($transactionId, $context);
                     }
-                } elseif ($chargedAmount < $reservedAmount && $chargedAmount > 0 && $transactionStateTechnicalName !== OrderTransactionStates::STATE_PARTIALLY_PAID) {
+                } elseif ($chargedAmount < $reservedAmount && $transactionStateTechnicalName !== OrderTransactionStates::STATE_PARTIALLY_PAID) {
                     $this->transHandler->payPartially($transactionId, $context);
                 }
             }
