@@ -11,6 +11,7 @@ use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
+use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\RequestBuilder\ChargeRequest;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -19,6 +20,7 @@ use Shopware\Core\Checkout\Order\OrderEntity;
 class OrderCharge
 {
     public function __construct(
+        private readonly PaymentFetcherInterface $fetcher,
         private readonly PaymentApiFactory $apiFactory,
         private readonly ConfigurationProvider $configurationProvider,
         private readonly ChargeRequest $chargeRequest
@@ -52,7 +54,7 @@ class OrderCharge
             }
 
             $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
-            $payment = $paymentApi->retrievePayment($paymentId)->getPayment();
+            $payment = $this->fetcher->fetchPayment($order->getSalesChannelId(), $paymentId);
 
             if ($payment->getStatus() !== PaymentStatusEnum::RESERVED) {
                 continue;
