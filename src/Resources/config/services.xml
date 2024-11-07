@@ -55,8 +55,13 @@
             <argument type="service" id="router"/>
         </service>
 
-        <service id="NexiNets\RequestBuilder\ChargeRequest"/>
-        <service id="NexiNets\RequestBuilder\RefundRequest"/>
+        <service id="NexiNets\RequestBuilder\ChargeRequest">
+            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\RefundRequest">
+            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+        </service>
 
         <!-- ### SDK ### -->
         <service id="NexiNets\CheckoutApi\Factory\PaymentApiFactory">
