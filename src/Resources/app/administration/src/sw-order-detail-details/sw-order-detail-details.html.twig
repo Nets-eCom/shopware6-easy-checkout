@@ -131,6 +131,7 @@
                         :max="paymentDetails.remainingCharge"
                         numberType="float"
                         :allowEmpty="false"
+                        :fillDigits="true"
                         :disabled="toggleItemsList"
                 >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
@@ -148,8 +149,25 @@
                       >
               </sw-checkbox-field>
             </div>
-            <div v-if="toggleItemsList">
-              <img src="https://media1.tenor.com/m/BP70qe8X0J8AAAAd/crycat-crying-cat.gif" alt="" style="height: 200px;">
+            <div v-if="toggleItemsList" class="nexinets-modal__items-list">
+              <sw-grid :selectable="false" :items="gridItems">
+                <template #columns="{ item }">
+                  <sw-grid-column flex="minmax(50px, 1.3fr)" label="QTY">
+                    {{ item.qty }}x
+                  </sw-grid-column>
+                  <sw-grid-column flex="minmax(200px, 4fr)" label="Item">
+                    {{ item.item }}
+                  </sw-grid-column>
+                  <sw-grid-column flex="minmax(100px, 2.2fr)" label="Subtotal" style="justify-self: end">
+                    {{ order.currency.symbol + item.subtotal }}
+                  </sw-grid-column>
+                  <sw-grid-column flex="minmax(100px, 2.5fr)" label="Charge QTY" style="justify-self: center">
+                    <sw-select-field placeholder="0" class="nexinets-modal__qty-select">
+                      <option v-for="n in parseInt(item.qty)" :key="n" :value="n">{{ n }}</option>
+                    </sw-select-field>
+                  </sw-grid-column>
+                </template>
+              </sw-grid>
             </div>
             <template #modal-footer>
               <sw-button @click="toggleCaptureModal" class="nexinets-modal__btn">
@@ -178,6 +196,7 @@
                         :min="0"
                         :max="paymentDetails.remainingRefund"
                         numberType="float"
+                        :fillDigits="true"
                         :allowEmpty="false"
                 >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
@@ -193,6 +212,26 @@
                       :label="$tc('nexinets-payment-component.refund.items-list')"
                       >
               </sw-checkbox-field>
+            </div>
+            <div v-if="toggleItemsList" class="nexinets-modal__items-list">
+              <sw-grid :selectable="false" :items="gridItems">
+                <template #columns="{ item }">
+                  <sw-grid-column flex="minmax(50px, 1.3fr)" label="QTY">
+                    {{ item.qty }}x
+                  </sw-grid-column>
+                  <sw-grid-column flex="minmax(200px, 4fr)" label="Item">
+                    {{ item.item }}
+                  </sw-grid-column>
+                  <sw-grid-column flex="minmax(100px, 2.2fr)" label="Subtotal" style="justify-self: end">
+                    {{ order.currency.symbol + item.subtotal }}
+                  </sw-grid-column>
+                  <sw-grid-column flex="minmax(100px, 2.5fr)" label="Charge QTY" style="justify-self: center">
+                    <sw-select-field placeholder="0" class="nexinets-modal__qty-select">
+                      <option v-for="n in parseInt(item.qty)" :key="n" :value="n">{{ n }}</option>
+                    </sw-select-field>
+                  </sw-grid-column>
+                </template>
+              </sw-grid>
             </div>
             <template #modal-footer>
               <sw-button @click="toggleRefundModal" class="nexinets-modal__btn">
