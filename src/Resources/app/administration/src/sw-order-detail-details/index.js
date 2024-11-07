@@ -15,6 +15,7 @@ Shopware.Component.override("sw-order-detail-details", {
       hasFetchError: false,
       toggleItemsList: false,
       paymentDetails: {},
+      orderItems: [],
       chargeAmount: 0,
       refundAmount: 0,
     };
@@ -77,6 +78,13 @@ Shopware.Component.override("sw-order-detail-details", {
   },
 
   methods: {
+    getOrderItems() {
+      this.orderItems = [
+        { qty: "1", item: "Item A", subtotal: "25.20" },
+        { qty: "3", item: "Item B", subtotal: "25.20" },
+      ];
+    },
+
     setPaymentStatusVariant() {
       const status = this.paymentDetails.status;
       const variantMapping = {

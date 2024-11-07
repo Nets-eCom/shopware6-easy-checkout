@@ -104,6 +104,14 @@ $border-color: #d1d9e0;
     }
   }
 
+  &__items-list {
+    margin-top: 2rem;
+  }
+
+  &__qty-select {
+    width: 80px;
+  }
+
   &__btn:focus-visible {
     outline: 2px solid #118cff;
     outline-offset: 2px;
