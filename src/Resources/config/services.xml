@@ -86,6 +86,7 @@
         </service>
 
         <service id="NexiNets\Order\OrderRefund">
+            <argument type="service" id="NexiNets\Fetcher\PaymentFetcher"/>
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
             <argument type="service" id="NexiNets\RequestBuilder\RefundRequest"/>

@@ -11,6 +11,7 @@ use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
+use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\RequestBuilder\RefundRequest;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -19,6 +20,7 @@ use Shopware\Core\Checkout\Order\OrderEntity;
 class OrderRefund
 {
     public function __construct(
+        private readonly PaymentFetcherInterface $fetcher,
         private readonly PaymentApiFactory $apiFactory,
         private readonly ConfigurationProvider $configurationProvider,
         private readonly RefundRequest $refundRequest
@@ -46,13 +48,13 @@ class OrderRefund
                 continue;
             }
 
-            $api = $this->createPaymentApi($order->getSalesChannelId());
-            $payment = $api->retrievePayment($paymentId)->getPayment();
+            $payment = $this->fetcher->fetchPayment($order->getSalesChannelId(), $paymentId);
 
             if ($payment->getStatus() !== PaymentStatusEnum::CHARGED) {
                 continue;
             }
 
+            $api = $this->createPaymentApi($order->getSalesChannelId());
             $api->refundCharge(
                 $payment->getCharges()[0]->getChargeId(),
                 $this->refundRequest->build($transaction)
