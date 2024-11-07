@@ -10,6 +10,7 @@ use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
 use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
+use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\Order\OrderRefund;
 use NexiNets\RequestBuilder\RefundRequest;
 use NexiNets\Tests\Order\Mother\RetrievePaymentResultMother;
@@ -29,10 +30,6 @@ final class OrderRefundTest extends TestCase
         $order = $this->createOrderEntity();
 
         $api = $this->createMock(PaymentApi::class);
-        $api->expects($this->once())
-            ->method('retrievePayment')
-            ->with('025400006091b1ef6937598058c4e487')
-            ->willReturn(RetrievePaymentResultMother::fullyCharged());
         $api
             ->expects($this->once())
             ->method('refundCharge')
@@ -42,7 +39,14 @@ final class OrderRefundTest extends TestCase
             )
             ->willReturn(new RefundChargeResult('foo'));
 
+        $fetcher = $this->createMock(PaymentFetcherInterface::class);
+        $fetcher->expects($this->once())
+            ->method('fetchPayment')
+            ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
+            ->willReturn(RetrievePaymentResultMother::fullyCharged()->getPayment());
+
         $sut = new OrderRefund(
+            $fetcher,
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             new RefundRequest(),
@@ -56,15 +60,18 @@ final class OrderRefundTest extends TestCase
         $order = $this->createOrderEntity();
 
         $api = $this->createMock(PaymentApi::class);
-        $api->expects($this->once())
-            ->method('retrievePayment')
-            ->with('025400006091b1ef6937598058c4e487')
-            ->willReturn(RetrievePaymentResultMother::fullyRefunded());
         $api
             ->expects($this->never())
             ->method('refundCharge');
 
+        $fetcher = $this->createMock(PaymentFetcherInterface::class);
+        $fetcher->expects($this->once())
+            ->method('fetchPayment')
+            ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
+            ->willReturn(RetrievePaymentResultMother::fullyRefunded()->getPayment());
+
         $sut = new OrderRefund(
+            $fetcher,
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             new RefundRequest(),
@@ -78,15 +85,18 @@ final class OrderRefundTest extends TestCase
         $order = $this->createOrderEntity();
 
         $api = $this->createMock(PaymentApi::class);
-        $api->expects($this->once())
-            ->method('retrievePayment')
-            ->with('025400006091b1ef6937598058c4e487')
-            ->willReturn(RetrievePaymentResultMother::partiallyRefunded());
         $api
             ->expects($this->never())
             ->method('refundCharge');
 
+        $fetcher = $this->createMock(PaymentFetcherInterface::class);
+        $fetcher->expects($this->once())
+            ->method('fetchPayment')
+            ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
+            ->willReturn(RetrievePaymentResultMother::partiallyRefunded()->getPayment());
+
         $sut = new OrderRefund(
+            $fetcher,
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             new RefundRequest(),
