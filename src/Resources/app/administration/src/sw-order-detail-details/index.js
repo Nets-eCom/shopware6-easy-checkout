@@ -73,7 +73,7 @@ Shopware.Component.override("sw-order-detail-details", {
 
   watch: {
     toggleItemsList() {
-      this.resetChargeAmount();
+      this.resetAmount();
     },
   },
 
@@ -159,8 +159,9 @@ Shopware.Component.override("sw-order-detail-details", {
       }
     },
 
-    resetChargeAmount() {
+    resetAmount() {
       this.chargeAmount = 0;
+      this.refundAmount = 0;
     },
   },
 });

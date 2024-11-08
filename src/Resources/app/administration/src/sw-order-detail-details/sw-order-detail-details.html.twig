@@ -198,6 +198,7 @@
                         numberType="float"
                         :fillDigits="true"
                         :allowEmpty="false"
+                        :disabled="toggleItemsList"
                 >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
                 </sw-number-field>
@@ -208,13 +209,14 @@
               </div>
               <sw-checkbox-field
                       class="nexinets-modal__checkbox"
-                      v-model="toggleItemsList"
-                      :label="$tc('nexinets-payment-component.refund.items-list')"
-                      >
+                      :value="toggleItemsList"
+                      @update:value="toggleItemsList = $event"
+                      :label="$tc('nexinets-payment-component.charge.items-list')"
+              >
               </sw-checkbox-field>
             </div>
             <div v-if="toggleItemsList" class="nexinets-modal__items-list">
-              <sw-grid :selectable="false" :items="gridItems">
+              <sw-grid :selectable="false" :items="paymentDetails.orderItems">
                 <template #columns="{ item }">
                   <sw-grid-column flex="minmax(50px, 1.3fr)" label="QTY">
                     {{ item.qty }}x
@@ -222,12 +224,12 @@
                   <sw-grid-column flex="minmax(200px, 4fr)" label="Item">
                     {{ item.item }}
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(100px, 2.2fr)" label="Subtotal" style="justify-self: end">
+                  <sw-grid-column flex="minmax(100px, 2.2fr)" label="Subtotal">
                     {{ order.currency.symbol + item.subtotal }}
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(100px, 2.5fr)" label="Charge QTY" style="justify-self: center">
+                  <sw-grid-column flex="minmax(100px, 2.5fr)" label="Charge QTY" class="nexinets-modal__qty-col">
                     <sw-select-field placeholder="0" class="nexinets-modal__qty-select">
-                      <option v-for="n in parseInt(item.qty)" :key="n" :value="n">{{ n }}</option>
+                      <option v-for="n in parseInt(item.qtyCharge)" :key="n" :value="n">{{ n }}</option>
                     </sw-select-field>
                   </sw-grid-column>
                 </template>
