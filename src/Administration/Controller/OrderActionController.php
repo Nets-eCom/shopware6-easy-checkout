@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace NexiNets\Administration\Controller;
 
 use NexiNets\Administration\Model\ChargeData;
+use NexiNets\Administration\Model\RefundData;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\Order\OrderCharge;
+use NexiNets\Order\OrderRefund;
 use Shopware\Core\Checkout\Order\OrderCollection;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Order\OrderException;
@@ -29,20 +31,22 @@ class OrderActionController extends AbstractController
     public function __construct(
         private readonly EntityRepository $orderRepository,
         private readonly OrderCharge $orderCharge,
+        private readonly OrderRefund $orderRefund
     ) {
     }
 
-    #[Route(
-        path: '/api/order/{orderId}/nexinets-payment-charge',
-        name: 'api.nexinets.payment.charge',
-        defaults: [
-            '_acl' => [
-                'order:read',
-                'order:write',
+    #[
+        Route(
+            path: '/api/order/{orderId}/nexinets-payment-charge',
+            name: 'api.nexinets.payment.charge',
+            defaults: [
+                '_acl' => [
+                    'order:read',
+                    'order:write',
+                ],
             ],
-        ],
-        methods: ['PUT']
-    )
+            methods: ['PUT']
+        )
     ]
     public function charge(
         Context $context,
@@ -71,6 +75,45 @@ class OrderActionController extends AbstractController
         return $this->json([]);
     }
 
+    #[
+        Route(
+            path: '/api/order/{orderId}/nexinets-payment-refund',
+            name: 'api.nexinets.payment.refund',
+            defaults: [
+                '_acl' => [
+                    'order:read',
+                    'order:write',
+                ],
+            ],
+            methods: ['PUT']
+        )
+    ]
+    public function refund(
+        Context $context,
+        string $orderId,
+        #[MapRequestPayload(acceptFormat: 'json', validationFailedStatusCode: Response::HTTP_BAD_REQUEST)]
+        RefundData $refundData
+    ): Response {
+        $order = $this->orderRepository->search(
+            (new Criteria([$orderId]))
+                ->addAssociation('transactions')
+                ->addAssociation('stateMachineState'),
+            $context
+        )->get($orderId);
+
+        if (!$order instanceof OrderEntity) {
+            throw OrderException::orderNotFound($orderId);
+        }
+
+        try {
+            $this->processRefund($order, $refundData);
+        } catch (PaymentApiException) {
+            return $this->json([], status: Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json([]);
+    }
+
     /**
      * @throws PaymentApiException
      */
@@ -83,5 +126,19 @@ class OrderActionController extends AbstractController
         }
 
         $this->orderCharge->fullCharge($order);
+    }
+
+    /**
+     * @throws PaymentApiException
+     */
+    private function processRefund(OrderEntity $order, RefundData $refundData): void
+    {
+        if ($refundData->getAmount() < $order->getAmountTotal()) {
+            $this->orderRefund->partialRefund($order, $refundData);
+
+            return;
+        }
+
+        $this->orderRefund->fullRefund($order);
     }
 }
