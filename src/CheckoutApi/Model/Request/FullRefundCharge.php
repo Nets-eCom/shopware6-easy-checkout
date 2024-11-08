@@ -8,7 +8,7 @@ class FullRefundCharge extends RefundCharge
 {
     public function __construct(
         private readonly int $amount,
-        protected ?string $myReference = null,
+        ?string $myReference = null,
     ) {
         parent::__construct($myReference);
     }
