@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\Order\Mother;
+namespace NexiNets\Tests\CheckoutApi\Fixture;
 
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Charge;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Checkout;
@@ -17,7 +17,7 @@ use NexiNets\CheckoutApi\Model\Result\RetrievePayment\RefundStateEnum;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Summary;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 
-class RetrievePaymentResultMother
+class RetrievePaymentResultFixture
 {
     public static function reserved(): RetrievePaymentResult
     {
