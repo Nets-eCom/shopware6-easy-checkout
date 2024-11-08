@@ -13,10 +13,10 @@ class PartialCharge extends Charge
      */
     public function __construct(
         protected readonly array $orderItems,
-        protected bool $finalCharge = true,
-        protected ?Shipping $shipping = null,
-        protected ?string $myReference = null,
-        protected ?string $paymentMethodReference = null
+        bool $finalCharge = true,
+        ?Shipping $shipping = null,
+        ?string $myReference = null,
+        ?string $paymentMethodReference = null
     ) {
         if ($orderItems === []) {
             throw new \LogicException('Order items cannot be empty');

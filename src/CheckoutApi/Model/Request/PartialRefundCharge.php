@@ -11,7 +11,7 @@ class PartialRefundCharge extends RefundCharge
      */
     public function __construct(
         protected readonly array $orderItems,
-        protected ?string $myReference = null,
+        ?string $myReference = null,
     ) {
         if ($orderItems === []) {
             throw new \LogicException('Order items cannot be empty');
