@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace NexiNets\Order;
 
-use NexiNets\Administration\Model\ChargeData;
+use NexiNets\Administration\Model\RefundData;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
@@ -12,31 +12,26 @@ use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
-use NexiNets\RequestBuilder\ChargeRequest;
+use NexiNets\RequestBuilder\RefundRequest;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
 
-class OrderCharge
+class OrderRefund
 {
     public function __construct(
         private readonly PaymentFetcherInterface $fetcher,
         private readonly PaymentApiFactory $apiFactory,
         private readonly ConfigurationProvider $configurationProvider,
-        private readonly ChargeRequest $chargeRequest
+        private readonly RefundRequest $refundRequest
     ) {
     }
 
     /**
      * @throws PaymentApiException
-     * @throws \LogicException
      */
-    public function fullCharge(OrderEntity $order): void
+    public function fullRefund(OrderEntity $order): void
     {
-        if ($this->configurationProvider->isAutoCharge($order->getSalesChannelId())) {
-            return;
-        }
-
         $transactions = $order->getTransactions();
 
         if (!$transactions instanceof OrderTransactionCollection) {
@@ -53,20 +48,23 @@ class OrderCharge
                 continue;
             }
 
-            $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
             $payment = $this->fetcher->fetchPayment($order->getSalesChannelId(), $paymentId);
 
-            if ($payment->getStatus() !== PaymentStatusEnum::RESERVED) {
+            if ($payment->getStatus() !== PaymentStatusEnum::CHARGED) {
                 continue;
             }
 
-            $paymentApi->charge($paymentId, $this->chargeRequest->buildFullCharge($transaction));
+            $api = $this->createPaymentApi($order->getSalesChannelId());
+            $api->refundCharge(
+                $payment->getCharges()[0]->getChargeId(),
+                $this->refundRequest->build($transaction)
+            );
         }
     }
 
-    public function partialCharge(OrderEntity $order, ChargeData $chargeData): void
+    public function partialRefund(OrderEntity $order, RefundData $refundData): void
     {
-        // TODO: Implement
+        // TODO: implement
     }
 
     private function createPaymentApi(string $salesChannelId): PaymentApi

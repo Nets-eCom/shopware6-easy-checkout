@@ -55,7 +55,13 @@
             <argument type="service" id="router"/>
         </service>
 
-        <service id="NexiNets\RequestBuilder\ChargeRequest"/>
+        <service id="NexiNets\RequestBuilder\ChargeRequest">
+            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\RefundRequest">
+            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+        </service>
 
         <!-- ### SDK ### -->
         <service id="NexiNets\CheckoutApi\Factory\PaymentApiFactory">
@@ -82,6 +88,13 @@
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
             <argument type="service" id="NexiNets\RequestBuilder\ChargeRequest"/>
+        </service>
+
+        <service id="NexiNets\Order\OrderRefund">
+            <argument type="service" id="NexiNets\Fetcher\PaymentFetcher"/>
+            <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="NexiNets\RequestBuilder\RefundRequest"/>
         </service>
 
         <!-- ### Webhooks ### -->
@@ -155,6 +168,7 @@
         <service id="NexiNets\Administration\Controller\OrderActionController" public="true">
             <argument type="service" id="order.repository"/>
             <argument type="service" id="NexiNets\Order\OrderCharge"/>
+            <argument type="service" id="NexiNets\Order\OrderRefund"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>

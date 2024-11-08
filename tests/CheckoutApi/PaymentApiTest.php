@@ -11,6 +11,7 @@ use NexiNets\CheckoutApi\Http\Configuration;
 use NexiNets\CheckoutApi\Http\HttpClient;
 use NexiNets\CheckoutApi\Model\Request\Charge;
 use NexiNets\CheckoutApi\Model\Request\FullCharge;
+use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
 use NexiNets\CheckoutApi\Model\Request\Item;
 use NexiNets\CheckoutApi\Model\Request\Payment;
 use NexiNets\CheckoutApi\Model\Request\Payment\HostedCheckout;
@@ -18,8 +19,10 @@ use NexiNets\CheckoutApi\Model\Request\Payment\Notification;
 use NexiNets\CheckoutApi\Model\Request\Payment\Order;
 use NexiNets\CheckoutApi\Model\Request\Payment\Webhook;
 use NexiNets\CheckoutApi\Model\Request\ReferenceInformation;
+use NexiNets\CheckoutApi\Model\Request\RefundCharge;
 use NexiNets\CheckoutApi\Model\Result\ChargeResult;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
+use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -205,13 +208,39 @@ final class PaymentApiTest extends TestCase
         $streamFactory = $this->createStub(StreamFactoryInterface::class);
         $streamFactory->method('createStream')->willReturn($stream);
 
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())->method('getStatusCode')->willReturn(200);
+        $response->expects($this->once())->method('getBody')->willReturn($stream);
+
+        $sut = $this->createPaymentApi($response, $streamFactory);
+
+        $sut->updateReferenceInformation('1234', $this->createReferenceInformationRequest());
+    }
+
+    public function testItRefundsCharge(): void
+    {
+        $stream = $this->createStub(StreamInterface::class);
+        $stream
+            ->method('getContents')
+            ->willReturn(
+                json_encode([
+                    'refundId' => '1234',
+                ])
+            );
+
+        $streamFactory = $this->createStub(StreamFactoryInterface::class);
+        $streamFactory->method('createStream')->willReturn($stream);
+
         $response = $this->createStub(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($stream);
 
         $sut = $this->createPaymentApi($response, $streamFactory);
 
-        $sut->updateReferenceInformation('1234', $this->createReferenceInformationRequest());
+        $result = $sut->refundCharge('1234', $this->createRefundRequest());
+
+        $this->assertInstanceOf(RefundChargeResult::class, $result);
+        $this->assertSame('1234', $result->getRefundId());
     }
 
     private function createPsrClient(ResponseInterface $response): ClientInterface
@@ -282,6 +311,11 @@ final class PaymentApiTest extends TestCase
     private function createReferenceInformationRequest(): ReferenceInformation
     {
         return new ReferenceInformation('https://shop.example.com/checkout/1000', 'ref1234');
+    }
+
+    private function createRefundRequest(): RefundCharge
+    {
+        return new FullRefundCharge(1);
     }
 
     private function createRequestFactoryStub(): RequestFactoryInterface

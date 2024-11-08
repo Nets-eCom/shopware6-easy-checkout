@@ -4,25 +4,20 @@ declare(strict_types=1);
 
 namespace NexiNets\CheckoutApi\Model\Request;
 
-use NexiNets\CheckoutApi\Model\Request\Charge\Shipping;
-
-class PartialCharge extends Charge
+class PartialRefundCharge extends RefundCharge
 {
     /**
      * @param array<Item> $orderItems
      */
     public function __construct(
         protected readonly array $orderItems,
-        bool $finalCharge = true,
-        ?Shipping $shipping = null,
         ?string $myReference = null,
-        ?string $paymentMethodReference = null
     ) {
         if ($orderItems === []) {
             throw new \LogicException('Order items cannot be empty');
         }
 
-        parent::__construct($finalCharge, $shipping, $myReference, $paymentMethodReference);
+        parent::__construct($myReference);
     }
 
     public function getAmount(): int
@@ -37,9 +32,7 @@ class PartialCharge extends Charge
      * @return array{
      *     amount: int,
      *     orderItems: array<Item>,
-     *     shipping: ?Shipping,
      *     myReference: ?string,
-     *     paymentMethodReference: ?string
      * }
      */
     public function jsonSerialize(): array
