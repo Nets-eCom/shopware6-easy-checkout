@@ -100,15 +100,8 @@ Shopware.Component.override("sw-order-detail-details", {
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
       try {
-        const details = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
-        if (details && typeof details === "object") {
-          this.paymentDetails = details;
-          this.setPaymentStatusVariant();
-        } else {
-          console.error("Invalid payment details received:", details);
-          this.hasFetchError = true;
-          this.variant = "danger";
-        }
+        this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
+        this.setPaymentStatusVariant();
       } catch (error) {
         const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
         this.hasFetchError = true;
