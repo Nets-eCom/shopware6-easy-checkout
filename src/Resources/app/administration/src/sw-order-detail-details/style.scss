@@ -112,6 +112,10 @@ $border-color: #d1d9e0;
     width: 80px;
   }
 
+  &__qty-col {
+    justify-self: center;
+  }
+
   &__btn:focus-visible {
     outline: 2px solid #118cff;
     outline-offset: 2px;
