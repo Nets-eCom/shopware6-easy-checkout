@@ -14,7 +14,7 @@ use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\Order\OrderRefund;
 use NexiNets\RequestBuilder\Helper\FormatHelper;
 use NexiNets\RequestBuilder\RefundRequest;
-use NexiNets\Tests\Order\Mother\RetrievePaymentResultMother;
+use NexiNets\Tests\CheckoutApi\Fixture\RetrievePaymentResultFixture;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
@@ -44,7 +44,7 @@ final class OrderRefundTest extends TestCase
         $fetcher->expects($this->once())
             ->method('fetchPayment')
             ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
-            ->willReturn(RetrievePaymentResultMother::fullyCharged()->getPayment());
+            ->willReturn(RetrievePaymentResultFixture::fullyCharged()->getPayment());
 
         $sut = new OrderRefund(
             $fetcher,
@@ -69,7 +69,7 @@ final class OrderRefundTest extends TestCase
         $fetcher->expects($this->once())
             ->method('fetchPayment')
             ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
-            ->willReturn(RetrievePaymentResultMother::fullyRefunded()->getPayment());
+            ->willReturn(RetrievePaymentResultFixture::fullyRefunded()->getPayment());
 
         $sut = new OrderRefund(
             $fetcher,
@@ -94,7 +94,7 @@ final class OrderRefundTest extends TestCase
         $fetcher->expects($this->once())
             ->method('fetchPayment')
             ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
-            ->willReturn(RetrievePaymentResultMother::partiallyRefunded()->getPayment());
+            ->willReturn(RetrievePaymentResultFixture::partiallyRefunded()->getPayment());
 
         $sut = new OrderRefund(
             $fetcher,
