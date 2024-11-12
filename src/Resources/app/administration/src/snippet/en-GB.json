@@ -45,6 +45,14 @@
         "cancel":  {
             "button-title": "Cancel payment",
             "button-modal": "Close"
+        },
+        "itemsTable": {
+            "columns": {
+                "qty": "QTY",
+                "item": "Item",
+                "subtotal": "Subtotal",
+                "chargeQty": "Charge QTY"
+            }
         }
     }
 }
