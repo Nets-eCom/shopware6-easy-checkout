@@ -132,6 +132,14 @@ Shopware.Component.override("sw-order-detail-details", {
       console.log(this.refundAmount);
     },
 
+    setChargeAmount(amount) {
+      this.chargeAmount = amount;
+    },
+
+    setRefundAmount(amount) {
+      this.refundAmount = amount;
+    },
+
     toggleCaptureModal() {
       this.isCaptureModalVisible = !this.isCaptureModalVisible;
     },
@@ -140,15 +148,15 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isRefundModalVisible = !this.isRefundModalVisible;
     },
 
-    addMaxCharge() {
+    onClickMaxCharge() {
       if (!this.toggleItemsList) {
-        this.chargeAmount = this.paymentDetails.remainingCharge;
+        this.setChargeAmount(this.paymentDetails.remainingCharge);
       }
     },
 
-    addMaxRefund() {
+    onClickMaxRefund() {
       if (!this.toggleItemsList) {
-        this.refundAmount = this.paymentDetails.remainingRefund;
+        this.setRefundAmount(this.paymentDetails.remainingRefund);
       }
     },
 

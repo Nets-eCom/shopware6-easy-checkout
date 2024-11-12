@@ -138,7 +138,7 @@
                 </sw-number-field>
                 <p class="nexinets-modal__full-amount">
                   {{ $tc('nexinets-payment-component.charge.max-charge-info') }}
-                  <span @click="addMaxCharge" data-testid="maxChargeBtn">{{ order.currency.symbol + paymentDetails.remainingCharge }}</span>
+                  <span @click="onClickMaxCharge" data-testid="maxChargeBtn">{{ order.currency.symbol + paymentDetails.remainingCharge }}</span>
                 </p>
               </div>
               <sw-checkbox-field
@@ -204,7 +204,7 @@
                 </sw-number-field>
                 <p class="nexinets-modal__full-amount">
                   {{ $tc('nexinets-payment-component.refund.max-refund-info') }}
-                  <span @click="addMaxRefund" data-testid="maxRefundBtn">{{ order.currency.symbol + paymentDetails.remainingRefund }}</span>
+                  <span @click="onClickMaxRefund" data-testid="maxRefundBtn">{{ order.currency.symbol + paymentDetails.remainingRefund }}</span>
                 </p>
               </div>
               <sw-checkbox-field
