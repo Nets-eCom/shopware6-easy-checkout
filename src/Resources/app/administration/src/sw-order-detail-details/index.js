@@ -13,6 +13,7 @@ Shopware.Component.override("sw-order-detail-details", {
       isRefundModalVisible: false,
       variant: "info",
       hasFetchError: false,
+      toggleItemsList: false,
       paymentDetails: {},
       chargeAmount: 0,
       refundAmount: 0,
@@ -21,6 +22,7 @@ Shopware.Component.override("sw-order-detail-details", {
   created() {
     if (this.isNexiNetsPayment) {
       this.fetchPaymentDetails(this.orderId);
+      this.getOrderItems();
     }
   },
   computed: {
@@ -54,7 +56,7 @@ Shopware.Component.override("sw-order-detail-details", {
         return;
       }
       return (
-          this.shouldDisplayCancelBtn || this.shouldDisplayRefundBtn || this.shouldDisplayChargeBtn
+        this.shouldDisplayCancelBtn || this.shouldDisplayRefundBtn || this.shouldDisplayChargeBtn
       );
     },
 
@@ -68,7 +70,21 @@ Shopware.Component.override("sw-order-detail-details", {
       return `nexinets-payment-component.payment-details.status.${status}`;
     },
   },
+
+  watch: {
+    toggleItemsList() {
+      this.resetAmount();
+    },
+  },
+
   methods: {
+    getOrderItems() {
+      this.paymentDetails.orderItems = [
+        { qty: "1", item: "Item A", subtotal: "25.20", qtyCharge: "2" },
+        { qty: "3", item: "Item B", subtotal: "25.20", qtyCharge: "3" },
+      ];
+    },
+
     setPaymentStatusVariant() {
       const status = this.paymentDetails.status;
       const variantMapping = {
@@ -91,8 +107,8 @@ Shopware.Component.override("sw-order-detail-details", {
         this.hasFetchError = true;
         this.variant = "danger";
         console.error(
-            `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
-            error,
+          `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
+          error,
         );
       } finally {
         this.isLoading = false;
@@ -116,6 +132,14 @@ Shopware.Component.override("sw-order-detail-details", {
       console.log(this.refundAmount);
     },
 
+    setChargeAmount(amount) {
+      this.chargeAmount = amount;
+    },
+
+    setRefundAmount(amount) {
+      this.refundAmount = amount;
+    },
+
     toggleCaptureModal() {
       this.isCaptureModalVisible = !this.isCaptureModalVisible;
     },
@@ -124,12 +148,21 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isRefundModalVisible = !this.isRefundModalVisible;
     },
 
-    addMaxCharge() {
-      this.chargeAmount = this.paymentDetails.remainingCharge;
+    onClickMaxCharge() {
+      if (!this.toggleItemsList) {
+        this.setChargeAmount(this.paymentDetails.remainingCharge);
+      }
     },
 
-    addMaxRefund() {
-      this.refundAmount = this.paymentDetails.remainingRefund;
+    onClickMaxRefund() {
+      if (!this.toggleItemsList) {
+        this.setRefundAmount(this.paymentDetails.remainingRefund);
+      }
+    },
+
+    resetAmount() {
+      this.chargeAmount = 0;
+      this.refundAmount = 0;
     },
   },
 });

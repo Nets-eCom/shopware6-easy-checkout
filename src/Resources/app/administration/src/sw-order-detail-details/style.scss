@@ -6,7 +6,9 @@ $border-color: #d1d9e0;
 // Mixin for Shopware breakpoint
 @mixin respond-to($breakpoint) {
   @if $breakpoint == lg {
-    @media (min-width: 961px) { @content; }
+    @media (min-width: 961px) {
+      @content;
+    }
   }
 }
 
@@ -58,6 +60,11 @@ $border-color: #d1d9e0;
     @include respond-to(lg) {
       padding-top: 1.85rem;
     }
+
+    .sw-button:focus-visible {
+      outline: 2px solid #118cff;
+      outline-offset: 2px;
+    }
   }
 }
 
@@ -95,5 +102,22 @@ $border-color: #d1d9e0;
       text-decoration: underline;
       cursor: pointer;
     }
+  }
+
+  &__items-list {
+    margin-top: 2rem;
+  }
+
+  &__qty-select {
+    width: 80px;
+  }
+
+  &__qty-col {
+    justify-self: center;
+  }
+
+  &__btn:focus-visible {
+    outline: 2px solid #118cff;
+    outline-offset: 2px;
   }
 }
