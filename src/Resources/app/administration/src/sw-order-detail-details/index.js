@@ -128,8 +128,15 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     handleRefund() {
-      // Implement refund handling logic here
-      console.log(this.refundAmount);
+      this.isLoading = true;
+      try {
+        this.nexiNetsPaymentActionsService.refund(this.order.id, this.refundAmount);
+      } catch (error) {
+        console.error("index.js error:", error);
+      } finally {
+        window.location.reload();
+        this.isLoading = false;
+      }
     },
 
     setChargeAmount(amount) {
