@@ -152,16 +152,16 @@
             <div v-if="toggleItemsList" class="nexinets-modal__items-list">
               <sw-grid :selectable="false" :items="paymentDetails.orderItems">
                 <template #columns="{ item }">
-                  <sw-grid-column flex="minmax(50px, 1.3fr)" label="QTY">
+                  <sw-grid-column flex="minmax(50px, 1.3fr)" :label="$tc('nexinets-payment-component.itemsTable.columns.qty')">
                     {{ item.qty }}x
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(200px, 4fr)" label="Item">
+                  <sw-grid-column flex="minmax(200px, 4fr)" :label="$tc('nexinets-payment-component.itemsTable.columns.item')">
                     {{ item.item }}
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(100px, 2.2fr)" label="Subtotal">
+                  <sw-grid-column flex="minmax(100px, 2.2fr)" :label="$tc('nexinets-payment-component.itemsTable.columns.subtotal')">
                     {{ order.currency.symbol + item.subtotal }}
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(100px, 2.5fr)" label="Charge QTY" class="nexinets-modal__qty-col">
+                  <sw-grid-column flex="minmax(100px, 2.5fr)" :label="$tc('nexinets-payment-component.itemsTable.columns.chargeQty')" class="nexinets-modal__qty-col">
                     <sw-select-field placeholder="0" class="nexinets-modal__qty-select">
                       <option v-for="n in parseInt(item.qtyCharge)" :key="n" :value="n">{{ n }}</option>
                     </sw-select-field>
