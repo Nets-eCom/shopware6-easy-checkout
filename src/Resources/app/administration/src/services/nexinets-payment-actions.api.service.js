@@ -1,31 +1,47 @@
 const ApiService = Shopware.Classes.ApiService;
 
 class NexiNetsCheckoutApiPaymentService extends ApiService {
-    constructor(httpClient, loginService) {
-        super(httpClient, loginService, "");
-        this.name = "nexiNetsPaymentActionsService";
-    }
+  constructor(httpClient, loginService) {
+    super(httpClient, loginService, "");
+    this.name = "nexiNetsPaymentActionsService";
+  }
 
-    charge(orderId, chargeAmount) {
-        return this.httpClient
-            .put(
-                `order/${orderId}/nexinets-payment-charge`,
-                {
-                    amount: chargeAmount,
-                },
-                {
-                    headers: this.getBasicHeaders(),
-                },
-            )
-            .then((response) => {
-                return ApiService.handleResponse(response);
-            });
-    }
+  charge(orderId, chargeAmount) {
+    return this.httpClient
+      .put(
+        `order/${orderId}/nexinets-payment-charge`,
+        {
+          amount: chargeAmount,
+        },
+        {
+          headers: this.getBasicHeaders(),
+        },
+      )
+      .then((response) => {
+        return ApiService.handleResponse(response);
+      });
+  }
+
+  refund(orderId, refundAmount) {
+    return this.httpClient
+      .put(
+        `order/${orderId}/nexinets-payment-refund`,
+        {
+          amount: refundAmount,
+        },
+        {
+          headers: this.getBasicHeaders(),
+        },
+      )
+      .then((response) => {
+        return ApiService.handleResponse(response);
+      });
+  }
 }
 
 Shopware.Service().register("nexiNetsPaymentActionsService", (container) => {
-    const initContainer = Shopware.Application.getContainer("init");
-    return new NexiNetsCheckoutApiPaymentService(initContainer.httpClient, container.loginService);
+  const initContainer = Shopware.Application.getContainer("init");
+  return new NexiNetsCheckoutApiPaymentService(initContainer.httpClient, container.loginService);
 });
 
 // eslint-disable-next-line sw-deprecation-rules/private-feature-declarations

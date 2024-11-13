@@ -85,6 +85,7 @@
         </service>
 
         <service id="NexiNets\Order\OrderCharge">
+            <argument type="service" id="NexiNets\Fetcher\PaymentFetcher"/>
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
             <argument type="service" id="NexiNets\RequestBuilder\ChargeRequest"/>
