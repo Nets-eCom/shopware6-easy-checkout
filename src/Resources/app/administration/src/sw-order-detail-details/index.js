@@ -115,21 +115,28 @@ Shopware.Component.override("sw-order-detail-details", {
       }
     },
 
-    handleCharge() {
+    async handleCharge() {
       this.isLoading = true;
       try {
-        this.nexiNetsPaymentActionsService.charge(this.order.id, this.chargeAmount);
+        await this.nexiNetsPaymentActionsService.charge(this.order.id, this.chargeAmount);
+        window.location.reload();
       } catch (error) {
         console.error("index.js error:", error);
       } finally {
-        window.location.reload();
         this.isLoading = false;
       }
     },
 
-    handleRefund() {
-      // Implement refund handling logic here
-      console.log(this.refundAmount);
+    async handleRefund() {
+      this.isLoading = true;
+      try {
+        await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refundAmount);
+        window.location.reload();
+      } catch (error) {
+        console.error("index.js error:", error);
+      } finally {
+        this.isLoading = false;
+      }
     },
 
     setChargeAmount(amount) {
