@@ -9,6 +9,7 @@ use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
 use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
 use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\Order\OrderRefund;
@@ -23,6 +24,7 @@ use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class OrderRefundTest extends TestCase
 {
@@ -46,11 +48,21 @@ final class OrderRefundTest extends TestCase
             ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
             ->willReturn(RetrievePaymentResultFixture::fullyCharged()->getPayment());
 
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects($this->once())
+            ->method('dispatch')
+            ->with(new RefundChargeSend(
+                $order,
+                $order->getTransactions()->first(),
+                10000
+            ));
+
         $sut = new OrderRefund(
             $fetcher,
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
+            $eventDispatcher,
         );
 
         $sut->fullRefund($order);
@@ -76,6 +88,7 @@ final class OrderRefundTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
+            $this->createStub(EventDispatcherInterface::class),
         );
 
         $sut->fullRefund($order);
@@ -101,6 +114,7 @@ final class OrderRefundTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
+            $this->createStub(EventDispatcherInterface::class),
         );
 
         $sut->fullRefund($order);
