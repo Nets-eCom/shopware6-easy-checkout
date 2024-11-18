@@ -8,5 +8,5 @@ interface CachablePaymentFetcherInterface
 {
     public function getCachedPayment(string $salesChannelId, string $paymentId): Payment;
 
-    public function updateCache(string $salesChannelId, string $paymentId): void;
+    public function removeCache(string $paymentId): void;
 }

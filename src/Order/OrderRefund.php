@@ -10,12 +10,14 @@ use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\RequestBuilder\RefundRequest;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class OrderRefund
 {
@@ -23,7 +25,8 @@ class OrderRefund
         private readonly PaymentFetcherInterface $fetcher,
         private readonly PaymentApiFactory $apiFactory,
         private readonly ConfigurationProvider $configurationProvider,
-        private readonly RefundRequest $refundRequest
+        private readonly RefundRequest $refundRequest,
+        private readonly EventDispatcherInterface $eventDispatcher
     ) {
     }
 
@@ -55,9 +58,14 @@ class OrderRefund
             }
 
             $api = $this->createPaymentApi($order->getSalesChannelId());
+            $refundRequest = $this->refundRequest->build($transaction);
             $api->refundCharge(
                 $payment->getCharges()[0]->getChargeId(),
-                $this->refundRequest->build($transaction)
+                $refundRequest
+            );
+
+            $this->eventDispatcher->dispatch(
+                new RefundChargeSend($order, $transaction, $refundRequest->getAmount())
             );
         }
     }
