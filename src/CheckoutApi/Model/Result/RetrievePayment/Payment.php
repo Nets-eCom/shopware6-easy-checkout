@@ -102,8 +102,8 @@ class Payment
     {
         return match (true) {
             $this->isCancelled() => PaymentStatusEnum::CANCELLED,
-            $this->isPendingRefund() => PaymentStatusEnum::PENDING_REFUND,
             $this->isFullyRefunded() => PaymentStatusEnum::REFUNDED,
+            $this->isPendingRefund() => PaymentStatusEnum::PENDING_REFUND,
             $this->isRefunded() => PaymentStatusEnum::PARTIALLY_REFUNDED,
             $this->isFullyCharged() => PaymentStatusEnum::CHARGED,
             $this->isCharged() => PaymentStatusEnum::PARTIALLY_CHARGED,
@@ -152,12 +152,14 @@ class Payment
 
     private function isPendingRefund(): bool
     {
-        if ($this->getRefunds() === null) {
+        $refunds = $this->getRefunds();
+
+        if ($refunds === null || $refunds === []) {
             return false;
         }
 
         return array_filter(
-            $this->getRefunds(),
+            $refunds,
             fn (Refund $refund) => $refund->getRefundState() === RefundStateEnum::PENDING
         ) !== [];
     }
