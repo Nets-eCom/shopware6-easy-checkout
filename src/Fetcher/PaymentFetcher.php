@@ -29,7 +29,7 @@ class PaymentFetcher implements PaymentFetcherInterface, CachablePaymentFetcherI
         return $this->fetchPayment($salesChannelId, $paymentId);
     }
 
-    public function updateCache(string $salesChannelId, string $paymentId): void
+    public function removeCache(string $paymentId): void
     {
         // @todo Implement caching
     }
