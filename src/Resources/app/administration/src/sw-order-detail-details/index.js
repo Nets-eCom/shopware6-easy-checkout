@@ -1,22 +1,25 @@
+const { Mixin } = Shopware;
 import template from "./sw-order-detail-details.html.twig";
 import "./style.scss";
 
 Shopware.Component.override("sw-order-detail-details", {
   template,
   inject: ["nexiNetsPaymentDetailService", "nexiNetsPaymentActionsService"],
-  mixins: [],
+  mixins: [Mixin.getByName("notification")],
   data() {
     return {
       isLoading: false,
       disabled: true,
-      isCaptureModalVisible: false,
+      isChargeModalVisible: false,
       isRefundModalVisible: false,
       variant: "info",
       hasFetchError: false,
       toggleItemsList: false,
       paymentDetails: {},
+      orderItems: [],
       chargeAmount: 0,
       refundAmount: 0,
+      reloadKey: 0,
     };
   },
   created() {
@@ -79,7 +82,7 @@ Shopware.Component.override("sw-order-detail-details", {
 
   methods: {
     getOrderItems() {
-      this.paymentDetails.orderItems = [
+      this.orderItems = [
         { qty: "1", item: "Item A", subtotal: "25.20", qtyCharge: "2" },
         { qty: "3", item: "Item B", subtotal: "25.20", qtyCharge: "3" },
       ];
@@ -103,13 +106,7 @@ Shopware.Component.override("sw-order-detail-details", {
         this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
         this.setPaymentStatusVariant();
       } catch (error) {
-        const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
-        this.hasFetchError = true;
-        this.variant = "danger";
-        console.error(
-          `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
-          error,
-        );
+        this.handleFetchError(error);
       } finally {
         this.isLoading = false;
       }
@@ -119,9 +116,15 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isLoading = true;
       try {
         await this.nexiNetsPaymentActionsService.charge(this.order.id, this.chargeAmount);
-        window.location.reload();
+        await this.fetchPaymentDetails(this.orderId);
+        this.createNotificationSuccess({
+          title: "NexiNets - Capture has been initiated",
+          message: `You have successfully initiated a capture of ${this.order.currency.symbol}${this.chargeAmount}.`,
+        });
+        this.closeChargeModal();
+        this.reloadKey++;
       } catch (error) {
-        console.error("index.js error:", error);
+        this.handleActionError(error);
       } finally {
         this.isLoading = false;
       }
@@ -131,12 +134,41 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isLoading = true;
       try {
         await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refundAmount);
-        window.location.reload();
+        await this.fetchPaymentDetails(this.orderId);
+        this.createNotificationSuccess({
+          title: "NexiNets - The refund has been initiated",
+          message:
+            "It can take up to 3 bank days before refunds are available on receivers account.",
+        });
+        this.closeRefundModal();
+        this.reloadKey++;
       } catch (error) {
-        console.error("index.js error:", error);
+        this.handleActionError(error);
       } finally {
         this.isLoading = false;
       }
+    },
+
+    handleFetchError(error) {
+      const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
+      this.hasFetchError = true;
+      this.variant = "danger";
+      console.error(
+        `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
+        error,
+      );
+      this.createNotificationError({
+        title: "NexiNets - Fetching Payment Details failed",
+        message: "See the logs for more information.",
+      });
+    },
+
+    handleActionError(error) {
+      console.error("index.js error:", error);
+      this.createNotificationError({
+        title: "NexiNets - Action failed",
+        message: "An error occurred while processing the action. Please check the logs.",
+      });
     },
 
     setChargeAmount(amount) {
@@ -147,12 +179,20 @@ Shopware.Component.override("sw-order-detail-details", {
       this.refundAmount = amount;
     },
 
-    toggleCaptureModal() {
-      this.isCaptureModalVisible = !this.isCaptureModalVisible;
+    toggleChargeModal() {
+      this.isChargeModalVisible = !this.isChargeModalVisible;
     },
 
     toggleRefundModal() {
       this.isRefundModalVisible = !this.isRefundModalVisible;
+    },
+
+    closeChargeModal() {
+      this.isChargeModalVisible = false;
+    },
+
+    closeRefundModal() {
+      this.isRefundModalVisible = false;
     },
 
     onClickMaxCharge() {

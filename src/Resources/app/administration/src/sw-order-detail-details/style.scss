@@ -27,11 +27,15 @@ $border-color: #d1d9e0;
 
   &__status-text {
     font-size: $font-size;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
   }
 
   &__status-label {
     width: 100%;
+
+    .sw-label__caption {
+      color: green;
+    }
   }
 
   &__history-link {
