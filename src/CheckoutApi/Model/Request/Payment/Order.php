@@ -19,6 +19,29 @@ final class Order implements \JsonSerializable
     ) {
     }
 
+    /**
+     * @return list<Item>
+     */
+    public function getItems(): array
+    {
+        return $this->items;
+    }
+
+    public function getCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    public function getAmount(): int
+    {
+        return $this->amount;
+    }
+
+    public function getReference(): ?string
+    {
+        return $this->reference;
+    }
+
     public function addItem(Item $item): self
     {
         $this->items[] = $item;
