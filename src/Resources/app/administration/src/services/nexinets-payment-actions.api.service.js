@@ -37,6 +37,19 @@ class NexiNetsCheckoutApiPaymentService extends ApiService {
         return ApiService.handleResponse(response);
       });
   }
+
+    cancel(orderId) {
+      return this.httpClient
+        .put(
+          `order/${orderId}/nexinets-payment-cancel`,
+          {
+            headers: this.getBasicHeaders(),
+          },
+        )
+        .then((response) => {
+            return ApiService.handleResponse(response);
+        });
+    }
 }
 
 Shopware.Service().register("nexiNetsPaymentActionsService", (container) => {

@@ -2,6 +2,7 @@
 
 namespace NexiNets\Administration\Controller;
 
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcher;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -63,19 +64,26 @@ class PaymentDetailController extends AbstractController
         $paymentId = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID);
         $payment = $this->paymentFetcher->getCachedPayment($order->getSalesChannelId(), $paymentId);
 
-        $remainingCharge = $payment->getOrderDetails()->getAmount() - $payment->getSummary()->getChargedAmount();
-        $remainingRefund = $payment->getSummary()->getChargedAmount() - $payment->getSummary()->getRefundedAmount();
+        $summary = $payment->getSummary();
+        $orderDetails = $payment->getOrderDetails();
+        $orderAmount = $orderDetails->getAmount();
+        $chargedAmount = $summary->getChargedAmount();
+        $refundedAmount = $summary->getRefundedAmount();
+        $status = $payment->getStatus();
+
+        $remainingChargeAmount = $status !== PaymentStatusEnum::CANCELLED ? $orderAmount - $chargedAmount : 0;
+        $remainingRefundAmount = $status !== PaymentStatusEnum::CANCELLED ? $chargedAmount - $refundedAmount : 0;
 
         return new JsonResponse([
             'paymentId' => $paymentId,
             'paymentVia' => $payment->getPaymentDetails()?->getPaymentMethod(),
-            'orderAmount' => $this->formatAmount($payment->getOrderDetails()->getAmount()),
+            'orderAmount' => $this->formatAmount($orderAmount),
             'orderTime' => $payment->getCreated()->format('Y-m-d H:i:s'),
-            'chargedAmount' => $this->formatAmount($payment->getSummary()->getChargedAmount()),
-            'remainingCharge' => $this->formatAmount($remainingCharge),
-            'refundedAmount' => $this->formatAmount($payment->getSummary()->getRefundedAmount()),
-            'remainingRefund' => $this->formatAmount($remainingRefund),
-            'status' => $payment->getStatus()->value,
+            'chargedAmount' => $this->formatAmount($chargedAmount),
+            'remainingChargeAmount' => $this->formatAmount($remainingChargeAmount),
+            'refundedAmount' => $this->formatAmount($refundedAmount),
+            'remainingRefundAmount' => $this->formatAmount($remainingRefundAmount),
+            'status' => $status->value,
         ]);
     }
 

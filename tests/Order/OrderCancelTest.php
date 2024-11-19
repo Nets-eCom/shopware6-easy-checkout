@@ -1,0 +1,124 @@
+<?php
+
+declare(strict_types=1);
+
+namespace NexiNets\Tests\Order;
+
+use NexiNets\CheckoutApi\Api\PaymentApi;
+use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
+use NexiNets\CheckoutApi\Model\Request\Cancel;
+use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Dictionary\OrderTransactionDictionary;
+use NexiNets\Fetcher\PaymentFetcherInterface;
+use NexiNets\Order\OrderCancel;
+use NexiNets\RequestBuilder\CancelRequest;
+use NexiNets\RequestBuilder\Helper\FormatHelper;
+use NexiNets\Tests\CheckoutApi\Fixture\RetrievePaymentResultFixture;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
+use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
+use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
+use Shopware\Core\Checkout\Order\OrderEntity;
+
+final class OrderCancelTest extends TestCase
+{
+    public function testItCanCancelOrderPayment(): void
+    {
+        $api = $this->createMock(PaymentApi::class);
+        $api
+            ->expects($this->once())
+            ->method('cancel')
+            ->with(
+                '025400006091b1ef6937598058c4e487',
+                new Cancel(10000)
+            );
+
+        $fetcher = $this->createMock(PaymentFetcherInterface::class);
+        $fetcher->expects($this->once())
+            ->method('fetchPayment')
+            ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
+            ->willReturn(RetrievePaymentResultFixture::reserved()->getPayment());
+
+
+        $sut = new OrderCancel(
+            $fetcher,
+            $this->createPaymentApiFactory($api),
+            $this->createConfigurationProvider(),
+            $this->createCancelRequestBuilder(),
+        );
+
+        $sut->cancel($this->createOrderEntity());
+    }
+
+    public function testItShouldNotCancelNotReserved(): void
+    {
+        $api = $this->createMock(PaymentApi::class);
+        $api
+            ->expects($this->never())
+            ->method('cancel');
+
+        $fetcher = $this->createMock(PaymentFetcherInterface::class);
+        $fetcher->expects($this->once())
+            ->method('fetchPayment')
+            ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
+            ->willReturn(RetrievePaymentResultFixture::fullyCharged()->getPayment());
+
+        $sut = new OrderCancel(
+            $fetcher,
+            $this->createPaymentApiFactory($api),
+            $this->createConfigurationProvider(),
+            $this->createCancelRequestBuilder(),
+        );
+
+        $sut->cancel($this->createOrderEntity());
+    }
+
+    private function createOrderEntity(): OrderEntity
+    {
+        $transaction = new OrderTransactionEntity();
+        $transaction->setId('transaction_uuid');
+        $transaction->setAmount(
+            new CalculatedPrice(100, 100, new CalculatedTaxCollection(), new TaxRuleCollection([]), 1)
+        );
+        $transaction->setCustomFields([
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
+        ]);
+
+        $order = new OrderEntity();
+        $order->setId('order_uuid');
+        $order->setSalesChannelId('test_sales_channel_id');
+        $order->setTransactions(new OrderTransactionCollection([$transaction]));
+
+        return $order;
+    }
+
+    private function createConfigurationProvider(): ConfigurationProvider|MockObject
+    {
+        return $this->createConfiguredMock(
+            ConfigurationProvider::class,
+            [
+                'getSecretKey' => 'secret',
+                'isLiveMode' => true,
+            ],
+        );
+    }
+
+    private function createPaymentApiFactory(MockObject $paymentApi): PaymentApiFactory|MockObject
+    {
+        $paymentApiFactory = $this->createMock(PaymentApiFactory::class);
+        $paymentApiFactory
+            ->method('create')
+            ->with('secret', true)
+            ->willReturn($paymentApi);
+
+        return $paymentApiFactory;
+    }
+
+    private function createCancelRequestBuilder(): CancelRequest
+    {
+        return new CancelRequest(new FormatHelper());
+    }
+}
