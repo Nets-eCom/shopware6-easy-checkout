@@ -19,6 +19,31 @@ class Payment implements \JsonSerializable
     ) {
     }
 
+    public function getOrder(): Order
+    {
+        return $this->order;
+    }
+
+    public function getCheckout(): Checkout
+    {
+        return $this->checkout;
+    }
+
+    public function getNotification(): ?Notification
+    {
+        return $this->notification;
+    }
+
+    public function getMerchantNumber(): ?string
+    {
+        return $this->merchantNumber;
+    }
+
+    public function getMyReference(): ?string
+    {
+        return $this->myReference;
+    }
+
     /**
      * @return array{
      *     order: Order,
