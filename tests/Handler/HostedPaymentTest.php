@@ -7,11 +7,16 @@ namespace NexiNets\Tests\Handler;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
+use NexiNets\CheckoutApi\Model\Request\Item;
+use NexiNets\CheckoutApi\Model\Request\Payment as RequestPayment;
+use NexiNets\CheckoutApi\Model\Request\Payment\HostedCheckout;
+use NexiNets\CheckoutApi\Model\Request\Payment\Order;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Summary;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Handler\HostedPayment;
 use NexiNets\RequestBuilder\PaymentRequest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -53,6 +58,10 @@ final class HostedPaymentTest extends TestCase
         $orderTransactionEntity = new OrderTransactionEntity();
         $orderTransactionEntity->setId(self::ORDER_TRANSACTION_ID);
 
+        $paymentRequest = $this->createPaymentRequest();
+        $requestBuilder = $this->createStub(PaymentRequest::class);
+        $requestBuilder->method('build')->willReturn($paymentRequest);
+
         $salesChannelContext = Generator::createSalesChannelContext();
 
         $orderTransactionRepository = $this->createOrderTransactionRepository();
@@ -64,16 +73,16 @@ final class HostedPaymentTest extends TestCase
                     [
                         'id' => self::ORDER_TRANSACTION_ID,
                         'customFields' => [
-                            'nexi_nets_payment_id' => self::PAYMENT_ID,
+                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => self::PAYMENT_ID,
+                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER => $paymentRequest->getOrder(),
                         ],
                     ],
                 ],
                 $salesChannelContext->getContext()
             );
 
-
         $sut = new HostedPayment(
-            $this->createStub(PaymentRequest::class),
+            $requestBuilder,
             $paymentApiFactory,
             $this->createStub(ConfigurationProvider::class),
             $orderTransactionRepository,
@@ -225,5 +234,31 @@ final class HostedPaymentTest extends TestCase
     private function createOrderTransactionRepository(): EntityRepository|MockObject
     {
         return $this->createMock(EntityRepository::class);
+    }
+
+    private function createPaymentRequest(): RequestPayment
+    {
+        return new RequestPayment(
+            new Order(
+                [
+                    new Item(
+                        'item',
+                        1,
+                        'pcs',
+                        100,
+                        100,
+                        100,
+                        'ref'
+                    ),
+                ],
+                'SEK',
+                100
+            ),
+            new HostedCheckout(
+                'https://shop.example.com/returnUrl',
+                'https://shop.example.com/cancelUrl',
+                'https://shop.example.com/termsUrl',
+            )
+        );
     }
 }
