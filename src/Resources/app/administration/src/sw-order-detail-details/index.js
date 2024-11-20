@@ -11,6 +11,7 @@ Shopware.Component.override("sw-order-detail-details", {
       disabled: true,
       isCaptureModalVisible: false,
       isRefundModalVisible: false,
+      isCancelModalVisible: false,
       variant: "info",
       hasFetchError: false,
       toggleItemsList: false,
@@ -39,11 +40,11 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     shouldDisplayRefundBtn() {
-      return this.paymentDetails.remainingRefund > 0;
+      return this.paymentDetails.remainingRefundAmount > 0;
     },
 
     shouldDisplayChargeBtn() {
-      return this.paymentDetails.remainingCharge > 0;
+      return this.paymentDetails.remainingChargeAmount > 0;
     },
 
     isNewPayment() {
@@ -131,6 +132,18 @@ Shopware.Component.override("sw-order-detail-details", {
       }
     },
 
+    async handleCancel() {
+      this.isLoading = true;
+      try {
+        await this.nexiNetsPaymentActionsService.cancel(this.order.id);
+        window.location.reload();
+      } catch (error) {
+        console.error("index.js error:", error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
     setChargeAmount(amount) {
       this.chargeAmount = amount;
     },
@@ -147,15 +160,19 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isRefundModalVisible = !this.isRefundModalVisible;
     },
 
+    toggleCancelModal() {
+      this.isCancelModalVisible = !this.isCancelModalVisible;
+    },
+
     onClickMaxCharge() {
       if (!this.toggleItemsList) {
-        this.setChargeAmount(this.paymentDetails.remainingCharge);
+        this.setChargeAmount(this.paymentDetails.remainingChargeAmount);
       }
     },
 
     onClickMaxRefund() {
       if (!this.toggleItemsList) {
-        this.setRefundAmount(this.paymentDetails.remainingRefund);
+        this.setRefundAmount(this.paymentDetails.remainingRefundAmount);
       }
     },
 

@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace NexiNets\Subscriber;
 
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Request\Cancel;
-use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
+use NexiNets\Order\OrderCancel;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
@@ -28,11 +24,9 @@ final readonly class PaymentCancelSubscriber implements EventSubscriberInterface
      * @param EntityRepository<OrderCollection> $orderRepository
      */
     public function __construct(
-        private PaymentApiFactory $paymentApiFactory,
-        private ConfigurationProvider $configurationProvider,
+        private OrderCancel $orderCancel,
         private EntityRepository $orderRepository,
         private OrderTransactionStateHandler $orderTransactionStateHandler,
-        private FormatHelper $formatHelper
     ) {
     }
 
@@ -45,11 +39,7 @@ final readonly class PaymentCancelSubscriber implements EventSubscriberInterface
 
     public function onOrderCancel(StateMachineTransitionEvent $event): void
     {
-        if ($event->getEntityName() !== OrderDefinition::ENTITY_NAME) {
-            return;
-        }
-
-        if ($event->getToPlace()->getTechnicalName() !== OrderStates::STATE_CANCELLED) {
+        if (!$this->isOrderCancellationEvent($event)) {
             return;
         }
 
@@ -88,20 +78,13 @@ final readonly class PaymentCancelSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->createApi($order->getSalesChannelId())
-            ->cancel(
-                $paymentId,
-                new Cancel($this->formatHelper->priceToInt($transaction->getAmount()->getTotalPrice())),
-            );
-
+        $this->orderCancel->cancel($order);
         $this->orderTransactionStateHandler->cancel($transaction->getId(), $context);
     }
 
-    private function createApi(string $salesChannelId): PaymentApi
+    private function isOrderCancellationEvent(StateMachineTransitionEvent $event): bool
     {
-        return $this->paymentApiFactory->create(
-            $this->configurationProvider->getSecretKey($salesChannelId),
-            $this->configurationProvider->isLiveMode($salesChannelId)
-        );
+        return $event->getEntityName() === OrderDefinition::ENTITY_NAME
+            && $event->getToPlace()->getTechnicalName() === OrderStates::STATE_CANCELLED;
     }
 }

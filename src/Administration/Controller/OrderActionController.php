@@ -7,6 +7,7 @@ namespace NexiNets\Administration\Controller;
 use NexiNets\Administration\Model\ChargeData;
 use NexiNets\Administration\Model\RefundData;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
+use NexiNets\Order\OrderCancel;
 use NexiNets\Order\OrderCharge;
 use NexiNets\Order\OrderRefund;
 use Shopware\Core\Checkout\Order\OrderCollection;
@@ -31,7 +32,8 @@ class OrderActionController extends AbstractController
     public function __construct(
         private readonly EntityRepository $orderRepository,
         private readonly OrderCharge $orderCharge,
-        private readonly OrderRefund $orderRefund
+        private readonly OrderRefund $orderRefund,
+        private readonly OrderCancel $orderCancel
     ) {
     }
 
@@ -107,6 +109,41 @@ class OrderActionController extends AbstractController
 
         try {
             $this->processRefund($order, $refundData);
+        } catch (PaymentApiException) {
+            return $this->json([], status: Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json([]);
+    }
+
+    #[
+        Route(
+            path: '/api/order/{orderId}/nexinets-payment-cancel',
+            name: 'api.nexinets.payment.cancel',
+            defaults: [
+                '_acl' => [
+                    'order:read',
+                    'order:write',
+                ],
+            ],
+            methods: ['PUT']
+        )
+    ]
+    public function cancel(Context $context, string $orderId): Response
+    {
+        $order = $this->orderRepository->search(
+            (new Criteria([$orderId]))
+                ->addAssociation('transactions')
+                ->addAssociation('stateMachineState'),
+            $context
+        )->get($orderId);
+
+        if (!$order instanceof OrderEntity) {
+            throw OrderException::orderNotFound($orderId);
+        }
+
+        try {
+            $this->orderCancel->cancel($order);
         } catch (PaymentApiException) {
             return $this->json([], status: Response::HTTP_BAD_REQUEST);
         }

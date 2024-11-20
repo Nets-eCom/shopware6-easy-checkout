@@ -63,6 +63,10 @@
             <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
         </service>
 
+        <service id="NexiNets\RequestBuilder\CancelRequest">
+            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
         <!-- ### SDK ### -->
         <service id="NexiNets\CheckoutApi\Factory\PaymentApiFactory">
             <argument type="service" id="NexiNets\CheckoutApi\Factory\HttpClientFactory"/>
@@ -96,6 +100,14 @@
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
             <argument type="service" id="NexiNets\RequestBuilder\RefundRequest"/>
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
+        </service>
+
+        <service id="NexiNets\Order\OrderCancel">
+            <argument type="service" id="NexiNets\Fetcher\PaymentFetcher"/>
+            <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
+            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="NexiNets\RequestBuilder\CancelRequest"/>
         </service>
 
         <!-- ### Webhooks ### -->
@@ -151,11 +163,9 @@
 
         <!-- ### Subscribers ### -->
         <service id="NexiNets\Subscriber\PaymentCancelSubscriber">
-            <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
-            <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="NexiNets\Order\OrderCancel"/>
             <argument type="service" id="order.repository"/>
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
-            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
             <tag name="kernel.event_subscriber"/>
         </service>
 
@@ -170,6 +180,7 @@
             <argument type="service" id="order.repository"/>
             <argument type="service" id="NexiNets\Order\OrderCharge"/>
             <argument type="service" id="NexiNets\Order\OrderRefund"/>
+            <argument type="service" id="NexiNets\Order\OrderCancel"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
