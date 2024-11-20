@@ -46,13 +46,13 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
         $transactionId = $transaction->getOrderTransaction()->getId();
 
         try {
-            $payment = $paymentApi->createPayment(
-                $this->paymentRequest->build(
-                    $transaction,
-                    $salesChannelContext,
-                    IntegrationTypeEnum::HostedPaymentPage
-                )
+            $paymentRequest = $this->paymentRequest->build(
+                $transaction,
+                $salesChannelContext,
+                IntegrationTypeEnum::HostedPaymentPage
             );
+
+            $payment = $paymentApi->createPayment($paymentRequest);
         } catch (PaymentApiException $paymentApiException) {
             throw PaymentException::asyncProcessInterrupted(
                 $transactionId,
@@ -65,6 +65,7 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
             'id' => $transactionId,
             'customFields' => [
                 OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => $payment->getPaymentId(),
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER => $paymentRequest->getOrder(),
             ],
         ];
 

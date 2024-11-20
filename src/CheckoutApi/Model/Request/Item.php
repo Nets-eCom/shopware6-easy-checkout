@@ -4,6 +4,19 @@ declare(strict_types=1);
 
 namespace NexiNets\CheckoutApi\Model\Request;
 
+/**
+ * @phpstan-type RequestItemSerialized array{
+ *     name: string,
+ *     quantity: int,
+ *     unit: string,
+ *     unitPrice: float,
+ *     grossTotalAmount: float,
+ *     netTotalAmount: float,
+ *     reference: string,
+ *     taxRate?: ?int,
+ *     taxAmount?: ?int
+ * }
+ */
 final readonly class Item implements \JsonSerializable
 {
     public function __construct(
@@ -65,17 +78,7 @@ final readonly class Item implements \JsonSerializable
     }
 
     /**
-     * @return array{
-     *     name: string,
-     *     quantity: int,
-     *     unit: string,
-     *     unitPrice: float,
-     *     grossTotalAmount: float,
-     *     netTotalAmount: float,
-     *     reference: string,
-     *     taxRate?: ?int,
-     *     taxAmount?: ?int
-     * }
+     * @phpstan-return RequestItemSerialized
      */
     public function jsonSerialize(): array
     {

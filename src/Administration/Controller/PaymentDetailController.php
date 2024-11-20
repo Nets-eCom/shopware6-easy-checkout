@@ -2,6 +2,11 @@
 
 namespace NexiNets\Administration\Controller;
 
+use NexiNets\CheckoutApi\Model\Request\Item as RequestItem;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Charge;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Item;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Refund;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcher;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -16,6 +21,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * @phpstan-import-type RequestItemSerialized from RequestItem
+ */
 #[Route(defaults: [
     '_routeScope' => ['api'],
 ])]
@@ -76,11 +84,63 @@ class PaymentDetailController extends AbstractController
             'refundedAmount' => $this->formatAmount($payment->getSummary()->getRefundedAmount()),
             'remainingRefund' => $this->formatAmount($remainingRefund),
             'status' => $payment->getStatus()->value,
+            'orderItems' => $this->buildItems($payment, $transaction),
         ]);
     }
 
     private function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2);
+    }
+
+    /**
+     * @return list<array{
+     *      name: string,
+     *      quantity: int,
+     *      unitPrice: string,
+     *      grossTotalAmount: string,
+     *      qtyCharged: int,
+     *      qtyRefunded: int
+     * }>
+     */
+    private function buildItems(Payment $payment, OrderTransactionEntity $transaction): array
+    {
+        $orderArray = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER);
+
+        return array_map(
+            fn (array $requestItem) => [
+                'name' => $requestItem['name'],
+                'quantity' => $requestItem['quantity'],
+                'unitPrice' => $this->formatAmount($requestItem['unitPrice']),
+                'grossTotalAmount' => $this->formatAmount($requestItem['grossTotalAmount']),
+                'qtyCharged' => array_reduce(
+                    $payment->getCharges() ?? [],
+                    fn (int $chargeQty, Charge $charge) => $chargeQty + array_reduce(
+                        $charge->getOrderItems(),
+                        fn (int $requestItemQty, Item $chargedItem) => $requestItemQty + ($this->isSameItem($chargedItem, $requestItem) ? $chargedItem->getQuantity() : 0),
+                        0
+                    ),
+                    0
+                ),
+                'qtyRefunded' => array_reduce(
+                    $payment->getRefunds() ?? [],
+                    fn (int $refundQty, Refund $refund) => $refundQty + array_reduce(
+                        $refund->getOrderItems(),
+                        fn (int $requestItemQty, Item $refundedItem) => $requestItemQty + ($this->isSameItem($refundedItem, $requestItem) ? $refundedItem->getQuantity() : 0),
+                        0
+                    ),
+                    0
+                ),
+            ],
+            $orderArray['items'] ?? []
+        );
+    }
+
+    /**
+     * @param RequestItemSerialized $item
+     */
+    private function isSameItem(Item $orderItem, array $item): bool
+    {
+        return $orderItem->getReference() === $item['reference'] && $orderItem->getName() === $item['name'];
     }
 }
