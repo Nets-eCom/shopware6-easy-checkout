@@ -179,7 +179,7 @@
             </div>
             <template #modal-footer>
               <sw-button @click="toggleChargeModal" class="nexinets-modal__btn">
-                {{ $tc('nexinets-payment-component.cancel.button-modal') }}
+                {{ $tc('nexinets-payment-component.cancel.button-action-title') }}
               </sw-button>
               <sw-button @click="handleCharge" class="nexinets-modal__btn" :isLoading="isLoading" variant="primary">
                 {{ $tc('nexinets-payment-component.charge.button-title') }}
@@ -245,7 +245,7 @@
             </div>
             <template #modal-footer>
               <sw-button @click="toggleRefundModal" class="nexinets-modal__btn">
-                {{ $tc('nexinets-payment-component.cancel.button-modal') }}
+                {{ $tc('nexinets-payment-component.cancel.button-action-title') }}
               </sw-button>
               <sw-button @click="handleRefund" class="nexinets-modal__btn" :isLoading="isLoading" variant="primary">
                 {{ $tc('nexinets-payment-component.refund.button-title') }}
