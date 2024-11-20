@@ -23,7 +23,6 @@ Shopware.Component.override("sw-order-detail-details", {
   created() {
     if (this.isNexiNetsPayment) {
       this.fetchPaymentDetails(this.orderId);
-      this.getOrderItems();
     }
   },
   computed: {
@@ -79,13 +78,6 @@ Shopware.Component.override("sw-order-detail-details", {
   },
 
   methods: {
-    getOrderItems() {
-      this.paymentDetails.orderItems = [
-        { qty: "1", item: "Item A", subtotal: "25.20", qtyCharge: "2" },
-        { qty: "3", item: "Item B", subtotal: "25.20", qtyCharge: "3" },
-      ];
-    },
-
     setPaymentStatusVariant() {
       const status = this.paymentDetails.status;
       const variantMapping = {

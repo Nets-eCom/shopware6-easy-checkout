@@ -52,7 +52,8 @@
                 "qty": "QTY",
                 "item": "Item",
                 "subtotal": "Subtotal",
-                "chargeQty": "Charge QTY"
+                "chargeQty": "Charge QTY",
+                "refundQty": "Refund QTY"
             }
         }
     }
