@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace NexiNets\Tests\Subscriber;
 
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Request\Cancel;
-use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
+use NexiNets\Order\OrderCancel;
 use NexiNets\Subscriber\PaymentCancelSubscriber;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
@@ -35,32 +31,16 @@ final class PaymentCancelSubscriberTest extends TestCase
         $context = Context::createDefaultContext();
 
         $paymentId = 'foo';
-        $paymentApi = $this->createMock(PaymentApi::class);
-        $paymentApi->expects($this->once())
-            ->method('cancel')
-            ->with(
-                $paymentId,
-                new Cancel(1000),
-            );
-
-        $paymentApiFactory = $this->createMock(PaymentApiFactory::class);
-        $paymentApiFactory->method('create')->with('secret', true)->willReturn($paymentApi);
-
-        $configurationProvider = $this->createStub(ConfigurationProvider::class);
-        $configurationProvider->method('getSecretKey')->willReturn('secret');
-        $configurationProvider->method('isLiveMode')->willReturn(true);
-
         $transactionId = 'transactionId';
+        $order = $this->createOrder($transactionId, OrderTransactionStates::STATE_AUTHORIZED, $paymentId);
 
         $entitySearchResult = $this->createStub(EntitySearchResult::class);
-        $entitySearchResult->method('first')->willReturn(
-            $this->createOrder($transactionId, OrderTransactionStates::STATE_AUTHORIZED, $paymentId)
-        );
+        $entitySearchResult->method('first')->willReturn($order);
         $entityRepository = $this->createStub(EntityRepository::class);
         $entityRepository->method('search')->willReturn($entitySearchResult);
 
-        $orderTransactionHandler = $this->createMock(OrderTransactionStateHandler::class);
-        $orderTransactionHandler
+        $transactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
+        $transactionStateHandler
             ->expects($this->once())
             ->method('cancel')
             ->with(
@@ -68,12 +48,13 @@ final class PaymentCancelSubscriberTest extends TestCase
                 $context
             );
 
+        $orderCancel = $this->createMock(OrderCancel::class);
+        $orderCancel->expects($this->once())->method('cancel')->with($order);
+
         $sut = new PaymentCancelSubscriber(
-            $paymentApiFactory,
-            $configurationProvider,
+            $orderCancel,
             $entityRepository,
-            $orderTransactionHandler,
-            new FormatHelper()
+            $transactionStateHandler
         );
 
         $sut->onOrderCancel(
@@ -89,11 +70,9 @@ final class PaymentCancelSubscriberTest extends TestCase
     public function testItSubscribesToStateMachineTransitionEvent(): void
     {
         $sut = new PaymentCancelSubscriber(
-            $this->createStub(PaymentApiFactory::class),
-            $this->createStub(ConfigurationProvider::class),
+            $this->createMock(OrderCancel::class),
             $this->createStub(EntityRepository::class),
             $this->createStub(OrderTransactionStateHandler::class),
-            $this->createStub(FormatHelper::class)
         );
 
         $this->assertSame(
@@ -144,7 +123,7 @@ final class PaymentCancelSubscriberTest extends TestCase
         return $transaction;
     }
 
-    public function createOrder(string $transactionId, string $orderTransactionState, string $paymentId): OrderEntity
+    private function createOrder(string $transactionId, string $orderTransactionState, string $paymentId): OrderEntity
     {
         $order = new OrderEntity();
         $order->setTransactions(
