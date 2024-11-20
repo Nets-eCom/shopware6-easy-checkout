@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace NexiNets\CheckoutApi\Model\Request;
 
 /**
- * @phpstan-type CheckoutApiRequestItem array{
+ * @phpstan-type RequestItemSerialized array{
  *     name: string,
  *     quantity: int,
  *     unit: string,
@@ -78,7 +78,7 @@ final readonly class Item implements \JsonSerializable
     }
 
     /**
-     * @phpstan-return CheckoutApiRequestItem
+     * @phpstan-return RequestItemSerialized
      */
     public function jsonSerialize(): array
     {

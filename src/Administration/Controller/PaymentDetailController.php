@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * @phpstan-import-type CheckoutApiRequestItem from RequestItem
+ * @phpstan-import-type RequestItemSerialized from RequestItem
  */
 #[Route(defaults: [
     '_routeScope' => ['api'],
@@ -105,7 +105,7 @@ class PaymentDetailController extends AbstractController
      */
     private function buildItems(Payment $payment, OrderTransactionEntity $transaction): array
     {
-        $itemsJson = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ITEMS);
+        $orderArray = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER);
 
         return array_map(
             fn (array $requestItem) => [
@@ -132,12 +132,12 @@ class PaymentDetailController extends AbstractController
                     0
                 ),
             ],
-            json_decode((string) $itemsJson, true) ?? []
+            $orderArray['items'] ?? []
         );
     }
 
     /**
-     * @param CheckoutApiRequestItem $item
+     * @param RequestItemSerialized $item
      */
     private function isSameItem(Item $orderItem, array $item): bool
     {
