@@ -44,14 +44,16 @@
         },
         "cancel": {
             "button-title": "Cancel payment",
-            "button-modal": "Close"
+            "confirmation": "You're about to cancel payment with amount of {currency} {amount}",
+            "title": "Cancel (NexiNets payment plugin)"
         },
         "itemsTable": {
             "columns": {
                 "qty": "QTY",
                 "item": "Item",
                 "subtotal": "Subtotal",
-                "chargeQty": "Charge QTY"
+                "chargeQty": "Charge QTY",
+                "refundQty": "Refund QTY"
             }
         }
     }
