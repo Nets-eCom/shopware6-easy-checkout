@@ -15,7 +15,7 @@ Shopware.Component.override("sw-order-detail-details", {
       isCancelModalVisible: false,
       variant: "info",
       hasFetchError: false,
-      toggleItemsList: false,
+      isItemsListVisible: false,
       paymentDetails: {},
       chargeAmount: 0,
       refundAmount: 0,
@@ -74,34 +74,31 @@ Shopware.Component.override("sw-order-detail-details", {
   },
 
   watch: {
-    toggleItemsList() {
+    isItemsListVisible() {
       this.resetAmount();
     },
   },
 
   methods: {
-    setPaymentStatusVariant() {
-      const status = this.paymentDetails.status;
-      const variantMapping = {
-        charged: "success",
-        partially_charged: "warning",
-        refunded: "warning",
-        partially_refunded: "warning",
-        cancelled: "danger",
-      };
-      this.variant = variantMapping[status] || "info";
-    },
-
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
       try {
         this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
         this.setPaymentStatusVariant();
       } catch (error) {
-        this.handleFetchError(error);
+        const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
+        this.hasFetchError = true;
+        this.variant = "danger";
+        console.error(
+          `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
+          error,
+        );
+        this.createNotificationError({
+          title: this.$tc("nexinets-payment-component.notification.fetch-error-title"),
+          message: this.$tc("nexinets-payment-component.notification.fetch-error-message"),
+        });
       } finally {
         this.isLoading = false;
-        console.log(this.paymentDetails);
       }
     },
 
@@ -111,8 +108,8 @@ Shopware.Component.override("sw-order-detail-details", {
         await this.nexiNetsPaymentActionsService.charge(this.order.id, this.chargeAmount);
         await this.fetchPaymentDetails(this.orderId);
         this.createNotificationSuccess({
-          title: "NexiNets - Capture has been initiated",
-          message: `You have successfully initiated a capture of ${this.order.currency.symbol}${this.chargeAmount}.`,
+          title: this.$tc("nexinets-payment-component.notification.charge-title"),
+          message: this.$tc("nexinets-payment-component.notification.charge-message"),
         });
         this.closeChargeModal();
         this.reloadKey++;
@@ -129,9 +126,8 @@ Shopware.Component.override("sw-order-detail-details", {
         await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refundAmount);
         await this.fetchPaymentDetails(this.orderId);
         this.createNotificationSuccess({
-          title: "NexiNets - The refund has been initiated",
-          message:
-            "It can take up to 3 bank days before refunds are available on receivers account.",
+          title: this.$tc("nexinets-payment-component.notification.refund-title"),
+          message: this.$tc("nexinets-payment-component.notification.refund-message"),
         });
         this.closeRefundModal();
         this.reloadKey++;
@@ -142,38 +138,36 @@ Shopware.Component.override("sw-order-detail-details", {
       }
     },
 
-    handleFetchError(error) {
-      const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
-      this.hasFetchError = true;
-      this.variant = "danger";
-      console.error(
-        `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
-        error,
-      );
-      this.createNotificationError({
-        title: "NexiNets - Fetching Payment Details failed",
-        message: "See the logs for more information.",
-      });
-    },
-
-    handleActionError(error) {
-      console.error("index.js error:", error);
-      this.createNotificationError({
-        title: "NexiNets - Action failed",
-        message: "An error occurred while processing the action. Please check the logs.",
-      });
-    },
-
     async handleCancel() {
       this.isLoading = true;
       try {
         await this.nexiNetsPaymentActionsService.cancel(this.order.id);
         window.location.reload();
       } catch (error) {
-        console.error("index.js error:", error);
+        this.handleActionError(error);
       } finally {
         this.isLoading = false;
       }
+    },
+
+    handleActionError(error) {
+      console.error("index.js error:", error);
+      this.createNotificationError({
+        title: this.$tc("nexinets-payment-component.notification.action-error-title"),
+        message: this.$tc("nexinets-payment-component.notification.action-error-message"),
+      });
+    },
+
+    setPaymentStatusVariant() {
+      const status = this.paymentDetails.status;
+      const variantMapping = {
+        charged: "success",
+        partially_charged: "warning",
+        refunded: "warning",
+        partially_refunded: "warning",
+        cancelled: "danger",
+      };
+      this.variant = variantMapping[status] || "info";
     },
 
     setChargeAmount(amount) {
@@ -192,6 +186,10 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isRefundModalVisible = !this.isRefundModalVisible;
     },
 
+    toggleCancelModal() {
+      this.isCancelModalVisible = !this.isCancelModalVisible;
+    },
+
     closeChargeModal() {
       this.isChargeModalVisible = false;
     },
@@ -200,18 +198,14 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isRefundModalVisible = false;
     },
 
-    toggleCancelModal() {
-      this.isCancelModalVisible = !this.isCancelModalVisible;
-    },
-
     onClickMaxCharge() {
-      if (!this.toggleItemsList) {
+      if (!this.isItemsListVisible) {
         this.setChargeAmount(this.paymentDetails.remainingChargeAmount);
       }
     },
 
     onClickMaxRefund() {
-      if (!this.toggleItemsList) {
+      if (!this.isItemsListVisible) {
         this.setRefundAmount(this.paymentDetails.remainingRefundAmount);
       }
     },
