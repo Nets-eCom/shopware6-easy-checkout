@@ -13,7 +13,7 @@ Shopware.Component.override("sw-order-detail-details", {
       isChargeModalVisible: false,
       isRefundModalVisible: false,
       isCancelModalVisible: false,
-      variant: "info",
+      variant: "neutral",
       hasFetchError: false,
       isItemsListVisible: false,
       paymentDetails: {},
@@ -164,12 +164,13 @@ Shopware.Component.override("sw-order-detail-details", {
       const status = this.paymentDetails.status;
       const variantMapping = {
         charged: "success",
-        partially_charged: "warning",
-        refunded: "warning",
-        partially_refunded: "warning",
+        partially_charged: "success",
+        pending_refund: "warning",
+        refunded: "success",
+        partially_refunded: "success",
         cancelled: "danger",
       };
-      this.variant = variantMapping[status] || "info";
+      this.variant = variantMapping[status] || "neutral";
     },
 
     setChargeAmount(amount) {

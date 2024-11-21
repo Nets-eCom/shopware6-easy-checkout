@@ -261,8 +261,8 @@
             :text="$t('nexinets-payment-component.cancel.confirmation', { amount: paymentDetails.orderAmount, currency: order.currency.symbol })"
             :title="$t('nexinets-payment-component.cancel.title')"
             @confirm="handleCancel"
-            @cancel="toggleCancelModal"
-            @close="toggleCancelModal"
+            @cancel="closeCancelModal"
+            @close="closeCancelModal"
           />
         {% endblock %}
       </sw-card>

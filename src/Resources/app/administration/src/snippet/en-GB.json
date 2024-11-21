@@ -22,7 +22,7 @@
                 "partially_charged": "Partially Charged",
                 "refunded": "Refunded",
                 "partially_refunded": "Partially Refunded",
-                "pending_refund": "Pending Refund",
+                "pending_refund": "Refund Pending",
                 "cancelled": "Canceled",
                 "terminated": "Terminated"
             }
