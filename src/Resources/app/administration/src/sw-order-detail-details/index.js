@@ -142,6 +142,8 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isLoading = true;
       try {
         await this.nexiNetsPaymentActionsService.cancel(this.order.id);
+        await this.fetchPaymentDetails(this.orderId);
+        this.closeCancelModal();
         this.reloadKey++;
       } catch (error) {
         this.handleActionError(error);
@@ -196,6 +198,10 @@ Shopware.Component.override("sw-order-detail-details", {
 
     closeRefundModal() {
       this.isRefundModalVisible = false;
+    },
+
+    closeCancelModal() {
+      this.isCancelModalVisible = false;
     },
 
     onClickMaxCharge() {
