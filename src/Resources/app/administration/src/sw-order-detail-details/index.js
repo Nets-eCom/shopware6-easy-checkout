@@ -142,7 +142,7 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isLoading = true;
       try {
         await this.nexiNetsPaymentActionsService.cancel(this.order.id);
-        window.location.reload();
+        this.reloadKey++;
       } catch (error) {
         this.handleActionError(error);
       } finally {
