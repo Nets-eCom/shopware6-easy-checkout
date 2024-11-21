@@ -13,7 +13,7 @@ class PartialCharge extends Charge
      */
     public function __construct(
         protected readonly array $orderItems,
-        bool $finalCharge = true,
+        bool $finalCharge = false,
         ?Shipping $shipping = null,
         ?string $myReference = null,
         ?string $paymentMethodReference = null

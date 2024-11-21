@@ -66,7 +66,35 @@ class OrderCharge
 
     public function partialCharge(OrderEntity $order, ChargeData $chargeData): void
     {
-        // TODO: Implement
+        if ($this->configurationProvider->isAutoCharge($order->getSalesChannelId())) {
+            return;
+        }
+
+        $transactions = $order->getTransactions();
+
+        if (!$transactions instanceof OrderTransactionCollection) {
+            throw new \LogicException('No order transactions found');
+        }
+
+        /** @var OrderTransactionEntity $transaction */
+        foreach ($transactions as $transaction) {
+            $paymentId = $transaction->getCustomFieldsValue(
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+            );
+
+            if ($paymentId === null) {
+                continue;
+            }
+
+            $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
+            $payment = $this->fetcher->fetchPayment($order->getSalesChannelId(), $paymentId);
+
+            if ($payment->getStatus() !== PaymentStatusEnum::RESERVED) {
+                continue;
+            }
+
+            $paymentApi->charge($paymentId, $this->chargeRequest->buildPartialCharge($transaction, $chargeData));
+        }
     }
 
     private function createPaymentApi(string $salesChannelId): PaymentApi
