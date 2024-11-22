@@ -1,23 +1,25 @@
+const { Mixin } = Shopware;
 import template from "./sw-order-detail-details.html.twig";
 import "./style.scss";
 
 Shopware.Component.override("sw-order-detail-details", {
   template,
   inject: ["nexiNetsPaymentDetailService", "nexiNetsPaymentActionsService"],
-  mixins: [],
+  mixins: [Mixin.getByName("notification")],
   data() {
     return {
       isLoading: false,
       disabled: true,
-      isCaptureModalVisible: false,
+      isChargeModalVisible: false,
       isRefundModalVisible: false,
       isCancelModalVisible: false,
-      variant: "info",
+      variant: "neutral",
       hasFetchError: false,
-      toggleItemsList: false,
+      isItemsListVisible: false,
       paymentDetails: {},
       chargeAmount: 0,
       refundAmount: 0,
+      reloadKey: 0,
     };
   },
   created() {
@@ -52,7 +54,7 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     shouldDisplayButtonsSection() {
-      if (this.isNewPayment) {
+      if (this.isNewPayment || this.paymentDetails.status === "pending_refund") {
         return;
       }
       return (
@@ -72,24 +74,12 @@ Shopware.Component.override("sw-order-detail-details", {
   },
 
   watch: {
-    toggleItemsList() {
+    isItemsListVisible() {
       this.resetAmount();
     },
   },
 
   methods: {
-    setPaymentStatusVariant() {
-      const status = this.paymentDetails.status;
-      const variantMapping = {
-        charged: "success",
-        partially_charged: "warning",
-        refunded: "warning",
-        partially_refunded: "warning",
-        cancelled: "danger",
-      };
-      this.variant = variantMapping[status] || "info";
-    },
-
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
       try {
@@ -103,6 +93,10 @@ Shopware.Component.override("sw-order-detail-details", {
           `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
           error,
         );
+        this.createNotificationError({
+          title: this.$tc("nexinets-payment-component.notification.fetch-error-title"),
+          message: this.$tc("nexinets-payment-component.notification.fetch-error-message"),
+        });
       } finally {
         this.isLoading = false;
       }
@@ -112,9 +106,15 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isLoading = true;
       try {
         await this.nexiNetsPaymentActionsService.charge(this.order.id, this.chargeAmount);
-        window.location.reload();
+        await this.fetchPaymentDetails(this.orderId);
+        this.createNotificationSuccess({
+          title: this.$tc("nexinets-payment-component.notification.charge-title"),
+          message: this.$tc("nexinets-payment-component.notification.charge-message"),
+        });
+        this.closeChargeModal();
+        this.reloadKey++;
       } catch (error) {
-        console.error("index.js error:", error);
+        this.handleActionError(error);
       } finally {
         this.isLoading = false;
       }
@@ -124,9 +124,15 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isLoading = true;
       try {
         await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refundAmount);
-        window.location.reload();
+        await this.fetchPaymentDetails(this.orderId);
+        this.createNotificationSuccess({
+          title: this.$tc("nexinets-payment-component.notification.refund-title"),
+          message: this.$tc("nexinets-payment-component.notification.refund-message"),
+        });
+        this.closeRefundModal();
+        this.reloadKey++;
       } catch (error) {
-        console.error("index.js error:", error);
+        this.handleActionError(error);
       } finally {
         this.isLoading = false;
       }
@@ -136,12 +142,35 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isLoading = true;
       try {
         await this.nexiNetsPaymentActionsService.cancel(this.order.id);
-        window.location.reload();
+        await this.fetchPaymentDetails(this.orderId);
+        this.closeCancelModal();
+        this.reloadKey++;
       } catch (error) {
-        console.error("index.js error:", error);
+        this.handleActionError(error);
       } finally {
         this.isLoading = false;
       }
+    },
+
+    handleActionError(error) {
+      console.error("index.js error:", error);
+      this.createNotificationError({
+        title: this.$tc("nexinets-payment-component.notification.action-error-title"),
+        message: this.$tc("nexinets-payment-component.notification.action-error-message"),
+      });
+    },
+
+    setPaymentStatusVariant() {
+      const status = this.paymentDetails.status;
+      const variantMapping = {
+        charged: "success",
+        partially_charged: "success",
+        pending_refund: "warning",
+        refunded: "success",
+        partially_refunded: "success",
+        cancelled: "danger",
+      };
+      this.variant = variantMapping[status] || "neutral";
     },
 
     setChargeAmount(amount) {
@@ -152,8 +181,8 @@ Shopware.Component.override("sw-order-detail-details", {
       this.refundAmount = amount;
     },
 
-    toggleCaptureModal() {
-      this.isCaptureModalVisible = !this.isCaptureModalVisible;
+    toggleChargeModal() {
+      this.isChargeModalVisible = !this.isChargeModalVisible;
     },
 
     toggleRefundModal() {
@@ -164,14 +193,26 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isCancelModalVisible = !this.isCancelModalVisible;
     },
 
+    closeChargeModal() {
+      this.isChargeModalVisible = false;
+    },
+
+    closeRefundModal() {
+      this.isRefundModalVisible = false;
+    },
+
+    closeCancelModal() {
+      this.isCancelModalVisible = false;
+    },
+
     onClickMaxCharge() {
-      if (!this.toggleItemsList) {
+      if (!this.isItemsListVisible) {
         this.setChargeAmount(this.paymentDetails.remainingChargeAmount);
       }
     },
 
     onClickMaxRefund() {
-      if (!this.toggleItemsList) {
+      if (!this.isItemsListVisible) {
         this.setRefundAmount(this.paymentDetails.remainingRefundAmount);
       }
     },
