@@ -15,7 +15,6 @@
             "charged-amount": "Charged amount",
             "refunded-amount": "Refunded amount",
             "charged-help-text": "Charge amount is what you've already collected to your Nets account.",
-            "refunded-help-text": "",
             "status": {
                 "new": "New",
                 "reserved": "Reserved",
@@ -23,6 +22,7 @@
                 "partially_charged": "Partially Charged",
                 "refunded": "Refunded",
                 "partially_refunded": "Partially Refunded",
+                "pending_refund": "Refund Pending",
                 "cancelled": "Canceled",
                 "terminated": "Terminated"
             }
@@ -44,17 +44,26 @@
         },
         "cancel": {
             "button-title": "Cancel payment",
-            "confirmation": "You're about to cancel payment with amount of {currency} {amount}",
+            "button-action-title": "Cancel",
+            "confirmation": "You're about to cancel payment with amount of {currency}{amount}.",
             "title": "Cancel (NexiNets payment plugin)"
         },
         "itemsTable": {
-            "columns": {
-                "qty": "QTY",
-                "item": "Item",
-                "subtotal": "Subtotal",
-                "chargeQty": "Charge QTY",
-                "refundQty": "Refund QTY"
-            }
+            "qty": "QTY",
+            "item": "Item",
+            "subtotal": "Subtotal",
+            "chargeQty": "Charge QTY",
+            "refundQty": "Refund QTY"
+        },
+        "notification": {
+            "charge-title": "NexiNets - Capture has been initiated",
+            "charge-message": "You have successfully initiated a capture",
+            "refund-title": "NexiNets - The refund has been initiated",
+            "refund-message": "It can take up to 3 bank days before refunds are available on receivers account.",
+            "action-error-title": "NexiNets - Action failed",
+            "action-error-message": "An error occurred while processing the action. Please check the logs.",
+            "fetch-error-title": "NexiNets - Fetching Payment Details failed",
+            "fetch-error-message": "See the logs for more information."
         }
     }
 }
