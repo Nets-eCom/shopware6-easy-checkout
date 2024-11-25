@@ -117,6 +117,7 @@ class PaymentDetailController extends AbstractController
 
         return array_map(
             fn (array $requestItem) => [
+                'reference' => $requestItem['reference'],
                 'name' => $requestItem['name'],
                 'quantity' => $requestItem['quantity'],
                 'unitPrice' => $this->formatAmount($requestItem['unitPrice']),

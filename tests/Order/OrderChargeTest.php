@@ -13,10 +13,10 @@ use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\Order\OrderCharge;
 use NexiNets\RequestBuilder\ChargeRequest;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
 use NexiNets\Tests\CheckoutApi\Fixture\RetrievePaymentResultFixture;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
@@ -40,17 +40,25 @@ final class OrderChargeTest extends TestCase
             ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
             ->willReturn(RetrievePaymentResultFixture::reserved()->getPayment());
 
+        $fullCharge = new FullCharge(10000);
+        $chargeRequestBuilder = $this->createChargeRequestBuilderMock();
+        $chargeRequestBuilder->expects($this->once())
+            ->method('buildFullCharge')
+            ->with($this->isInstanceOf(OrderTransactionEntity::class))
+            ->willReturn($fullCharge);
+
         $paymentApi = $this->createMock(PaymentApi::class);
         $paymentApi->expects($this->once())
             ->method('charge')
-            ->with('025400006091b1ef6937598058c4e487', new FullCharge(10000))
+            ->with('025400006091b1ef6937598058c4e487', $fullCharge)
             ->willReturn(new ChargeResult('test_charge_id'));
 
         $sut = new OrderCharge(
             $fetcher,
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
-            $this->createChargeRequestBuilder(),
+            $chargeRequestBuilder,
+            $this->createStub(LoggerInterface::class),
         );
 
         $sut->fullCharge($this->createOrderEntity());
@@ -71,7 +79,8 @@ final class OrderChargeTest extends TestCase
             $this->createMock(PaymentFetcherInterface::class),
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
-            $this->createChargeRequestBuilder(),
+            $this->createChargeRequestBuilderMock(),
+            $this->createStub(LoggerInterface::class),
         );
 
         $sut->fullCharge($this->createOrderEntity());
@@ -98,7 +107,8 @@ final class OrderChargeTest extends TestCase
             $fetcher,
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
-            $this->createChargeRequestBuilder(),
+            $this->createChargeRequestBuilderMock(),
+            $this->createStub(LoggerInterface::class),
         );
 
         $sut->fullCharge($order);
@@ -125,7 +135,8 @@ final class OrderChargeTest extends TestCase
             $fetcher,
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
-            $this->createChargeRequestBuilder(),
+            $this->createChargeRequestBuilderMock(),
+            $this->createStub(LoggerInterface::class),
         );
 
         $sut->fullCharge($this->createOrderEntity());
@@ -172,8 +183,8 @@ final class OrderChargeTest extends TestCase
         return $paymentApiFactory;
     }
 
-    private function createChargeRequestBuilder(): ChargeRequest
+    private function createChargeRequestBuilderMock(): ChargeRequest|MockObject
     {
-        return new ChargeRequest(new FormatHelper());
+        return $this->createMock(ChargeRequest::class);
     }
 }

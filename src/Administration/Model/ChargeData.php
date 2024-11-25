@@ -6,16 +6,27 @@ namespace NexiNets\Administration\Model;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[Assert\Cascade]
 class ChargeData
 {
     /**
-     * @param array<Item> $items
+     * @var Item[]
+     */
+    #[Assert\All([new Assert\Type(Item::class)])]
+    private readonly array $items;
+
+    /**
+     * @param array{'reference': string, 'quantity': int|string, 'amount': float|string}[] $items
      */
     public function __construct(
         #[Assert\GreaterThanOrEqual(0.01)]
         private readonly float $amount,
-        private readonly array $items = []
+        array $items = []
     ) {
+        $this->items = array_map(
+            fn ($item) => new Item($item['reference'], (int) $item['quantity'], (float) $item['amount']),
+            $items
+        );
     }
 
     public function getAmount(): float

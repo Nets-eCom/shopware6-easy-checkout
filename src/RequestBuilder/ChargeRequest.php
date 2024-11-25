@@ -32,13 +32,13 @@ class ChargeRequest
     public function buildPartialCharge(OrderTransactionEntity $transaction, ChargeData $chargeData): PartialCharge
     {
         if ($chargeData->getItems() === []) {
-            return new PartialCharge([
-                $this->itemsBuilder->createUnrelatedPartialChargeItem(
+            return new PartialCharge(
+                [$this->itemsBuilder->createUnrelatedPartialChargeItem(
                     $transaction,
                     $chargeData->getAmount()
-                ),
-                false,
-            ]);
+                )],
+                false
+            );
         }
 
         $orderArray = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER);
