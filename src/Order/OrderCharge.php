@@ -13,6 +13,7 @@ use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\RequestBuilder\ChargeRequest;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
@@ -23,7 +24,8 @@ class OrderCharge
         private readonly PaymentFetcherInterface $fetcher,
         private readonly PaymentApiFactory $apiFactory,
         private readonly ConfigurationProvider $configurationProvider,
-        private readonly ChargeRequest $chargeRequest
+        private readonly ChargeRequest $chargeRequest,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -57,10 +59,34 @@ class OrderCharge
             $payment = $this->fetcher->fetchPayment($order->getSalesChannelId(), $paymentId);
 
             if ($payment->getStatus() !== PaymentStatusEnum::RESERVED) {
+                $this->logger->info('Payment in incorrect status for full charge', [
+                    'paymentId' => $paymentId,
+                    'status' => $payment->getStatus()->value,
+                ]);
                 continue;
             }
 
-            $paymentApi->charge($paymentId, $this->chargeRequest->buildFullCharge($transaction));
+            $payload = $this->chargeRequest->buildFullCharge($transaction);
+            $this->logger->info('Full charge request', [
+                'paymentId' => $paymentId,
+                'payload' => $payload,
+            ]);
+
+            try {
+                $response = $paymentApi->charge($paymentId, $payload);
+
+                $this->logger->info('Full charge success', [
+                    'paymentId' => $paymentId,
+                    'chargeId' => $response->getChargeId(),
+                ]);
+            } catch (PaymentApiException $e) {
+                $this->logger->error('Full charge failed', [
+                    'paymentId' => $paymentId,
+                    'error' => $e->getMessage(),
+                ]);
+
+                throw $e;
+            }
         }
     }
 
@@ -86,14 +112,42 @@ class OrderCharge
                 continue;
             }
 
+            // need to assign order because there is no addAssociation from OrderTransactionEntity to OrderEntity in query
+            // only association is from OrderEntity to OrderTransactionEntity
+            $transaction->setOrder($order);
+
             $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
             $payment = $this->fetcher->fetchPayment($order->getSalesChannelId(), $paymentId);
 
-            if ($payment->getStatus() !== PaymentStatusEnum::RESERVED) {
+            if (!\in_array($payment->getStatus(), [PaymentStatusEnum::RESERVED, PaymentStatusEnum::PARTIALLY_CHARGED], true)) {
+                $this->logger->info('Payment in incorrect status for partial charge', [
+                    'paymentId' => $paymentId,
+                    'status' => $payment->getStatus()->value,
+                ]);
                 continue;
             }
 
-            $paymentApi->charge($paymentId, $this->chargeRequest->buildPartialCharge($transaction, $chargeData));
+            $payload = $this->chargeRequest->buildPartialCharge($transaction, $chargeData);
+            $this->logger->info('Partial charge request', [
+                'paymentId' => $paymentId,
+                'payload' => $payload,
+            ]);
+
+            try {
+                $response = $paymentApi->charge($paymentId, $payload);
+
+                $this->logger->info('Partial charge success', [
+                    'paymentId' => $paymentId,
+                    'chargeId' => $response->getChargeId(),
+                ]);
+            } catch (PaymentApiException $e) {
+                $this->logger->error('Partial charge failed', [
+                    'paymentId' => $paymentId,
+                    'error' => $e->getMessage(),
+                ]);
+
+                throw $e;
+            }
         }
     }
 

@@ -6,12 +6,17 @@ namespace NexiNets\RequestBuilder\PaymentRequest;
 
 use NexiNets\Administration\Model\ChargeData;
 use NexiNets\CheckoutApi\Model\Request\Item;
+use NexiNets\CheckoutApi\Model\Request\Payment\Order;
 use NexiNets\RequestBuilder\Helper\FormatHelper;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
 
+/**
+ * @phpstan-import-type RequestOrderSerialized from Order
+ * @phpstan-import-type RequestItemSerialized from Item
+ */
 class ItemsBuilder
 {
     public function __construct(
@@ -52,6 +57,8 @@ class ItemsBuilder
     }
 
     /**
+     * @param RequestOrderSerialized $orderArray
+     *
      * @return Item[]
      */
     public function createForCharge(ChargeData $chargeData, array $orderArray): array
@@ -59,18 +66,8 @@ class ItemsBuilder
         $chargeItems = $chargeData->getItems();
         $returnItems = [];
 
-        $array_find_item = function (array $order, string $reference) {
-            foreach ($order['items'] as $item) {
-                if ($item['reference'] === $reference) {
-                    return $item;
-                }
-            }
-        };
-
         foreach ($chargeItems as $chargeItem) {
-            $item = $array_find_item($orderArray, $chargeItem->getReference());
-
-            // @todo check if not empty
+            $item = $this->findItemByReference($orderArray, $chargeItem->getReference());
 
             $grossTotalAmount = $this->priceToInt($chargeItem->getAmount());
             $netTotalAmount = $item['unitPrice'] * $chargeItem->getQuantity();
@@ -92,9 +89,6 @@ class ItemsBuilder
         return $returnItems;
     }
 
-    /**
-     * @return Item[]
-     */
     public function createUnrelatedPartialChargeItem(OrderTransactionEntity $transaction, float $amount): Item
     {
         $chargeAmount = $this->priceToInt($amount);
@@ -148,5 +142,21 @@ class ItemsBuilder
     private function sanitize(string $label): string
     {
         return $this->helper->sanitizeString($label);
+    }
+
+    /**
+     * @param RequestOrderSerialized $order
+     *
+     * @return RequestItemSerialized
+     */
+    private function findItemByReference(array $order, string $reference): array
+    {
+        foreach ($order['items'] as $item) {
+            if ($item['reference'] === $reference) {
+                return $item;
+            }
+        }
+
+        throw new \LogicException('Item not found');
     }
 }

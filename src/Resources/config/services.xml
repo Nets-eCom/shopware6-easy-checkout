@@ -57,6 +57,7 @@
 
         <service id="NexiNets\RequestBuilder\ChargeRequest">
             <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
+            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder"/>
         </service>
 
         <service id="NexiNets\RequestBuilder\RefundRequest">
@@ -93,6 +94,7 @@
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
             <argument type="service" id="NexiNets\RequestBuilder\ChargeRequest"/>
+            <argument type="service" id="monolog.logger.nexinets_channel"/>
         </service>
 
         <service id="NexiNets\Order\OrderRefund">

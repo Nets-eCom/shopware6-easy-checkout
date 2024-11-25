@@ -67,7 +67,6 @@ class OrderActionController extends AbstractController
             throw OrderException::orderNotFound($orderId);
         }
 
-
         try {
             $this->processCharge($order, $chargeData);
         } catch (PaymentApiException) {
