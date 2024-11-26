@@ -204,9 +204,11 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     calculateChargeAmount() {
-      this.setChargeAmount(this.charge.items.reduce((total, item) => {
+      const total = this.charge.items.reduce((total, item) => {
         return total + item.amount;
-      }, 0.0).toFixed(2));
+      }, 0.0);
+
+      this.setChargeAmount(parseFloat(total.toFixed(2)));
     },
 
     setRefundAmount(amount) {
@@ -250,8 +252,7 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     resetAmount() {
-      this.charge.amount = 0.00;
-      this.charge.items = [];
+      this.charge = { amount: 0.00, items: [] };
       this.refund = { amount: 0.00, items: [] };
     },
   },

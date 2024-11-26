@@ -57,7 +57,11 @@
 
         <service id="NexiNets\RequestBuilder\ChargeRequest">
             <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
-            <argument type="service" id="NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder"/>
+            <argument type="service" id="NexiNets\RequestBuilder\ChargeRequest\ItemsBuilder"/>
+        </service>
+
+        <service id="NexiNets\RequestBuilder\ChargeRequest\ItemsBuilder">
+            <argument type="service" id="NexiNets\RequestBuilder\Helper\FormatHelper"/>
         </service>
 
         <service id="NexiNets\RequestBuilder\RefundRequest">
