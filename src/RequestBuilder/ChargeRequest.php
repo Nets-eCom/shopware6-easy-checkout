@@ -8,8 +8,8 @@ use NexiNets\Administration\Model\ChargeData;
 use NexiNets\CheckoutApi\Model\Request\FullCharge;
 use NexiNets\CheckoutApi\Model\Request\PartialCharge;
 use NexiNets\Dictionary\OrderTransactionDictionary;
+use NexiNets\RequestBuilder\ChargeRequest\ItemsBuilder;
 use NexiNets\RequestBuilder\Helper\FormatHelper;
-use NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 
 class ChargeRequest
@@ -33,10 +33,10 @@ class ChargeRequest
     {
         if ($chargeData->getItems() === []) {
             return new PartialCharge(
-                [$this->itemsBuilder->createUnrelatedPartialChargeItem(
+                $this->itemsBuilder->createUnrelatedPartialChargeItem(
                     $transaction,
                     $chargeData->getAmount()
-                )],
+                ),
                 false
             );
         }

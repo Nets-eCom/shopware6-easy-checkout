@@ -58,7 +58,7 @@ class OrderActionController extends AbstractController
     ): Response {
         $order = $this->orderRepository->search(
             (new Criteria([$orderId]))
-                ->addAssociation('transactions')
+                ->addAssociation('transactions.order')
                 ->addAssociation('stateMachineState'),
             $context
         )->get($orderId);

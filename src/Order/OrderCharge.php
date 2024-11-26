@@ -35,7 +35,8 @@ class OrderCharge
      */
     public function fullCharge(OrderEntity $order): void
     {
-        if ($this->configurationProvider->isAutoCharge($order->getSalesChannelId())) {
+        $salesChannelId = $order->getSalesChannelId();
+        if ($this->configurationProvider->isAutoCharge($salesChannelId)) {
             return;
         }
 
@@ -55,13 +56,13 @@ class OrderCharge
                 continue;
             }
 
-            $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
-            $payment = $this->fetcher->fetchPayment($order->getSalesChannelId(), $paymentId);
+            $payment = $this->fetcher->fetchPayment($salesChannelId, $paymentId);
 
-            if ($payment->getStatus() !== PaymentStatusEnum::RESERVED) {
+            $paymentStatus = $payment->getStatus();
+            if ($paymentStatus !== PaymentStatusEnum::RESERVED) {
                 $this->logger->info('Payment in incorrect status for full charge', [
                     'paymentId' => $paymentId,
-                    'status' => $payment->getStatus()->value,
+                    'status' => $paymentStatus->value,
                 ]);
                 continue;
             }
@@ -73,12 +74,8 @@ class OrderCharge
             ]);
 
             try {
+                $paymentApi = $this->createPaymentApi($salesChannelId);
                 $response = $paymentApi->charge($paymentId, $payload);
-
-                $this->logger->info('Full charge success', [
-                    'paymentId' => $paymentId,
-                    'chargeId' => $response->getChargeId(),
-                ]);
             } catch (PaymentApiException $e) {
                 $this->logger->error('Full charge failed', [
                     'paymentId' => $paymentId,
@@ -87,12 +84,18 @@ class OrderCharge
 
                 throw $e;
             }
+
+            $this->logger->info('Full charge success', [
+                'paymentId' => $paymentId,
+                'chargeId' => $response->getChargeId(),
+            ]);
         }
     }
 
     public function partialCharge(OrderEntity $order, ChargeData $chargeData): void
     {
-        if ($this->configurationProvider->isAutoCharge($order->getSalesChannelId())) {
+        $salesChannelId = $order->getSalesChannelId();
+        if ($this->configurationProvider->isAutoCharge($salesChannelId)) {
             return;
         }
 
@@ -112,17 +115,13 @@ class OrderCharge
                 continue;
             }
 
-            // need to assign order because there is no addAssociation from OrderTransactionEntity to OrderEntity in query
-            // only association is from OrderEntity to OrderTransactionEntity
-            $transaction->setOrder($order);
+            $payment = $this->fetcher->fetchPayment($salesChannelId, $paymentId);
 
-            $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
-            $payment = $this->fetcher->fetchPayment($order->getSalesChannelId(), $paymentId);
-
-            if (!\in_array($payment->getStatus(), [PaymentStatusEnum::RESERVED, PaymentStatusEnum::PARTIALLY_CHARGED], true)) {
+            $paymentStatus = $payment->getStatus();
+            if (!\in_array($paymentStatus, [PaymentStatusEnum::RESERVED, PaymentStatusEnum::PARTIALLY_CHARGED], true)) {
                 $this->logger->info('Payment in incorrect status for partial charge', [
                     'paymentId' => $paymentId,
-                    'status' => $payment->getStatus()->value,
+                    'status' => $paymentStatus->value,
                 ]);
                 continue;
             }
@@ -134,12 +133,8 @@ class OrderCharge
             ]);
 
             try {
+                $paymentApi = $this->createPaymentApi($salesChannelId);
                 $response = $paymentApi->charge($paymentId, $payload);
-
-                $this->logger->info('Partial charge success', [
-                    'paymentId' => $paymentId,
-                    'chargeId' => $response->getChargeId(),
-                ]);
             } catch (PaymentApiException $e) {
                 $this->logger->error('Partial charge failed', [
                     'paymentId' => $paymentId,
@@ -148,6 +143,11 @@ class OrderCharge
 
                 throw $e;
             }
+
+            $this->logger->info('Partial charge success', [
+                'paymentId' => $paymentId,
+                'chargeId' => $response->getChargeId(),
+            ]);
         }
     }
 
