@@ -58,7 +58,7 @@ class OrderActionController extends AbstractController
     ): Response {
         $order = $this->orderRepository->search(
             (new Criteria([$orderId]))
-                ->addAssociation('transactions')
+                ->addAssociation('transactions.order')
                 ->addAssociation('stateMachineState'),
             $context
         )->get($orderId);
@@ -66,7 +66,6 @@ class OrderActionController extends AbstractController
         if (!$order instanceof OrderEntity) {
             throw OrderException::orderNotFound($orderId);
         }
-
 
         try {
             $this->processCharge($order, $chargeData);

@@ -6,6 +6,16 @@ namespace NexiNets\CheckoutApi\Model\Request\Payment;
 
 use NexiNets\CheckoutApi\Model\Request\Item;
 
+/**
+ * @phpstan-import-type RequestItemSerialized from Item
+ *
+ * @phpstan-type RequestOrderSerialized array{
+ *     items: list<RequestItemSerialized>,
+ *     currency: string,
+ *     amount: int,
+ *     reference: ?string,
+ * }
+ */
 final class Order implements \JsonSerializable
 {
     /**

@@ -74,6 +74,34 @@ class RetrievePaymentResultFixture
         );
     }
 
+    public static function partiallyCharged(): RetrievePaymentResult
+    {
+        return new RetrievePaymentResult(
+            new Payment(
+                '025400006091b1ef6937598058c4e487',
+                new OrderDetails(100, 'EUR'),
+                new Checkout('https://example.com/checkout', null),
+                new \DateTimeImmutable(),
+                new Consumer(
+                    new Address(null, null, null, null, null),
+                    new Address(null, null, null, null, null),
+                    new PrivatePerson(null, null, null, null, null, null),
+                    new Company(null, null, null, null),
+                ),
+                null,
+                self::createSummary(
+                    100,
+                    15,
+                    0,
+                    0
+                ),
+                null,
+                null,
+                [new Charge('test_charge_id', 15, new \DateTimeImmutable(), [])]
+            )
+        );
+    }
+
     public static function fullyRefunded(): RetrievePaymentResult
     {
         return new RetrievePaymentResult(
