@@ -22,12 +22,13 @@ class NexiNetsCheckoutApiPaymentService extends ApiService {
       });
   }
 
-  refund(orderId, refundAmount) {
+  refund(orderId, { amount, items }) {
     return this.httpClient
       .put(
         `order/${orderId}/nexinets-payment-refund`,
         {
-          amount: refundAmount,
+          amount,
+          items
         },
         {
           headers: this.getBasicHeaders(),

@@ -20,6 +20,7 @@ Shopware.Component.override("sw-order-detail-details", {
       chargeAmount: 0,
       refundAmount: 0,
       reloadKey: 0,
+      refund: { amount: 0.00, items: [] }
     };
   },
   created() {
@@ -123,7 +124,7 @@ Shopware.Component.override("sw-order-detail-details", {
     async handleRefund() {
       this.isLoading = true;
       try {
-        await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refundAmount);
+        await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refund);
         await this.fetchPaymentDetails(this.orderId);
         this.createNotificationSuccess({
           title: this.$tc("nexinets-payment-component.notification.refund-title"),
@@ -160,6 +161,36 @@ Shopware.Component.override("sw-order-detail-details", {
       });
     },
 
+    updateRefundItem({ reference, grossTotalAmount, quantity, chargeId }, quantityToRefund) {
+      const index = this.refund.items.findIndex(existing => existing.reference === reference);
+      const amount = (grossTotalAmount / quantity) * quantityToRefund;
+
+      if (index === -1) {
+        this.refund.items.push({ reference, quantity: quantityToRefund, amount, chargeId });
+        this.calculateRefundAmount();
+
+        return;
+      }
+
+      if (quantityToRefund === null || quantityToRefund === 0) {
+        this.refund.items.splice(index, 1);
+        this.calculateRefundAmount();
+
+        return;
+      }
+
+      this.refund.items[index] = { reference, quantity: quantityToRefund, amount, chargeId };
+      this.calculateRefundAmount();
+    },
+
+    calculateRefundAmount() {
+      const total = this.refund.items.reduce((total, item) => {
+        return total + item.amount;
+      }, 0.0);
+
+      this.setRefundAmount(parseFloat(total.toFixed(2)));
+    },
+
     setPaymentStatusVariant() {
       const status = this.paymentDetails.status;
       const variantMapping = {
@@ -178,7 +209,7 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     setRefundAmount(amount) {
-      this.refundAmount = amount;
+      this.refund.amount = amount;
     },
 
     toggleChargeModal() {
@@ -219,7 +250,7 @@ Shopware.Component.override("sw-order-detail-details", {
 
     resetAmount() {
       this.chargeAmount = 0;
-      this.refundAmount = 0;
+      this.refund = { amount: 0.00, items: [] };
     },
   },
 });

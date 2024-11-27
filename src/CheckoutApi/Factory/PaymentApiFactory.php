@@ -9,9 +9,13 @@ use NexiNets\CheckoutApi\Factory\Provider\HttpClientConfigurationProviderInterfa
 
 class PaymentApiFactory
 {
-    private const LIVE_URL = 'https://api.dibspayment.eu';
+    //    private const LIVE_URL = 'https://api.dibspayment.eu';
+    //
+    //    private const TEST_URL = 'https://test.api.dibspayment.eu';
 
-    private const TEST_URL = 'https://test.api.dibspayment.eu';
+    private const LIVE_URL = 'https://api.pp.easy.netsdev.eu';
+
+    private const TEST_URL = 'https://api-test.pp.easy.netsdev.eu';
 
     public function __construct(
         private readonly HttpClientFactory $clientFactory,
