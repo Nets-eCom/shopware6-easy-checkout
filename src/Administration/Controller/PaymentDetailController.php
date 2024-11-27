@@ -155,6 +155,7 @@ class PaymentDetailController extends AbstractController
 
         return array_map(
             fn (array $requestItem) => [
+                'reference' => $requestItem['reference'],
                 'name' => $requestItem['name'],
                 'reference' => $requestItem['reference'],
                 'quantity' => $requestItem['quantity'],

@@ -87,7 +87,6 @@ final readonly class Item implements \JsonSerializable
             'quantity' => $this->quantity,
             'unit' => $this->unit,
             'unitPrice' => $this->unitPrice,
-            'taxRate' => $this->taxRate,
             'grossTotalAmount' => $this->grossTotalAmount,
             'netTotalAmount' => $this->netTotalAmount,
             'reference' => $this->reference,

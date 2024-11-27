@@ -11,7 +11,7 @@
             <p class="nexinets-details__status-text">
               {{ $tc('nexinets-payment-component.payment-details.status-label') }}
             </p>
-            <sw-label :variant="variant" size="default" appearance="pill" class="nexinets-details__status-label">
+            <sw-label :variant="statusVariant" size="default" appearance="pill" class="nexinets-details__status-label">
               {{ $tc(statusTcString) }}
             </sw-label>
           </div>
@@ -134,7 +134,7 @@
                 <sw-number-field
                   class="nexinets-modal__input"
                   :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
-                  v-model:value="chargeAmount"
+                  v-model:value="charge.amount"
                   :min="0"
                   :max="paymentDetails.remainingChargeAmount"
                   numberType="float"
@@ -170,7 +170,11 @@
                     {{ order.currency.symbol + item.grossTotalAmount }}
                   </sw-grid-column>
                   <sw-grid-column flex="minmax(100px, 2.5fr)" :label="$tc('nexinets-payment-component.itemsTable.chargeQty')" class="nexinets-modal__qty-col">
-                    <sw-select-field placeholder="0" class="nexinets-modal__qty-select">
+                    <sw-select-field
+                      placeholder="0"
+                      class="nexinets-modal__qty-select"
+                      @update:value="$quantity => updateChargeItem(item, $quantity)"
+                    >
                       <option v-for="n in (parseInt(item.quantity) - parseInt(item.qtyCharged))" :key="n" :value="n">{{ n }}</option>
                     </sw-select-field>
                   </sw-grid-column>

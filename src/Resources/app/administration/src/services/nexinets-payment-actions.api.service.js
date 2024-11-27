@@ -6,13 +6,11 @@ class NexiNetsCheckoutApiPaymentService extends ApiService {
     this.name = "nexiNetsPaymentActionsService";
   }
 
-  charge(orderId, chargeAmount) {
+  charge(orderId, { amount, items }) {
     return this.httpClient
       .put(
         `order/${orderId}/nexinets-payment-charge`,
-        {
-          amount: chargeAmount,
-        },
+        { amount, items },
         {
           headers: this.getBasicHeaders(),
         },
