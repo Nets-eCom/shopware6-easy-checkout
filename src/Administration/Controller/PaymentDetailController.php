@@ -93,7 +93,44 @@ class PaymentDetailController extends AbstractController
             'remainingRefundAmount' => $this->formatAmount($remainingRefundAmount),
             'status' => $status->value,
             'orderItems' => $this->buildItems($payment, $transaction),
+            'charges' => $this->buildChargedItems($payment)
         ]);
+    }
+
+    private function buildChargedItems(Payment $payment): array
+    {
+        $charges = $payment->getCharges();
+
+        if ($charges === null) {
+            return [];
+        }
+
+        $chargedItems = [];
+
+        foreach($charges as $charge) {
+            foreach ($charge->getOrderItems() as $chargedItem) {
+                $chargedItems[] = [
+                    'chargeId' => $charge->getChargeId(),
+                    'name' => $chargedItem->getName(),
+                    'reference' => $chargedItem->getReference(),
+                    'quantity' => $chargedItem->getQuantity(),
+                    'qtyRefunded' => 0, // @TODO calculate
+//                    'qtyRefunded' => array_reduce(
+//                        $payment->getRefunds() ?? [],
+//                        fn (int $refundQty, Refund $refund) => $refundQty + array_reduce(
+//                                $refund->getOrderItems(),
+//                                fn (int $requestItemQty, Item $refundedItem) => $requestItemQty + ($refundedItem->getReference() === $chargedItem->getReference() ? $refundedItem->getQuantity() : 0),
+//                                0
+//                            ),
+//                        0
+//                    ),
+                    'unitPrice' => $this->formatAmount($chargedItem->getUnitPrice()),
+                    'grossTotalAmount' => $this->formatAmount($chargedItem->getGrossTotalAmount()),
+                ];
+            }
+        }
+
+        return $chargedItems;
     }
 
     private function formatAmount(int $amount): string
@@ -104,6 +141,7 @@ class PaymentDetailController extends AbstractController
     /**
      * @return list<array{
      *      name: string,
+     *      reference: string,
      *      quantity: int,
      *      unitPrice: string,
      *      grossTotalAmount: string,
@@ -118,6 +156,7 @@ class PaymentDetailController extends AbstractController
         return array_map(
             fn (array $requestItem) => [
                 'name' => $requestItem['name'],
+                'reference' => $requestItem['reference'],
                 'quantity' => $requestItem['quantity'],
                 'unitPrice' => $this->formatAmount($requestItem['unitPrice']),
                 'grossTotalAmount' => $this->formatAmount($requestItem['grossTotalAmount']),

@@ -25,6 +25,7 @@ class PartialRefundCharge extends RefundCharge
         return array_reduce(
             $this->orderItems,
             fn (int $carry, Item $item): int => $carry + $item->getGrossTotalAmount(),
+            0
         );
     }
 

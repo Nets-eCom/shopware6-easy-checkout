@@ -101,6 +101,7 @@
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
             <argument type="service" id="NexiNets\RequestBuilder\RefundRequest"/>
             <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
+            <argument type="service" id="monolog.logger.nexinets_channel"/>
         </service>
 
         <service id="NexiNets\Order\OrderCancel">
@@ -192,6 +193,10 @@
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
+        </service>
+
+        <service id="NexiNets\Administration\Serializer\RefundDataDenormalizer">
+            <tag name="serializer.normalizer"/>
         </service>
     </services>
 </container>
