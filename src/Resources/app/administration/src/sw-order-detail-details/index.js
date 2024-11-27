@@ -16,8 +16,8 @@ Shopware.Component.override("sw-order-detail-details", {
       hasFetchError: false,
       isItemsListVisible: false,
       paymentDetails: {},
-      charge: { amount: 0.00, items: [] },
-      refund: { amount: 0.00, items: [] },
+      charge: { amount: 0.0, items: [] },
+      refund: { amount: 0.0, items: [] },
       reloadKey: 0,
     };
   },
@@ -182,7 +182,7 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     updateChargeItem({ reference, grossTotalAmount, quantity }, quantityToCharge) {
-      const index = this.charge.items.findIndex(existing => existing.reference === reference);
+      const index = this.charge.items.findIndex((existing) => existing.reference === reference);
       const amount = (grossTotalAmount / quantity) * quantityToCharge;
 
       if (index === -1) {
@@ -217,14 +217,17 @@ Shopware.Component.override("sw-order-detail-details", {
 
     toggleChargeModal() {
       this.isChargeModalVisible = !this.isChargeModalVisible;
+      this.resetAmount();
     },
 
     toggleRefundModal() {
       this.isRefundModalVisible = !this.isRefundModalVisible;
+      this.resetAmount();
     },
 
     toggleCancelModal() {
       this.isCancelModalVisible = !this.isCancelModalVisible;
+      this.resetAmount();
     },
 
     closeChargeModal() {
@@ -252,8 +255,8 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     resetAmount() {
-      this.charge = { amount: 0.00, items: [] };
-      this.refund = { amount: 0.00, items: [] };
+      this.charge = { amount: 0.0, items: [] };
+      this.refund = { amount: 0.0, items: [] };
     },
   },
 });
