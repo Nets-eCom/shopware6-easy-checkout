@@ -13,12 +13,11 @@ Shopware.Component.override("sw-order-detail-details", {
       isChargeModalVisible: false,
       isRefundModalVisible: false,
       isCancelModalVisible: false,
-      variant: "neutral",
       hasFetchError: false,
       isItemsListVisible: false,
       paymentDetails: {},
-      chargeAmount: 0,
-      refundAmount: 0,
+      charge: { amount: 0.00, items: [] },
+      refund: { amount: 0.00, items: [] },
       reloadKey: 0,
     };
   },
@@ -71,6 +70,24 @@ Shopware.Component.override("sw-order-detail-details", {
 
       return `nexinets-payment-component.payment-details.status.${status}`;
     },
+
+    statusVariant() {
+      if (this.hasFetchError) {
+        return "danger";
+      }
+
+      const status = this.paymentDetails.status;
+      const variantMapping = {
+        charged: "success",
+        partially_charged: "success",
+        pending_refund: "warning",
+        refunded: "success",
+        partially_refunded: "success",
+        cancelled: "danger",
+      };
+
+      return variantMapping[status] || "neutral";
+    },
   },
 
   watch: {
@@ -84,11 +101,9 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isLoading = true;
       try {
         this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
-        this.setPaymentStatusVariant();
       } catch (error) {
         const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
         this.hasFetchError = true;
-        this.variant = "danger";
         console.error(
           `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
           error,
@@ -105,14 +120,13 @@ Shopware.Component.override("sw-order-detail-details", {
     async handleCharge() {
       this.isLoading = true;
       try {
-        await this.nexiNetsPaymentActionsService.charge(this.order.id, this.chargeAmount);
-        await this.fetchPaymentDetails(this.orderId);
+        await this.nexiNetsPaymentActionsService.charge(this.order.id, this.charge);
         this.createNotificationSuccess({
           title: this.$tc("nexinets-payment-component.notification.charge-title"),
           message: this.$tc("nexinets-payment-component.notification.charge-message"),
         });
         this.closeChargeModal();
-        this.reloadKey++;
+        await this.reloadComponent();
       } catch (error) {
         this.handleActionError(error);
       } finally {
@@ -123,14 +137,13 @@ Shopware.Component.override("sw-order-detail-details", {
     async handleRefund() {
       this.isLoading = true;
       try {
-        await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refundAmount);
-        await this.fetchPaymentDetails(this.orderId);
+        await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refund);
         this.createNotificationSuccess({
           title: this.$tc("nexinets-payment-component.notification.refund-title"),
           message: this.$tc("nexinets-payment-component.notification.refund-message"),
         });
         this.closeRefundModal();
-        this.reloadKey++;
+        await this.reloadComponent();
       } catch (error) {
         this.handleActionError(error);
       } finally {
@@ -142,14 +155,18 @@ Shopware.Component.override("sw-order-detail-details", {
       this.isLoading = true;
       try {
         await this.nexiNetsPaymentActionsService.cancel(this.order.id);
-        await this.fetchPaymentDetails(this.orderId);
         this.closeCancelModal();
-        this.reloadKey++;
+        await this.reloadComponent();
       } catch (error) {
         this.handleActionError(error);
       } finally {
         this.isLoading = false;
       }
+    },
+
+    async reloadComponent() {
+      await this.fetchPaymentDetails(this.orderId);
+      this.reloadKey++;
     },
 
     handleActionError(error) {
@@ -160,25 +177,42 @@ Shopware.Component.override("sw-order-detail-details", {
       });
     },
 
-    setPaymentStatusVariant() {
-      const status = this.paymentDetails.status;
-      const variantMapping = {
-        charged: "success",
-        partially_charged: "success",
-        pending_refund: "warning",
-        refunded: "success",
-        partially_refunded: "success",
-        cancelled: "danger",
-      };
-      this.variant = variantMapping[status] || "neutral";
+    setChargeAmount(amount) {
+      this.charge.amount = amount;
     },
 
-    setChargeAmount(amount) {
-      this.chargeAmount = amount;
+    updateChargeItem({ reference, grossTotalAmount, quantity }, quantityToCharge) {
+      const index = this.charge.items.findIndex(existing => existing.reference === reference);
+      const amount = (grossTotalAmount / quantity) * quantityToCharge;
+
+      if (index === -1) {
+        this.charge.items.push({ reference, quantity: quantityToCharge, amount });
+        this.calculateChargeAmount();
+
+        return;
+      }
+
+      if (quantityToCharge === null || quantityToCharge === 0) {
+        this.charge.items.splice(index, 1);
+        this.calculateChargeAmount();
+
+        return;
+      }
+
+      this.charge.items[index] = { reference, quantity: quantityToCharge, amount };
+      this.calculateChargeAmount();
+    },
+
+    calculateChargeAmount() {
+      const total = this.charge.items.reduce((total, item) => {
+        return total + item.amount;
+      }, 0.0);
+
+      this.setChargeAmount(parseFloat(total.toFixed(2)));
     },
 
     setRefundAmount(amount) {
-      this.refundAmount = amount;
+      this.refund.amount = amount;
     },
 
     toggleChargeModal() {
@@ -218,8 +252,8 @@ Shopware.Component.override("sw-order-detail-details", {
     },
 
     resetAmount() {
-      this.chargeAmount = 0;
-      this.refundAmount = 0;
+      this.charge = { amount: 0.00, items: [] };
+      this.refund = { amount: 0.00, items: [] };
     },
   },
 });
