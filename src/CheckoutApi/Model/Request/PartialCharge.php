@@ -9,11 +9,11 @@ use NexiNets\CheckoutApi\Model\Request\Charge\Shipping;
 class PartialCharge extends Charge
 {
     /**
-     * @param array<Item> $orderItems
+     * @param Item[] $orderItems
      */
     public function __construct(
         protected readonly array $orderItems,
-        bool $finalCharge = true,
+        bool $finalCharge = false,
         ?Shipping $shipping = null,
         ?string $myReference = null,
         ?string $paymentMethodReference = null
@@ -30,13 +30,14 @@ class PartialCharge extends Charge
         return array_reduce(
             $this->orderItems,
             fn (int $carry, Item $item): int => $carry + $item->getGrossTotalAmount(),
+            0
         );
     }
 
     /**
      * @return array{
      *     amount: int,
-     *     orderItems: array<Item>,
+     *     orderItems: Item[],
      *     shipping: ?Shipping,
      *     myReference: ?string,
      *     paymentMethodReference: ?string
