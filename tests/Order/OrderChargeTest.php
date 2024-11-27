@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace NexiNets\Tests\Order;
 
+use NexiNets\Administration\Model\ChargeData;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Request\FullCharge;
+use NexiNets\CheckoutApi\Model\Request\Item;
+use NexiNets\CheckoutApi\Model\Request\PartialCharge;
 use NexiNets\CheckoutApi\Model\Result\ChargeResult;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
@@ -140,6 +143,45 @@ final class OrderChargeTest extends TestCase
         );
 
         $sut->fullCharge($this->createOrderEntity());
+    }
+
+    public function testItPariallyCharges(): void
+    {
+        $configurationProvider = $this->createConfigurationProviderMock();
+        $configurationProvider
+            ->method('isAutoCharge')
+            ->with('test_sales_channel_id')
+            ->willReturn(false);
+
+        $fetcher = $this->createMock(PaymentFetcherInterface::class);
+        $fetcher->expects($this->once())
+            ->method('fetchPayment')
+            ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
+            ->willReturn(RetrievePaymentResultFixture::reserved()->getPayment());
+
+        $chargeData = new ChargeData(5000);
+        $partialCharge = new PartialCharge([new Item('test', 1, 'pcs', 5000, 5000, 5000, 'test')]);
+        $chargeRequestBuilder = $this->createChargeRequestBuilderMock();
+        $chargeRequestBuilder->expects($this->once())
+            ->method('buildPartialCharge')
+            ->with($this->isInstanceOf(OrderTransactionEntity::class), $chargeData)
+            ->willReturn($partialCharge);
+
+        $paymentApi = $this->createMock(PaymentApi::class);
+        $paymentApi->expects($this->once())
+            ->method('charge')
+            ->with('025400006091b1ef6937598058c4e487', $partialCharge)
+            ->willReturn(new ChargeResult('test_charge_id'));
+
+        $sut = new OrderCharge(
+            $fetcher,
+            $this->createPaymentApiFactoryMock($paymentApi),
+            $configurationProvider,
+            $chargeRequestBuilder,
+            $this->createStub(LoggerInterface::class),
+        );
+
+        $sut->partialCharge($this->createOrderEntity(), $chargeData);
     }
 
     private function createOrderEntity(): OrderEntity
