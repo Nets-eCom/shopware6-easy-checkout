@@ -31,6 +31,12 @@ Shopware.Component.override("sw-order-detail-details", {
       return !!this.transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id");
     },
 
+    chargeAmountError() {
+      if (this.charge.amount > this.paymentDetails.remainingChargeAmount) {
+        return { code: "error-charge-max-amount" };
+      }
+    },
+
     // @todo use PaymentStatusEnum
     shouldDisplayRefundField() {
       return this.paymentDetails.refundedAmount > 0;
@@ -210,6 +216,10 @@ Shopware.Component.override("sw-order-detail-details", {
       }, 0.0);
 
       this.setChargeAmount(parseFloat(total.toFixed(2)));
+
+      if (this.charge.amount > this.paymentDetails.remainingChargeAmount) {
+        this.setChargeAmount(this.paymentDetails.remainingChargeAmount);
+      }
     },
 
     setRefundAmount(amount) {
