@@ -114,6 +114,7 @@ Shopware.Component.override("sw-order-detail-details", {
         });
       } finally {
         this.isLoading = false;
+        console.log(this.paymentDetails);
       }
     },
 
@@ -218,16 +219,19 @@ Shopware.Component.override("sw-order-detail-details", {
     toggleChargeModal() {
       this.isChargeModalVisible = !this.isChargeModalVisible;
       this.resetAmount();
+      this.isItemsListVisible = false;
     },
 
     toggleRefundModal() {
       this.isRefundModalVisible = !this.isRefundModalVisible;
       this.resetAmount();
+      this.isItemsListVisible = false;
     },
 
     toggleCancelModal() {
       this.isCancelModalVisible = !this.isCancelModalVisible;
       this.resetAmount();
+      this.isItemsListVisible = false;
     },
 
     closeChargeModal() {
