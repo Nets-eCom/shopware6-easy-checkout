@@ -88,6 +88,10 @@ $border-color: #d1d9e0;
   &__checkbox {
     margin-top: 1rem;
 
+    &.error-margin {
+      margin-top: 1.4rem;
+    }
+
     @include respond-to(lg) {
       margin-top: 3rem;
       margin-left: 1rem;

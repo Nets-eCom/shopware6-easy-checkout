@@ -2,7 +2,7 @@
     "global": {
         "error-codes": {
             "error-charge-max-amount": "Amount is bigger than the max. amount that can be charged.",
-            "error-charge-min-amount": "Amount must be bigger then 0."
+            "error-refund-max-amount": "Amount is bigger than the max. amount that can be refunded."
         }
     },
     "nexinets-charge-action": {

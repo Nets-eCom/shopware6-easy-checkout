@@ -151,6 +151,7 @@
               </div>
               <sw-checkbox-field
                 class="nexinets-modal__checkbox"
+                :class="{ 'error-margin': chargeAmountError }"
                 :value="isItemsListVisible"
                 @update:value="isItemsListVisible = $event"
                 :label="$tc('nexinets-payment-component.charge.items-list')"
@@ -206,11 +207,11 @@
                   :label="$tc('nexinets-payment-component.refund.input-label')"
                   v-model:value="refund.amount"
                   :min="0"
-                  :max="paymentDetails.remainingRefundAmount"
                   numberType="float"
                   :fillDigits="true"
                   :allowEmpty="false"
                   :disabled="isItemsListVisible"
+                  :error="refundAmountError"
                 >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
                 </sw-number-field>
@@ -221,6 +222,7 @@
               </div>
               <sw-checkbox-field
                 class="nexinets-modal__checkbox"
+                :class="{ 'error-margin': refundAmountError }"
                 :value="isItemsListVisible"
                 @update:value="isItemsListVisible = $event"
                 :label="$tc('nexinets-payment-component.refund.items-list')"
@@ -251,7 +253,7 @@
               <sw-button @click="toggleRefundModal" class="nexinets-modal__btn">
                 {{ $tc('nexinets-payment-component.cancel.button-action-title') }}
               </sw-button>
-              <sw-button @click="handleRefund" class="nexinets-modal__btn" :isLoading="isLoading" variant="primary">
+              <sw-button @click="handleRefund" class="nexinets-modal__btn" :isLoading="isLoading" variant="primary" :disabled="refundAmountError">
                 {{ $tc('nexinets-payment-component.refund.button-title') }}
               </sw-button>
             </template>
