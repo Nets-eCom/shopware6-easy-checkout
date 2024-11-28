@@ -98,6 +98,12 @@ Shopware.Component.override("sw-order-detail-details", {
       //   return { code: "error-charge-min-amount" };
       // }
     },
+
+    refundAmountError() {
+      if (this.refund.amount > this.paymentDetails.remainingRefundAmount) {
+        return { code: "error-refund-max-amount" };
+      }
+    },
   },
 
   watch: {
