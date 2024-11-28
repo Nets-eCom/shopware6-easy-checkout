@@ -136,11 +136,12 @@
                   :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
                   v-model:value="charge.amount"
                   :min="0"
-                  :max="paymentDetails.remainingChargeAmount"
+{#                  :max="paymentDetails.remainingChargeAmount"#}
                   numberType="float"
                   :allowEmpty="false"
                   :fillDigits="true"
                   :disabled="isItemsListVisible"
+                  :error="chargeAmountError"
                 >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
                 </sw-number-field>
@@ -185,7 +186,7 @@
               <sw-button @click="toggleChargeModal" class="nexinets-modal__btn">
                 {{ $tc('nexinets-payment-component.cancel.button-action-title') }}
               </sw-button>
-              <sw-button @click="handleCharge" class="nexinets-modal__btn" :isLoading="isLoading" variant="primary">
+              <sw-button @click="handleCharge" class="nexinets-modal__btn" :isLoading="isLoading" variant="primary" :disabled="chargeAmountError">
                 {{ $tc('nexinets-payment-component.charge.button-title') }}
               </sw-button>
             </template>
@@ -223,7 +224,7 @@
                 class="nexinets-modal__checkbox"
                 :value="isItemsListVisible"
                 @update:value="isItemsListVisible = $event"
-                :label="$tc('nexinets-payment-component.charge.items-list')"
+                :label="$tc('nexinets-payment-component.refund.items-list')"
               >
               </sw-checkbox-field>
             </div>

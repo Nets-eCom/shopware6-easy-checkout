@@ -1,4 +1,9 @@
 {
+    "global": {
+        "error-codes": {
+            "error-charge-max-amount": "Amount is bigger than the max. amount that can be charged."
+        }
+    },
     "nexinets-charge-action": {
         "title": "Make Full Charge",
         "description": "Send charge request to Nexi/Nets"
