@@ -26,7 +26,7 @@ class NexiNetsCheckoutApiPaymentService extends ApiService {
         `order/${orderId}/nexinets-payment-refund`,
         {
           amount,
-          charges: charges
+          charges
         },
         {
           headers: this.getBasicHeaders(),

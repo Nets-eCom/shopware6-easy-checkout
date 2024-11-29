@@ -136,6 +136,7 @@
                   :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
                   v-model:value="charge.amount"
                   :min="0"
+                  :max="paymentDetails.remainingChargeAmount"
                   numberType="float"
                   :allowEmpty="false"
                   :fillDigits="true"
