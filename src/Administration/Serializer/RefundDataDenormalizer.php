@@ -10,22 +10,41 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class RefundDataDenormalizer implements DenormalizerInterface
 {
+    /**
+     * @param array<string, string> $context
+     */
     public function supportsDenormalization($data, string $type, ?string $format = null, array $context = []): bool
     {
         return $type === RefundData::class
-            && isset($data['items'])
-            && $data['items'] !== [];
+            && isset($data['charges'])
+            && $data['charges'] !== [];
     }
 
+    /**
+     * @param array<string, string> $context
+     */
     public function denormalize($data, string $type, ?string $format = null, array $context = []): RefundData
     {
-        $items = [];
+        $chargeData = [];
 
-        foreach ($data['items'] as $item) {
-            $items[] = new ChargeItem($item['chargeId'], $item['reference'], (int) $item['quantity'], $item['amount']);
+        foreach ($data['charges'] as $chargeId => $charges) {
+            $chargeData[$chargeId] = [
+                'amount' => $charges['amount'],
+                'items' => array_map(fn (array $item): ChargeItem => new ChargeItem(
+                    $chargeId,
+                    $item['name'],
+                    (int) $item['quantity'],
+                    $item['unit'],
+                    (float) $item['unitPrice'],
+                    $item['amount'],
+                    (float) $item['netTotalAmount'],
+                    $item['reference'],
+                    null,
+                ), $charges['items']),
+            ];
         }
 
-        return new RefundData($data['amount'], $items);
+        return new RefundData($data['amount'], $chargeData);
     }
 
     public function getSupportedTypes(?string $format): array

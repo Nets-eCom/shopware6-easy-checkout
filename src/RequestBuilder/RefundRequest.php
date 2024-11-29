@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NexiNets\RequestBuilder;
 
-use NexiNets\Administration\Model\RefundData;
 use NexiNets\Administration\Model\ChargeItem;
 use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
 use NexiNets\CheckoutApi\Model\Request\Item;
@@ -29,76 +28,46 @@ class RefundRequest
     }
 
     /**
-     * @param array<ChargeItem> $refundItem
+     * @param array{amount: float, items: array<ChargeItem>} $chargeData
      */
-    public function buildPartialRefund(OrderTransactionEntity $transaction, ChargeItem $refundItem): PartialRefundCharge
+    public function buildPartialRefund(OrderTransactionEntity $transaction, array $chargeData): PartialRefundCharge
     {
-        $refundItems = [];
+        $itemsToRefund = [];
 
-//        foreach ($refundItem as $item) {
+        foreach ($chargeData['items'] as $chargeItem) {
             $orderItem = $this->findOrderItemByReference(
                 $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER),
-                $refundItem->getReference()
+                $chargeItem->getReference()
             );
 
-            $quantity = $refundItem->getQuantity();
-            $unitPrice = $orderItem['unitPrice'];
+            $quantity = (int) $chargeItem->getQuantity();
+            $unitPrice = $orderItem !== [] ? $orderItem['unitPrice'] : $this->helper->priceToInt($chargeItem->getUnitPrice());
 
-            $grossTotalAmount = $this->helper->priceToInt($refundItem->getAmount());
+            $grossTotalAmount = $this->helper->priceToInt($chargeItem->getGrossTotalAmount());
             $netTotalAmount = $unitPrice * $quantity;
             $taxAmount = $grossTotalAmount - $netTotalAmount;
 
-//            $refundItems[] = new Item(
-//                $orderItem['name'],
-//                $quantity,
-//                'pcs',
-//                $unitPrice,
-//                $grossTotalAmount,
-//                $netTotalAmount,
-//                $orderItem['reference'],
-//                $orderItem['taxRate'] ?? null,
-//                $taxAmount > 0 ? $taxAmount : null
-//            );
-////        }
-
-        return new PartialRefundCharge([
-            new Item(
-                $orderItem['name'],
+            $itemsToRefund[] = new Item(
+                $orderItem !== [] ? $orderItem['name'] : $chargeItem->getName(),
                 $quantity,
                 'pcs',
                 $unitPrice,
                 $grossTotalAmount,
                 $netTotalAmount,
-                $orderItem['reference'],
-                $orderItem['taxRate'] ?? null,
+                $orderItem !== [] ? $orderItem['reference'] : $chargeItem->getReference(),
+                $orderItem !== [] ? $orderItem['taxRate'] : $chargeItem->getTaxRate() ?? null,
                 $taxAmount > 0 ? $taxAmount : null
-            )
-        ]);
+            );
+        }
+
+        return new PartialRefundCharge($itemsToRefund);
     }
 
-    public function buildArtificialPartialRefund(
-        OrderTransactionEntity $transaction,
-        float $amount
-    ): PartialRefundCharge {
-        $refundAmount = $this->helper->priceToInt($amount);
-        $reference = \sprintf('refund %d', $transaction->getCaptures()?->count() + 1);
-        $name = \sprintf('refund %s %s', $transaction->getOrder()->getOrderNumber(), $reference);
-
-        return new PartialRefundCharge(
-            [
-                new Item(
-                    $name,
-                    1,
-                    'pcs',
-                    $refundAmount,
-                    $refundAmount,
-                    $refundAmount,
-                    substr($reference, 0, 128)
-                )
-            ]
-        );
-    }
-
+    /**
+     * @param array<string, array<string, mixed>> $order
+     *
+     * @return array<string, mixed>
+     */
     private function findOrderItemByReference(array $order, string $reference): array
     {
         foreach ($order['items'] as $item) {
@@ -107,6 +76,6 @@ class RefundRequest
             }
         }
 
-        throw new \LogicException('Item not found');
+        return [];
     }
 }
