@@ -9,12 +9,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 class RefundData
 {
     /**
-     * @param array<Item> $items
+     * @param array{chargeId: string, array{amount: float, items: array<ChargeItem>}}|array{} $charges
      */
     public function __construct(
         #[Assert\GreaterThanOrEqual(0.01)]
         private readonly float $amount,
-        private readonly array $items = []
+        #[Assert\Valid]
+        private readonly array $charges = [],
     ) {
     }
 
@@ -24,10 +25,10 @@ class RefundData
     }
 
     /**
-     * @return Item[]
+     * @return array{chargeId: string, array{amount: float, items: array<ChargeItem>}}|array{}
      */
-    public function getItems(): array
+    public function getCharges(): array
     {
-        return $this->items;
+        return $this->charges;
     }
 }
