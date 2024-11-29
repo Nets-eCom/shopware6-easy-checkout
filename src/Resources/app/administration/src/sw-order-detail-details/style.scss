@@ -110,6 +110,16 @@ $border-color: #d1d9e0;
 
   &__items-list {
     margin-top: 2rem;
+    font-size: 16px;
+
+    .sw-grid__header .sw-grid-column:nth-child(odd) {
+      justify-self: end;
+    }
+  }
+
+  &__charge-id {
+    color: #8599ad;
+    font-size: 12px;
   }
 
   &__qty-select {
@@ -118,6 +128,10 @@ $border-color: #d1d9e0;
 
   &__qty-col {
     justify-self: center;
+  }
+
+  &__end-col {
+    justify-self: end;
   }
 
   &__btn:focus-visible {

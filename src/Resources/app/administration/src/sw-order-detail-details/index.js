@@ -93,10 +93,6 @@ Shopware.Component.override("sw-order-detail-details", {
       if (this.charge.amount > this.paymentDetails.remainingChargeAmount) {
         return { code: "error-charge-max-amount" };
       }
-
-      // if (this.charge.amount <= 0) {
-      //   return { code: "error-charge-min-amount" };
-      // }
     },
 
     refundAmountError() {
@@ -130,7 +126,6 @@ Shopware.Component.override("sw-order-detail-details", {
         });
       } finally {
         this.isLoading = false;
-        console.log(this.paymentDetails);
       }
     },
 
