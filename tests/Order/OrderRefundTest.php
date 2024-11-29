@@ -18,6 +18,7 @@ use NexiNets\RequestBuilder\RefundRequest;
 use NexiNets\Tests\CheckoutApi\Fixture\RetrievePaymentResultFixture;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
@@ -63,6 +64,7 @@ final class OrderRefundTest extends TestCase
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
             $eventDispatcher,
+            $this->createMock(LoggerInterface::class)
         );
 
         $sut->fullRefund($order);
@@ -89,6 +91,7 @@ final class OrderRefundTest extends TestCase
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
             $this->createStub(EventDispatcherInterface::class),
+            $this->createMock(LoggerInterface::class)
         );
 
         $sut->fullRefund($order);
@@ -115,6 +118,7 @@ final class OrderRefundTest extends TestCase
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
             $this->createStub(EventDispatcherInterface::class),
+            $this->createMock(LoggerInterface::class)
         );
 
         $sut->fullRefund($order);
@@ -129,6 +133,18 @@ final class OrderRefundTest extends TestCase
         );
         $transaction->setCustomFields([
             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER => [
+                'items' => [
+                    [
+                        'reference' => 'foo',
+                        'name' => 'foo',
+                        'unitPrice' => 100,
+                        'taxAmount' => 20,
+                    ],
+                ],
+                'refundedItems' => [],
+                'chargedItems' => [],
+            ],
         ]);
 
         $order = new OrderEntity();

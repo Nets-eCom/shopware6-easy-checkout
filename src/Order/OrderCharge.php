@@ -8,6 +8,7 @@ use NexiNets\Administration\Model\ChargeData;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
@@ -117,11 +118,11 @@ class OrderCharge
 
             $payment = $this->fetcher->fetchPayment($salesChannelId, $paymentId);
 
-            $paymentStatus = $payment->getStatus();
-            if (!\in_array($paymentStatus, [PaymentStatusEnum::RESERVED, PaymentStatusEnum::PARTIALLY_CHARGED], true)) {
+
+            if (!$this->isChargeable($payment, $chargeData->getAmount())) {
                 $this->logger->info('Payment in incorrect status for partial charge', [
                     'paymentId' => $paymentId,
-                    'status' => $paymentStatus->value,
+                    'status' => $payment->getStatus()->value,
                 ]);
                 continue;
             }
@@ -157,5 +158,24 @@ class OrderCharge
             $this->configurationProvider->getSecretKey($salesChannelId),
             $this->configurationProvider->isLiveMode($salesChannelId)
         );
+    }
+
+    private function isChargeable(Payment $payment, float $partialAmount): bool
+    {
+        $status = $payment->getStatus();
+
+        if (\in_array(
+            $status,
+            [
+                PaymentStatusEnum::RESERVED,
+                PaymentStatusEnum::PARTIALLY_CHARGED,
+            ],
+            true
+        )) {
+            return true;
+        }
+
+        return $status === PaymentStatusEnum::PARTIALLY_REFUNDED
+            && $payment->getSummary()->getChargedAmount() > $partialAmount;
     }
 }
