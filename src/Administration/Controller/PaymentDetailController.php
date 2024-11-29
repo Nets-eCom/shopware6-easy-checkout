@@ -138,7 +138,7 @@ class PaymentDetailController extends AbstractController
 
     private function formatAmount(int $amount): string
     {
-        return number_format($amount / 100, 2);
+        return number_format($amount / 100, 2, '.', '');
     }
 
     /**

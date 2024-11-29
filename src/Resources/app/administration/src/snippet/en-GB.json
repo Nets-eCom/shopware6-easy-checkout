@@ -1,4 +1,10 @@
 {
+    "global": {
+        "error-codes": {
+            "error-charge-max-amount": "Amount is bigger than the max. amount that can be charged.",
+            "error-refund-max-amount": "Amount is bigger than the max. amount that can be refunded."
+        }
+    },
     "nexinets-charge-action": {
         "title": "Make Full Charge",
         "description": "Send charge request to Nexi/Nets"
@@ -50,7 +56,7 @@
         },
         "itemsTable": {
             "qty": "QTY",
-            "item": "Item",
+            "item": "Item name",
             "subtotal": "Subtotal",
             "chargeQty": "Charge QTY",
             "refundQty": "Refund QTY"
