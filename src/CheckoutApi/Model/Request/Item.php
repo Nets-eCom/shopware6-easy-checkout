@@ -7,7 +7,7 @@ namespace NexiNets\CheckoutApi\Model\Request;
 /**
  * @phpstan-type RequestItemSerialized array{
  *     name: string,
- *     quantity: int,
+ *     quantity: int|float,
  *     unit: string,
  *     unitPrice: int,
  *     grossTotalAmount: int,
