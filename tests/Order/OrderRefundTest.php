@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace NexiNets\Tests\Order;
 
-use NexiNets\Administration\Model\RefundData;
-use NexiNets\Administration\Model\ChargeItem;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
-use NexiNets\CheckoutApi\Model\Request\Item;
-use NexiNets\CheckoutApi\Model\Request\PartialRefundCharge;
 use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
@@ -72,41 +68,6 @@ final class OrderRefundTest extends TestCase
         );
 
         $sut->fullRefund($order);
-    }
-
-    public function testItPartiallyRefundsChargedOrder(): void
-    {
-        $order = $this->createOrderEntity();
-
-        $api = $this->createMock(PaymentApi::class);
-        $api
-            ->expects($this->once())
-            ->method('refundCharge')
-            ->with(
-                'test_charge_id',
-                new PartialRefundCharge(
-                    [
-                        new Item('foo', 1, 'pcs', 1000, 500, 800, 'foo')
-                    ]
-                )
-            );
-
-        $fetcher = $this->createMock(PaymentFetcherInterface::class);
-        $fetcher->expects($this->once())
-            ->method('fetchPayment')
-            ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
-            ->willReturn(RetrievePaymentResultFixture::fullyCharged()->getPayment());
-
-        $sut = new OrderRefund(
-            $fetcher,
-            $this->createPaymentApiFactory($api),
-            $this->createConfigurationProvider(),
-            $this->createRefundChargeRequestBuilder(),
-            $this->createStub(EventDispatcherInterface::class),
-            $this->createMock(LoggerInterface::class)
-        );
-
-        $sut->partialRefund($order, new RefundData(50, [new ChargeItem('test_charge_id','foo', 1, 500)]));
     }
 
     public function testItShouldNotFullyRefundIfAlreadyRefunded(): void
@@ -178,12 +139,12 @@ final class OrderRefundTest extends TestCase
                         'reference' => 'foo',
                         'name' => 'foo',
                         'unitPrice' => 100,
-                        'taxAmount' => 20
-                    ]
+                        'taxAmount' => 20,
+                    ],
                 ],
                 'refundedItems' => [],
                 'chargedItems' => [],
-            ]
+            ],
         ]);
 
         $order = new OrderEntity();

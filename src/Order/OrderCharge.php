@@ -118,7 +118,15 @@ class OrderCharge
             $payment = $this->fetcher->fetchPayment($salesChannelId, $paymentId);
 
             $paymentStatus = $payment->getStatus();
-            if (!\in_array($paymentStatus, [PaymentStatusEnum::RESERVED, PaymentStatusEnum::PARTIALLY_CHARGED], true)) {
+            if (!\in_array(
+                $paymentStatus,
+                [
+                    PaymentStatusEnum::RESERVED,
+                    PaymentStatusEnum::PARTIALLY_CHARGED,
+                    PaymentStatusEnum::PARTIALLY_REFUNDED,
+                ],
+                true
+            )) {
                 $this->logger->info('Payment in incorrect status for partial charge', [
                     'paymentId' => $paymentId,
                     'status' => $paymentStatus->value,

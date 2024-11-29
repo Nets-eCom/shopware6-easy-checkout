@@ -142,7 +142,7 @@ class Payment
             return false;
         }
 
-        return $summary->getChargedAmount() === $summary->getRefundedAmount();
+        return $summary->getRefundedAmount() === $summary->getReservedAmount();
     }
 
     private function isRefunded(): bool

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NexiNets\Order;
 
-use NexiNets\Administration\Model\Item;
 use NexiNets\Administration\Model\RefundData;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
@@ -98,12 +97,12 @@ class OrderRefund
             $status = $payment->getStatus();
 
             if (
-                !in_array(
+                !\in_array(
                     $status,
                     [
                         PaymentStatusEnum::PARTIALLY_REFUNDED,
                         PaymentStatusEnum::PARTIALLY_CHARGED,
-                        PaymentStatusEnum::CHARGED
+                        PaymentStatusEnum::CHARGED,
                     ],
                     true
                 )) {
@@ -116,10 +115,10 @@ class OrderRefund
 
             $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
 
-            foreach ($refundData->chargeItems() as $chargeItem) {
+            foreach ($refundData->getCharges() as $chargeId => $items) {
                 $partialRefund = $this->refundRequest->buildPartialRefund(
                     $transaction,
-                    $chargeItem
+                    $items
                 );
 
                 $this->logger->info('Partial refund request', [
@@ -128,7 +127,7 @@ class OrderRefund
                 ]);
 
                 try {
-                    $response = $paymentApi->refundCharge($chargeItem->getChargeId(), $partialRefund);
+                    $response = $paymentApi->refundCharge($chargeId, $partialRefund);
 
                     $this->logger->info('Partial refund success', [
                         'paymentId' => $paymentId,

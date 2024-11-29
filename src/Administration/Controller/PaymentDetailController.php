@@ -7,7 +7,6 @@ use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Charge;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Item;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Refund;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcher;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -93,10 +92,20 @@ class PaymentDetailController extends AbstractController
             'remainingRefundAmount' => $this->formatAmount($remainingRefundAmount),
             'status' => $status->value,
             'orderItems' => $this->buildItems($payment, $transaction),
-            'charges' => $this->buildChargedItems($payment)
+            'charges' => $this->buildChargedItems($payment),
         ]);
     }
 
+    /**
+     * @return list<array{
+     *      name: string,
+     *      reference: string,
+     *      quantity: int|float,
+     *      unitPrice: string,
+     *      grossTotalAmount: string,
+     *      qtyRefunded: int
+     * }>
+     */
     private function buildChargedItems(Payment $payment): array
     {
         $charges = $payment->getCharges();
@@ -107,25 +116,19 @@ class PaymentDetailController extends AbstractController
 
         $chargedItems = [];
 
-        foreach($charges as $charge) {
+        foreach ($charges as $charge) {
             foreach ($charge->getOrderItems() as $chargedItem) {
                 $chargedItems[] = [
                     'chargeId' => $charge->getChargeId(),
                     'name' => $chargedItem->getName(),
-                    'reference' => $chargedItem->getReference(),
+                    'unit' => $chargedItem->getUnit(),
                     'quantity' => $chargedItem->getQuantity(),
-                    'qtyRefunded' => 0, // @TODO calculate
-//                    'qtyRefunded' => array_reduce(
-//                        $payment->getRefunds() ?? [],
-//                        fn (int $refundQty, Refund $refund) => $refundQty + array_reduce(
-//                                $refund->getOrderItems(),
-//                                fn (int $requestItemQty, Item $refundedItem) => $requestItemQty + ($refundedItem->getReference() === $chargedItem->getReference() ? $refundedItem->getQuantity() : 0),
-//                                0
-//                            ),
-//                        0
-//                    ),
                     'unitPrice' => $this->formatAmount($chargedItem->getUnitPrice()),
                     'grossTotalAmount' => $this->formatAmount($chargedItem->getGrossTotalAmount()),
+                    'netTotalAmount' => $this->formatAmount($chargedItem->getNetTotalAmount()),
+                    'reference' => $chargedItem->getReference(),
+                    'taxRate' => $chargedItem->getTaxRate() !== null ? $this->formatAmount($chargedItem->getTaxRate()) : null,
+                    'qtyRefunded' => 0, // @todo remove?
                 ];
             }
         }
@@ -145,8 +148,7 @@ class PaymentDetailController extends AbstractController
      *      quantity: int,
      *      unitPrice: string,
      *      grossTotalAmount: string,
-     *      qtyCharged: int,
-     *      qtyRefunded: int
+     *      qtyCharged: int
      * }>
      */
     private function buildItems(Payment $payment, OrderTransactionEntity $transaction): array
@@ -157,7 +159,6 @@ class PaymentDetailController extends AbstractController
             fn (array $requestItem) => [
                 'reference' => $requestItem['reference'],
                 'name' => $requestItem['name'],
-                'reference' => $requestItem['reference'],
                 'quantity' => $requestItem['quantity'],
                 'unitPrice' => $this->formatAmount($requestItem['unitPrice']),
                 'grossTotalAmount' => $this->formatAmount($requestItem['grossTotalAmount']),
@@ -166,15 +167,6 @@ class PaymentDetailController extends AbstractController
                     fn (int $chargeQty, Charge $charge) => $chargeQty + array_reduce(
                         $charge->getOrderItems(),
                         fn (int $requestItemQty, Item $chargedItem) => $requestItemQty + ($this->isSameItem($chargedItem, $requestItem) ? $chargedItem->getQuantity() : 0),
-                        0
-                    ),
-                    0
-                ),
-                'qtyRefunded' => array_reduce(
-                    $payment->getRefunds() ?? [],
-                    fn (int $refundQty, Refund $refund) => $refundQty + array_reduce(
-                        $refund->getOrderItems(),
-                        fn (int $requestItemQty, Item $refundedItem) => $requestItemQty + ($this->isSameItem($refundedItem, $requestItem) ? $refundedItem->getQuantity() : 0),
                         0
                     ),
                     0
