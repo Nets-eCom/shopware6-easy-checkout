@@ -161,16 +161,28 @@
             <div v-if="isItemsListVisible" class="nexinets-modal__items-list">
               <sw-grid :selectable="false" :items="paymentDetails.orderItems">
                 <template #columns="{ item }">
-                  <sw-grid-column flex="minmax(50px, 1.3fr)" :label="$tc('nexinets-payment-component.itemsTable.qty')">
+                  <sw-grid-column
+                    flex="minmax(50px, 1.3fr)"
+                    class="nexinets-modal__end-col"
+                    :label="$tc('nexinets-payment-component.itemsTable.qty')"
+                  >
                     {{ item.quantity }}x
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(200px, 4fr)" :label="$tc('nexinets-payment-component.itemsTable.item')">
+                  <sw-grid-column flex="minmax(200px, 4.3fr)" :label="$tc('nexinets-payment-component.itemsTable.item')">
                     {{ item.name }}
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(100px, 2.2fr)" :label="$tc('nexinets-payment-component.itemsTable.subtotal')">
+                  <sw-grid-column
+                    flex="minmax(100px, 2.1fr)"
+                    class="nexinets-modal__end-col"
+                    :label="$tc('nexinets-payment-component.itemsTable.subtotal')"
+                  >
                     {{ order.currency.symbol + item.grossTotalAmount }}
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(100px, 2.5fr)" :label="$tc('nexinets-payment-component.itemsTable.chargeQty')" class="nexinets-modal__qty-col">
+                  <sw-grid-column
+                    flex="minmax(100px, 2.3fr)"
+                    :label="$tc('nexinets-payment-component.itemsTable.chargeQty')"
+                    class="nexinets-modal__qty-col"
+                  >
                     <sw-select-field
                       placeholder="0"
                       class="nexinets-modal__qty-select"
@@ -232,18 +244,28 @@
             <div v-if="isItemsListVisible" class="nexinets-modal__items-list">
               <sw-grid :selectable="false" :items="paymentDetails.charges">
                 <template #columns="{ item }">
-                  <sw-grid-column flex="minmax(50px, 1.3fr)" :label="$tc('nexinets-payment-component.itemsTable.qty')">
+                  <sw-grid-column
+                    flex="minmax(50px, 1.3fr)"
+                    :label="$tc('nexinets-payment-component.itemsTable.qty')"
+                    class="nexinets-modal__end-col"
+                  >
                     {{ item.quantity }}x
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(200px, 4fr)" :label="$tc('nexinets-payment-component.itemsTable.item')">
-                    {{ item.name }}
-                    <span>{{ item.chargeId }}</span>
+                  <sw-grid-column
+                    flex="minmax(220px, 4.3fr)"
+                    :label="$tc('nexinets-payment-component.itemsTable.item')"
+                  >
+                    <p>{{ item.name }}<br><span class="nexinets-modal__charge-id">{{ item.chargeId }}</span></p>
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(100px, 2.2fr)" :label="$tc('nexinets-payment-component.itemsTable.subtotal')">
+                  <sw-grid-column
+                    flex="minmax(100px, 2.1fr)"
+                    class="nexinets-modal__end-col"
+                    :label="$tc('nexinets-payment-component.itemsTable.subtotal')"
+                  >
                     {{ order.currency.symbol + item.grossTotalAmount }}
                   </sw-grid-column>
                   <sw-grid-column
-                    flex="minmax(100px, 2.5fr)"
+                    flex="minmax(100px, 2.3fr)"
                     :label="$tc('nexinets-payment-component.itemsTable.refundQty')"
                     class="nexinets-modal__qty-col"
                   >

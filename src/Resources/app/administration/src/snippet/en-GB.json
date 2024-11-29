@@ -56,7 +56,7 @@
         },
         "itemsTable": {
             "qty": "QTY",
-            "item": "Item",
+            "item": "Item name",
             "subtotal": "Subtotal",
             "chargeQty": "Charge QTY",
             "refundQty": "Refund QTY"
