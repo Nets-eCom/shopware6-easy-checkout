@@ -142,6 +142,7 @@ class Payment
             return false;
         }
 
+        // @todo check if reserved amount can be 0 (methods with auto-charge by design)
         return $summary->getRefundedAmount() === $summary->getReservedAmount();
     }
 

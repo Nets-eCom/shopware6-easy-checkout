@@ -232,13 +232,14 @@ Shopware.Component.override("sw-order-detail-details", {
     calculateRefundAmount() {
       const total = Object.keys(this.refund)
           .reduce((sum, key) => {
-                if (key !== "amount") {
-                  sum += this.refund[key].amount;
-                }
+            const value = this.refund[key];
 
-                return sum;
-              }, 0.0
-          );
+            if (!(value instanceof Array)) {
+              sum += value.amount || 0;
+            }
+
+            return sum;
+          }, 0.0);
 
       this.setRefundAmount(parseFloat(total.toFixed(2)));
     },
