@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace NexiNets\Order;
 
 use NexiNets\Administration\Model\RefundData;
+use NexiNets\CheckoutApi\Api\ErrorCodeEnum;
+use NexiNets\CheckoutApi\Api\Exception\InternalErrorPaymentApiException;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
@@ -13,6 +15,8 @@ use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
+use NexiNets\Order\Exception\OrderChargeRefundExceeded;
+use NexiNets\Order\Exception\OrderRefundException;
 use NexiNets\RequestBuilder\RefundRequest;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
@@ -33,7 +37,8 @@ class OrderRefund
     }
 
     /**
-     * @throws PaymentApiException
+     * @throws OrderChargeRefundExceeded
+     * @throws OrderRefundException
      */
     public function fullRefund(OrderEntity $order): void
     {
@@ -61,10 +66,21 @@ class OrderRefund
 
             $api = $this->createPaymentApi($order->getSalesChannelId());
             $refundRequest = $this->refundRequest->build($transaction);
-            $api->refundCharge(
-                $payment->getCharges()[0]->getChargeId(),
-                $refundRequest
-            );
+            $chargeId = $payment->getCharges()[0]->getChargeId();
+
+            try {
+                $api->refundCharge(
+                    $chargeId,
+                    $refundRequest
+                );
+            } catch (PaymentApiException|InternalErrorPaymentApiException $e) {
+                $this->logFailure([
+                    'paymentId' => $paymentId,
+                    'error' => $e->getMessage(),
+                ]);
+
+                $this->throwCorrespondingOrderRefundException($e, $chargeId);
+            }
 
             $this->eventDispatcher->dispatch(
                 new RefundChargeSend($order, $transaction, $refundRequest->getAmount())
@@ -73,7 +89,8 @@ class OrderRefund
     }
 
     /**
-     * @throws PaymentApiException
+     * @throws OrderChargeRefundExceeded
+     * @throws OrderRefundException
      */
     public function partialRefund(OrderEntity $order, RefundData $refundData): void
     {
@@ -133,13 +150,13 @@ class OrderRefund
                         'paymentId' => $paymentId,
                         'refundId' => $response->getRefundId(),
                     ]);
-                } catch (PaymentApiException $e) {
-                    $this->logger->error('Partial refund failed', [
+                } catch (InternalErrorPaymentApiException|PaymentApiException $e) {
+                    $this->logFailure([
                         'paymentId' => $paymentId,
                         'error' => $e->getMessage(),
                     ]);
 
-                    throw $e;
+                    $this->throwCorrespondingOrderRefundException($e, $chargeId);
                 }
             }
         }
@@ -151,5 +168,31 @@ class OrderRefund
             $this->configurationProvider->getSecretKey($salesChannelId),
             $this->configurationProvider->isLiveMode($salesChannelId)
         );
+    }
+
+    /**
+     * @param array<string, string> $parameters
+     */
+    private function logFailure(array $parameters): void
+    {
+        $this->logger->error('Partial refund failed', $parameters);
+    }
+
+    /**
+     * @throws OrderChargeRefundExceeded
+     * @throws OrderRefundException
+     */
+    private function throwCorrespondingOrderRefundException(
+        PaymentApiException $exception,
+        string $chargeId
+    ): void {
+        if (!$exception instanceof InternalErrorPaymentApiException) {
+            throw new OrderRefundException($chargeId, previous: $exception);
+        }
+
+        throw match ($exception->getInternalCode()) {
+            ErrorCodeEnum::InvalidRefundAmount => throw new OrderChargeRefundExceeded($chargeId, previous: $exception),
+            default => throw new OrderRefundException($chargeId, previous: $exception)
+        };
     }
 }

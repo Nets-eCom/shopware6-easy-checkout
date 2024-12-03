@@ -15,9 +15,7 @@ class NexiNetsCheckoutApiPaymentService extends ApiService {
           headers: this.getBasicHeaders(),
         },
       )
-      .then((response) => {
-        return ApiService.handleResponse(response);
-      });
+      .then(ApiService.handleResponse.bind(this));
   }
 
   refund(orderId, { amount, ...charges }) {
@@ -32,9 +30,7 @@ class NexiNetsCheckoutApiPaymentService extends ApiService {
           headers: this.getBasicHeaders(),
         },
       )
-      .then((response) => {
-        return ApiService.handleResponse(response);
-      });
+      .then(ApiService.handleResponse.bind(this));
   }
 
     cancel(orderId) {
@@ -45,9 +41,7 @@ class NexiNetsCheckoutApiPaymentService extends ApiService {
             headers: this.getBasicHeaders(),
           },
         )
-        .then((response) => {
-            return ApiService.handleResponse(response);
-        });
+        .then(ApiService.handleResponse.bind(this));
     }
 }
 
