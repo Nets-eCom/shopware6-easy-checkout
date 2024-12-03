@@ -111,69 +111,67 @@ Shopware.Component.override("sw-order-detail-details", {
   methods: {
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
-      try {
-        this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId);
-      } catch (error) {
-        const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
-        this.hasFetchError = true;
-        console.error(
-          `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
-          error,
-        );
-        this.createNotificationError({
-          title: this.$tc("nexinets-payment-component.notification.fetch-error-title"),
-          message: this.$tc("nexinets-payment-component.notification.fetch-error-message"),
-        });
-      } finally {
-        this.isLoading = false;
-      }
+      this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId)
+          .catch(({response}) => {
+            const errors = response.data.errors;
+            const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
+            this.hasFetchError = true;
+            console.error(
+                `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
+                errors,
+            );
+            this.handleErrors(errors);
+          })
+          .finally(() => {
+            this.isLoading = false
+          });
     },
 
     async handleCharge() {
       this.isLoading = true;
-      try {
-        await this.nexiNetsPaymentActionsService.charge(this.order.id, this.charge);
-        this.createNotificationSuccess({
-          title: this.$tc("nexinets-payment-component.notification.charge-title"),
-          message: this.$tc("nexinets-payment-component.notification.charge-message"),
-        });
-        this.closeChargeModal();
-        await this.reloadComponent();
-      } catch (error) {
-        this.handleActionError(error);
-      } finally {
-        this.isLoading = false;
-      }
+      await this.nexiNetsPaymentActionsService.charge(this.order.id, this.charge)
+          .then(() => {
+            this.createNotificationSuccess({
+              title: this.$tc("nexinets-payment-component.notification.charge-title"),
+              message: this.$tc("nexinets-payment-component.notification.charge-message"),
+            });
+
+            this.closeChargeModal();
+            this.reloadComponent();
+          })
+          .catch(({response}) => {
+            this.handleErrors(response.data);
+          }).finally(() => this.isloading = false)
     },
 
     async handleRefund() {
       this.isLoading = true;
-      try {
-        await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refund);
-        this.createNotificationSuccess({
-          title: this.$tc("nexinets-payment-component.notification.refund-title"),
-          message: this.$tc("nexinets-payment-component.notification.refund-message"),
-        });
-        this.closeRefundModal();
-        await this.reloadComponent();
-      } catch (error) {
-        this.handleActionError(error);
-      } finally {
-        this.isLoading = false;
-      }
+      await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refund)
+          .then(() => {
+            this.createNotificationSuccess({
+              title: this.$tc("nexinets-payment-component.notification.refund-title"),
+              message: this.$tc("nexinets-payment-component.notification.refund-message"),
+            });
+            this.closeRefundModal();
+            this.reloadComponent();
+          })
+          .catch(({response}) => {
+            this.handleErrors(response.data);
+          })
+          .finally(() => this.isLoading = false);
     },
 
     async handleCancel() {
       this.isLoading = true;
-      try {
-        await this.nexiNetsPaymentActionsService.cancel(this.order.id);
-        this.closeCancelModal();
-        await this.reloadComponent();
-      } catch (error) {
-        this.handleActionError(error);
-      } finally {
-        this.isLoading = false;
-      }
+      await this.nexiNetsPaymentActionsService.cancel(this.order.id)
+          .then(() => {
+            this.closeCancelModal();
+            this.reloadComponent();
+          })
+          .catch(({response}) => {
+            this.handleErrors(response);
+          })
+          .finally(() => this.isLoading = false);
     },
 
     async reloadComponent() {
@@ -181,15 +179,26 @@ Shopware.Component.override("sw-order-detail-details", {
       this.reloadKey++;
     },
 
-    handleActionError(error) {
-      console.error("index.js error:", error);
+    handleErrors({errors}) {
+      console.error("index.js error:", errors);
+      if (!errors) {
+        this.createNotificationError({
+          title: this.$t("nexinets-payment-component.notification.action-error-title"),
+          message: this.$t("nexinets-payment-component.notification.action-error-message"),
+        });
+
+        return;
+      }
+
+      const error = errors[0];
+
       this.createNotificationError({
-        title: this.$tc("nexinets-payment-component.notification.action-error-title"),
-        message: this.$tc("nexinets-payment-component.notification.action-error-message"),
-      });
+        title: this.$t("nexinets-payment-component.notification.action-error-title"),
+        message: this.$t(`nexinets-payment-component.api.errors.${error.code}`, error.meta.parameters),
+      })
     },
 
-    updateRefundItem({ chargeId, reference, grossTotalAmount, quantity, ...rest }, quantityToRefund) {
+  updateRefundItem({ chargeId, reference, grossTotalAmount, quantity, ...rest }, quantityToRefund) {
       const amount = (grossTotalAmount / quantity) * quantityToRefund;
 
       if (!this.refund[chargeId]) {

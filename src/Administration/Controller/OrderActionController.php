@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace NexiNets\Administration\Controller;
 
+use NexiNets\Administration\Exception\OrderActionHttpException;
 use NexiNets\Administration\Model\ChargeData;
 use NexiNets\Administration\Model\RefundData;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
+use NexiNets\Order\Exception\OrderCancelException;
+use NexiNets\Order\Exception\OrderChargeException;
+use NexiNets\Order\Exception\OrderChargeRefundExceeded;
+use NexiNets\Order\Exception\OrderRefundException;
 use NexiNets\Order\OrderCancel;
 use NexiNets\Order\OrderCharge;
 use NexiNets\Order\OrderRefund;
@@ -69,8 +74,8 @@ class OrderActionController extends AbstractController
 
         try {
             $this->processCharge($order, $chargeData);
-        } catch (PaymentApiException) {
-            return $this->json([], status: Response::HTTP_BAD_REQUEST);
+        } catch (OrderChargeException $orderChargeException) {
+            throw OrderActionHttpException::chargeFailed($orderChargeException->getPaymentId());
         }
 
         return $this->json([]);
@@ -108,8 +113,8 @@ class OrderActionController extends AbstractController
 
         try {
             $this->processRefund($order, $refundData);
-        } catch (PaymentApiException) {
-            return $this->json([], status: Response::HTTP_BAD_REQUEST);
+        } catch (OrderRefundException $orderRefundException) {
+            $this->resolveToHttpException($orderRefundException);
         }
 
         return $this->json([]);
@@ -143,8 +148,8 @@ class OrderActionController extends AbstractController
 
         try {
             $this->orderCancel->cancel($order);
-        } catch (PaymentApiException) {
-            return $this->json([], status: Response::HTTP_BAD_REQUEST);
+        } catch (OrderCancelException $orderCancelException) {
+            throw OrderActionHttpException::cancelFailed($orderCancelException->getPaymentId());
         }
 
         return $this->json([]);
@@ -152,6 +157,7 @@ class OrderActionController extends AbstractController
 
     /**
      * @throws PaymentApiException
+     * @throws OrderChargeException
      */
     private function processCharge(OrderEntity $order, ChargeData $chargeData): void
     {
@@ -165,7 +171,8 @@ class OrderActionController extends AbstractController
     }
 
     /**
-     * @throws PaymentApiException
+     * @throws OrderChargeRefundExceeded
+     * @throws OrderRefundException
      */
     private function processRefund(OrderEntity $order, RefundData $refundData): void
     {
@@ -176,5 +183,16 @@ class OrderActionController extends AbstractController
         }
 
         $this->orderRefund->fullRefund($order);
+    }
+
+    private function resolveToHttpException(OrderRefundException $exception): void
+    {
+        $chargeId = $exception->getChargeId();
+
+        if (!$exception instanceof OrderChargeRefundExceeded) {
+            throw OrderActionHttpException::refundFailed($chargeId);
+        }
+
+        throw OrderActionHttpException::refundAmountExceeded($chargeId);
     }
 }

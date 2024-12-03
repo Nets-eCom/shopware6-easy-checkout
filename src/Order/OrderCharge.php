@@ -13,6 +13,7 @@ use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
+use NexiNets\Order\Exception\OrderChargeException;
 use NexiNets\RequestBuilder\ChargeRequest;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
@@ -31,8 +32,7 @@ class OrderCharge
     }
 
     /**
-     * @throws PaymentApiException
-     * @throws \LogicException
+     * @throws OrderChargeException
      */
     public function fullCharge(OrderEntity $order): void
     {
@@ -83,7 +83,7 @@ class OrderCharge
                     'error' => $e->getMessage(),
                 ]);
 
-                throw $e;
+                throw new OrderChargeException($paymentId, previous: $e);
             }
 
             $this->logger->info('Full charge success', [
@@ -93,6 +93,9 @@ class OrderCharge
         }
     }
 
+    /**
+     * @throws OrderChargeException
+     */
     public function partialCharge(OrderEntity $order, ChargeData $chargeData): void
     {
         $salesChannelId = $order->getSalesChannelId();
@@ -142,7 +145,7 @@ class OrderCharge
                     'error' => $e->getMessage(),
                 ]);
 
-                throw $e;
+                throw new OrderChargeException($paymentId, previous: $e);
             }
 
             $this->logger->info('Partial charge success', [

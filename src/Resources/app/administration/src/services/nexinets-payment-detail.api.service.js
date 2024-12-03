@@ -12,9 +12,7 @@ class NexiNetsCheckoutApiPaymentService extends ApiService {
         {
           headers: this.getBasicHeaders(),
         },
-    ).then((response) => {
-      return ApiService.handleResponse(response);
-    });
+    ).then(ApiService.handleResponse.bind(this));
   }
 }
 
