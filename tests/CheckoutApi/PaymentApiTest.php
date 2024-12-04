@@ -13,6 +13,7 @@ use NexiNets\CheckoutApi\Model\Request\Charge;
 use NexiNets\CheckoutApi\Model\Request\FullCharge;
 use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
 use NexiNets\CheckoutApi\Model\Request\Item;
+use NexiNets\CheckoutApi\Model\Request\MyReference;
 use NexiNets\CheckoutApi\Model\Request\Payment;
 use NexiNets\CheckoutApi\Model\Request\Payment\HostedCheckout;
 use NexiNets\CheckoutApi\Model\Request\Payment\Notification;
@@ -217,6 +218,42 @@ final class PaymentApiTest extends TestCase
         $sut->updateReferenceInformation('1234', $this->createReferenceInformationRequest());
     }
 
+    public function testItUpdatesMyReferenceInformation(): void
+    {
+        $stream = $this->createStub(StreamInterface::class);
+        $stream
+            ->method('getContents')
+            ->willReturn('');
+
+        $streamFactory = $this->createStub(StreamFactoryInterface::class);
+        $streamFactory->method('createStream')->willReturn($stream);
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())->method('getStatusCode')->willReturn(204);
+
+        $sut = $this->createPaymentApi($response, $streamFactory);
+
+        $sut->updateMyReference('1234', $this->createMyReferenceRequest());
+    }
+
+    public function testItTerminatesPayment(): void
+    {
+        $stream = $this->createStub(StreamInterface::class);
+        $stream
+            ->method('getContents')
+            ->willReturn('');
+
+        $streamFactory = $this->createStub(StreamFactoryInterface::class);
+        $streamFactory->method('createStream')->willReturn($stream);
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())->method('getStatusCode')->willReturn(204);
+
+        $sut = $this->createPaymentApi($response, $streamFactory);
+
+        $sut->terminate('1234');
+    }
+
     public function testItRefundsCharge(): void
     {
         $stream = $this->createStub(StreamInterface::class);
@@ -311,6 +348,11 @@ final class PaymentApiTest extends TestCase
     private function createReferenceInformationRequest(): ReferenceInformation
     {
         return new ReferenceInformation('https://shop.example.com/checkout/1000', 'ref1234');
+    }
+
+    private function createMyReferenceRequest(): MyReference
+    {
+        return new MyReference('foo');
     }
 
     private function createRefundRequest(): RefundCharge
