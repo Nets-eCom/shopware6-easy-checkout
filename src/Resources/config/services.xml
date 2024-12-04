@@ -115,6 +115,7 @@
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
             <argument type="service" id="NexiNets\RequestBuilder\CancelRequest"/>
+            <argument type="service" id="monolog.logger.nexinets_channel"/>
         </service>
 
         <!-- ### Webhooks ### -->

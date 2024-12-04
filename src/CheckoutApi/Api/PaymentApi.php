@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NexiNets\CheckoutApi\Api;
 
 use NexiNets\CheckoutApi\Api\Exception\ClientErrorPaymentApiException;
+use NexiNets\CheckoutApi\Api\Exception\InternalErrorPaymentApiException;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Http\HttpClient;
 use NexiNets\CheckoutApi\Http\HttpClientException;
@@ -110,6 +111,9 @@ class PaymentApi
         return ChargeResult::fromJson($contents);
     }
 
+    /**
+     * @throws PaymentApiException
+     */
     public function cancel(string $paymentId, Cancel $cancel): void
     {
         try {
@@ -206,12 +210,17 @@ class PaymentApi
         return $code >= 200 && $code < 300;
     }
 
+    /**
+     * @throws \JsonException
+     */
     private function createPaymentApiException(int $code, string $contents): PaymentApiException
     {
         return match (true) {
             $code >= 300 && $code < 400 => new PaymentApiException('Redirection not supported'),
             $code === 400 => new ClientErrorPaymentApiException(\sprintf('Client error: %s', $contents), $contents),
-            $code >= 401 && $code < 500 => new PaymentApiException(\sprintf('Client error: %s', $contents)),
+            $code === 401 => new PaymentApiException(\sprintf('Unauthorized: %s', $contents)),
+            $code === 404 => new PaymentApiException(\sprintf('Client error: %s', $contents)),
+            $code >= 402 && $code < 500 => new InternalErrorPaymentApiException($contents),
             $code >= 500 && $code < 600 => new PaymentApiException(\sprintf('Server error occurred: %s', $contents)),
             default => new PaymentApiException(\sprintf('Unexpected status code: %d', $code)),
         };
