@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace NexiNets\Tests\Order;
 
+use NexiNets\Administration\Model\RefundData;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
+use NexiNets\CheckoutApi\Model\Request\Item;
+use NexiNets\CheckoutApi\Model\Request\PartialRefundCharge;
+use NexiNets\CheckoutApi\Model\Request\RefundCharge;
 use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
@@ -55,7 +59,53 @@ final class OrderRefundTest extends TestCase
             ->with(new RefundChargeSend(
                 $order,
                 $order->getTransactions()->first(),
-                10000
+                100.00
+            ));
+
+        $sut = new OrderRefund(
+            $fetcher,
+            $this->createPaymentApiFactory($api),
+            $this->createConfigurationProvider(),
+            $this->createRefundChargeRequestBuilder(),
+            $eventDispatcher,
+            $this->createMock(LoggerInterface::class)
+        );
+
+        $sut->fullRefund($order);
+    }
+
+    public function testItFullyRefundsAllCharges(): void
+    {
+        $order = $this->createOrderEntity();
+
+        $payment = RetrievePaymentResultFixture::fullyChargedWithMultipleCharges()->getPayment();
+        $invokedCount = $this->exactly(\count($payment->getCharges()));
+
+        $api = $this->createMock(PaymentApi::class);
+        $api
+            ->expects($invokedCount)
+            ->method('refundCharge')
+            ->willReturnCallback(function (string $chargeId, RefundCharge $refund) use ($payment, $invokedCount) {
+                $charge = $payment->getCharges()[$invokedCount->numberOfInvocations() - 1];
+                $this->assertSame($charge->getChargeId(), $chargeId);
+                $this->assertSame($charge->getAmount(), $refund->getAmount());
+
+                return new RefundChargeResult('foo');
+            });
+
+        $fetcher = $this->createMock(PaymentFetcherInterface::class);
+        $fetcher->expects($this->once())
+            ->method('fetchPayment')
+            ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
+            ->willReturn($payment);
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects($this->once())
+            ->method('dispatch')
+            ->with(new RefundChargeSend(
+                $order,
+                $order->getTransactions()->first(),
+                $order->getTransactions()->first()->getAmount()->getTotalPrice()
             ));
 
         $sut = new OrderRefund(
@@ -124,6 +174,64 @@ final class OrderRefundTest extends TestCase
         $sut->fullRefund($order);
     }
 
+    public function testItShouldPartiallyRefundWithoutItems(): void
+    {
+        $order = $this->createOrderEntity();
+
+        $invokedCount = $this->exactly(3);
+        $api = $this->createMock(PaymentApi::class);
+        $api
+            ->expects($this->exactly(3))
+            ->method('refundCharge')
+            ->willReturnCallback(function ($parameters) use ($invokedCount) {
+                if ($invokedCount->numberOfInvocations() === 1) {
+                    $this->assertSame(['test_charge_id 1', new PartialRefundCharge([
+                        new Item('refund 100', 1, 'pcs', 100, 100, 100, 'refund 100'),
+                    ])], $parameters);
+                }
+
+                if ($invokedCount->numberOfInvocations() === 2) {
+                    $this->assertSame(['test_charge_id 2', new PartialRefundCharge([
+                        new Item('refund 300', 1, 'pcs', 300, 300, 300, 'refund 100'),
+                    ])], $parameters);
+                }
+
+                if ($invokedCount->numberOfInvocations() === 3) {
+                    $this->assertSame(['test_charge_id 3', new PartialRefundCharge([
+                        new Item('refund 199', 1, 'pcs', 199, 199, 199, 'refund 199'),
+                    ])], $parameters);
+                }
+
+                return new RefundChargeResult('foo');
+            });
+
+        $fetcher = $this->createMock(PaymentFetcherInterface::class);
+        $fetcher->expects($this->once())
+            ->method('fetchPayment')
+            ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
+            ->willReturn(RetrievePaymentResultFixture::fullyChargedWithMultipleCharges()->getPayment());
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects($this->once())
+            ->method('dispatch')
+            ->with(new RefundChargeSend(
+                $order,
+                $order->getTransactions()->first(),
+                5.99
+            ));
+
+        $sut = new OrderRefund(
+            $fetcher,
+            $this->createPaymentApiFactory($api),
+            $this->createConfigurationProvider(),
+            $this->createRefundChargeRequestBuilder(),
+            $eventDispatcher,
+            $this->createMock(LoggerInterface::class)
+        );
+
+        $sut->partialRefund($order, new RefundData(5.99));
+    }
+
     private function createOrderEntity(): OrderEntity
     {
         $transaction = new OrderTransactionEntity();
@@ -144,6 +252,9 @@ final class OrderRefundTest extends TestCase
                 ],
                 'refundedItems' => [],
                 'chargedItems' => [],
+            ],
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => [
+                'test_charge_id 3' => 400,
             ],
         ]);
 

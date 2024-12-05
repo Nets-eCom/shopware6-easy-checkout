@@ -169,7 +169,7 @@ class OrderActionController extends AbstractController
      */
     private function processRefund(OrderEntity $order, RefundData $refundData): void
     {
-        if ($refundData->getAmount() < $order->getAmountTotal() && $refundData->getCharges() !== []) {
+        if ($refundData->getAmount() < $order->getAmountTotal()) {
             $this->orderRefund->partialRefund($order, $refundData);
 
             return;

@@ -8,6 +8,7 @@ use NexiNets\Administration\Model\ChargeItem;
 use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
 use NexiNets\CheckoutApi\Model\Request\Item;
 use NexiNets\CheckoutApi\Model\Request\PartialRefundCharge;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Charge;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\RequestBuilder\Helper\FormatHelper;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -18,12 +19,10 @@ class RefundRequest
     {
     }
 
-    public function build(OrderTransactionEntity $transaction): FullRefundCharge
+    public function buildFullRefund(Charge $charge): FullRefundCharge
     {
         return new FullRefundCharge(
-            $this->helper->priceToInt(
-                $transaction->getAmount()->getTotalPrice()
-            )
+            $charge->getAmount(),
         );
     }
 
@@ -61,6 +60,21 @@ class RefundRequest
         }
 
         return new PartialRefundCharge($itemsToRefund);
+    }
+
+    public function buildUnrelatedPartialRefund(int $refundAmount): PartialRefundCharge
+    {
+        $reference = \sprintf('refund %d', $refundAmount);
+
+        return new PartialRefundCharge([new Item(
+            $reference,
+            1,
+            'pcs',
+            $refundAmount,
+            $refundAmount,
+            $refundAmount,
+            substr($reference, 0, 128),
+        )]);
     }
 
     /**

@@ -75,6 +75,7 @@ final class HostedPaymentTest extends TestCase
                         'customFields' => [
                             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => self::PAYMENT_ID,
                             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER => $paymentRequest->getOrder(),
+                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => [],
                         ],
                     ],
                 ],
