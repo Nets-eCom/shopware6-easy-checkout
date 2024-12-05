@@ -11,7 +11,7 @@ class RefundChargeSend implements SalesChannelAware
     public function __construct(
         private readonly OrderEntity $order,
         private readonly OrderTransactionEntity $transaction,
-        private readonly int $refundAmount
+        private readonly float $refundAmount
     ) {
     }
 
@@ -25,7 +25,7 @@ class RefundChargeSend implements SalesChannelAware
         return $this->transaction;
     }
 
-    public function getRefundAmount(): int
+    public function getRefundAmount(): float
     {
         return $this->refundAmount;
     }

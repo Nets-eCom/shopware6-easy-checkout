@@ -66,6 +66,7 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
             'customFields' => [
                 OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => $payment->getPaymentId(),
                 OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER => $paymentRequest->getOrder(),
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => [],
             ],
         ];
 
