@@ -48,14 +48,13 @@ final class PaymentApiTest extends TestCase
                 ])
             );
 
-        $streamFactory = $this->createStub(StreamFactoryInterface::class);
-        $streamFactory->method('createStream')->willReturn($stream);
+        $streamFactory = $this->createStreamFactory($stream);
 
         $response = $this->createStub(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($stream);
 
-        $sut = $this->createPaymentApi($response, $this->createStub(StreamFactoryInterface::class));
+        $sut = $this->createPaymentApi($response, $streamFactory);
 
         $result = $sut->createPayment($this->createPaymentRequest());
 
@@ -102,7 +101,7 @@ final class PaymentApiTest extends TestCase
         $response->method('getStatusCode')->willReturn(400);
         $response->method('getBody')->willReturn($stream);
 
-        $sut = $this->createPaymentApi($response, $this->createStub(StreamFactoryInterface::class));
+        $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
         $sut->createPayment($this->createPaymentRequest());
     }
 
@@ -153,7 +152,7 @@ final class PaymentApiTest extends TestCase
         $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($stream);
 
-        $sut = $this->createPaymentApi($response, $this->createStub(StreamFactoryInterface::class));
+        $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
 
         $result = $sut->retrievePayment('1234');
 
@@ -184,14 +183,11 @@ final class PaymentApiTest extends TestCase
                 ])
             );
 
-        $streamFactory = $this->createStub(StreamFactoryInterface::class);
-        $streamFactory->method('createStream')->willReturn($stream);
-
         $response = $this->createStub(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($stream);
 
-        $sut = $this->createPaymentApi($response, $streamFactory);
+        $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
 
         $result = $sut->charge('1234', $this->createChargeRequest());
 
@@ -206,14 +202,11 @@ final class PaymentApiTest extends TestCase
             ->method('getContents')
             ->willReturn('');
 
-        $streamFactory = $this->createStub(StreamFactoryInterface::class);
-        $streamFactory->method('createStream')->willReturn($stream);
-
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('getStatusCode')->willReturn(200);
         $response->expects($this->once())->method('getBody')->willReturn($stream);
 
-        $sut = $this->createPaymentApi($response, $streamFactory);
+        $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
 
         $sut->updateReferenceInformation('1234', $this->createReferenceInformationRequest());
     }
@@ -225,13 +218,10 @@ final class PaymentApiTest extends TestCase
             ->method('getContents')
             ->willReturn('');
 
-        $streamFactory = $this->createStub(StreamFactoryInterface::class);
-        $streamFactory->method('createStream')->willReturn($stream);
-
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('getStatusCode')->willReturn(204);
 
-        $sut = $this->createPaymentApi($response, $streamFactory);
+        $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
 
         $sut->updateMyReference('1234', $this->createMyReferenceRequest());
     }
@@ -243,13 +233,10 @@ final class PaymentApiTest extends TestCase
             ->method('getContents')
             ->willReturn('');
 
-        $streamFactory = $this->createStub(StreamFactoryInterface::class);
-        $streamFactory->method('createStream')->willReturn($stream);
-
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('getStatusCode')->willReturn(204);
 
-        $sut = $this->createPaymentApi($response, $streamFactory);
+        $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
 
         $sut->terminate('1234');
     }
@@ -265,14 +252,11 @@ final class PaymentApiTest extends TestCase
                 ])
             );
 
-        $streamFactory = $this->createStub(StreamFactoryInterface::class);
-        $streamFactory->method('createStream')->willReturn($stream);
-
         $response = $this->createStub(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($stream);
 
-        $sut = $this->createPaymentApi($response, $streamFactory);
+        $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
 
         $result = $sut->refundCharge('1234', $this->createRefundRequest());
 
@@ -383,5 +367,13 @@ final class PaymentApiTest extends TestCase
             ),
             'https://api.example.com/'
         );
+    }
+
+    private function createStreamFactory(StreamInterface $stream): StreamFactoryInterface
+    {
+        $streamFactory = $this->createStub(StreamFactoryInterface::class);
+        $streamFactory->method('createStream')->willReturn($stream);
+
+        return $streamFactory;
     }
 }
