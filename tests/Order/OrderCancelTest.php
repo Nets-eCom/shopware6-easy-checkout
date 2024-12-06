@@ -16,6 +16,7 @@ use NexiNets\RequestBuilder\Helper\FormatHelper;
 use NexiNets\Tests\CheckoutApi\Fixture\RetrievePaymentResultFixture;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
@@ -48,6 +49,7 @@ final class OrderCancelTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createCancelRequestBuilder(),
+            $this->createMock(LoggerInterface::class)
         );
 
         $sut->cancel($this->createOrderEntity());
@@ -71,6 +73,7 @@ final class OrderCancelTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createCancelRequestBuilder(),
+            $this->createMock(LoggerInterface::class)
         );
 
         $sut->cancel($this->createOrderEntity());

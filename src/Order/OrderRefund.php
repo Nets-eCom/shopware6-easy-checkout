@@ -6,6 +6,8 @@ namespace NexiNets\Order;
 
 use NexiNets\Administration\Model\ChargeItem;
 use NexiNets\Administration\Model\RefundData;
+use NexiNets\CheckoutApi\Api\ErrorCodeEnum;
+use NexiNets\CheckoutApi\Api\Exception\InternalErrorPaymentApiException;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
@@ -16,6 +18,8 @@ use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
+use NexiNets\Order\Exception\OrderChargeRefundExceeded;
+use NexiNets\Order\Exception\OrderRefundException;
 use NexiNets\RequestBuilder\RefundRequest;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
@@ -36,7 +40,8 @@ class OrderRefund
     }
 
     /**
-     * @throws PaymentApiException
+     * @throws OrderChargeRefundExceeded
+     * @throws OrderRefundException
      */
     public function fullRefund(OrderEntity $order): void
     {
@@ -75,7 +80,7 @@ class OrderRefund
                         $charge->getChargeId(),
                         $refundRequest
                     );
-                } catch (PaymentApiException $e) {
+                } catch (PaymentApiException|InternalErrorPaymentApiException $e) {
                     $this->logger->error('Full refund failed', [
                         'paymentId' => $paymentId,
                         'error' => $e->getMessage(),
@@ -97,7 +102,8 @@ class OrderRefund
     }
 
     /**
-     * @throws PaymentApiException
+     * @throws OrderChargeRefundExceeded
+     * @throws OrderRefundException
      */
     public function partialRefund(OrderEntity $order, RefundData $refundData): void
     {
@@ -165,13 +171,13 @@ class OrderRefund
                                 : $partialRefund->getAmount(),
                         ],
                     ]);
-                } catch (PaymentApiException $e) {
+                } catch (InternalErrorPaymentApiException|PaymentApiException $e) {
                     $this->logger->error('Partial refund failed', [
                         'paymentId' => $paymentId,
                         'error' => $e->getMessage(),
                     ]);
 
-                    throw $e;
+                    $this->throwCorrespondingOrderRefundException($e, $chargeId);
                 }
 
                 $this->logger->info('Partial refund success', [
@@ -261,5 +267,23 @@ class OrderRefund
             $transaction,
             $items
         );
+    }
+
+    /**
+     * @throws OrderChargeRefundExceeded
+     * @throws OrderRefundException
+     */
+    private function throwCorrespondingOrderRefundException(
+        PaymentApiException $exception,
+        string $chargeId
+    ): void {
+        if (!$exception instanceof InternalErrorPaymentApiException) {
+            throw new OrderRefundException($chargeId, previous: $exception);
+        }
+
+        throw match ($exception->getInternalCode()) {
+            ErrorCodeEnum::InvalidRefundAmount => throw new OrderChargeRefundExceeded($chargeId, previous: $exception),
+            default => throw new OrderRefundException($chargeId, previous: $exception)
+        };
     }
 }
