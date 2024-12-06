@@ -14,7 +14,6 @@ use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Request\PartialRefundCharge;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Charge;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Item;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
@@ -154,7 +153,7 @@ class OrderRefund
 
             $charges = $refundData->getCharges();
             if ($charges === []) {
-                $charges = $this->selectChargesForUnrelatedPartialRefund($payment, $refundData->getAmount(), $alreadyRefunded);
+                $charges = $this->selectChargesForUnrelatedPartialRefund($refundData->getAmount(), $alreadyRefunded, $payment->getCharges() ?? []);
             }
 
             foreach ($charges as $chargeId => $items) {
@@ -167,13 +166,7 @@ class OrderRefund
 
                 try {
                     $response = $paymentApi->refundCharge($chargeId, $partialRefund);
-                    $transaction->changeCustomFields([
-                        OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => $alreadyRefunded + [
-                            $chargeId => isset($alreadyRefunded[$chargeId])
-                                ? $alreadyRefunded[$chargeId] + $partialRefund->getAmount()
-                                : $partialRefund->getAmount(),
-                        ],
-                    ]);
+                    $this->updateTransactionCustomFields($transaction, $chargeId, $alreadyRefunded, $partialRefund);
                 } catch (PaymentApiException $e) {
                     $this->logger->error('Partial refund failed', [
                         'paymentId' => $paymentId,
@@ -207,13 +200,13 @@ class OrderRefund
 
     /**
      * @param array<string, int> $alreadyRefunded
+     * @param array<Charge> $charges
      *
-     * @return array<string, array{amount: int, items: array<ChargeItem>}> $alreadyRefunded
+     * @return array<string, array{amount: int, items: array<ChargeItem>}>
      */
-    private function selectChargesForUnrelatedPartialRefund(Payment $payment, float $refundAmount, array $alreadyRefunded): array
+    private function selectChargesForUnrelatedPartialRefund(float $refundAmount, array $alreadyRefunded, array $charges): array
     {
         $refundAmount = (int) ($refundAmount * 100);
-        $charges = $payment->getCharges() ?? [];
 
         // find charge matching refundAmount
         foreach ($charges as $charge) {
@@ -249,7 +242,7 @@ class OrderRefund
                 break;
             }
 
-            $refundPerCharge = $chargeAvailableAmount;
+            $refundPerCharge = $charge->getAmount();
             if ($chargeAvailableAmount <= $remaining) {
                 $refundPerCharge = $chargeAvailableAmount;
                 $remaining -= $chargeAvailableAmount;
@@ -270,7 +263,7 @@ class OrderRefund
     /**
      * @param array{amount: int, items: array<ChargeItem>} $items
      */
-    public function buildPartialRefund(OrderTransactionEntity $transaction, array $items): PartialRefundCharge
+    private function buildPartialRefund(OrderTransactionEntity $transaction, array $items): PartialRefundCharge
     {
         if ($items['items'] === []) {
             return $this->refundRequest->buildUnrelatedPartialRefund(
@@ -300,5 +293,19 @@ class OrderRefund
             ErrorCodeEnum::InvalidRefundAmount => throw new OrderChargeRefundExceeded($chargeId, previous: $exception),
             default => throw new OrderRefundException($chargeId, previous: $exception)
         };
+    }
+
+    /**
+     * @param array<string, int> $alreadyRefunded
+     */
+    private function updateTransactionCustomFields(OrderTransactionEntity $transaction, string $chargeId, array $alreadyRefunded, PartialRefundCharge $partialRefund): void
+    {
+        $transaction->changeCustomFields([
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => $alreadyRefunded + [
+                $chargeId => isset($alreadyRefunded[$chargeId])
+                    ? $alreadyRefunded[$chargeId] + $partialRefund->getAmount()
+                    : $partialRefund->getAmount(),
+            ],
+        ]);
     }
 }

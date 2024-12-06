@@ -98,9 +98,9 @@ class RetrievePaymentResultFixture
                 null,
                 null,
                 [
-                    new Charge('test_charge_id 1', 100, new \DateTimeImmutable(), []),
-                    new Charge('test_charge_id 2', 300, new \DateTimeImmutable(), []),
-                    new Charge('test_charge_id 3', 600, new \DateTimeImmutable(), []),
+                    new Charge('test_charge_1', 100, new \DateTimeImmutable(), []),
+                    new Charge('test_charge_2', 300, new \DateTimeImmutable(), []),
+                    new Charge('test_charge_3', 600, new \DateTimeImmutable(), []),
                 ]
             )
         );

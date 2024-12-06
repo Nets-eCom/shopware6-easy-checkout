@@ -8,7 +8,6 @@ use NexiNets\Administration\Model\RefundData;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
-use NexiNets\CheckoutApi\Model\Request\Item;
 use NexiNets\CheckoutApi\Model\Request\PartialRefundCharge;
 use NexiNets\CheckoutApi\Model\Request\RefundCharge;
 use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
@@ -99,13 +98,14 @@ final class OrderRefundTest extends TestCase
             ->with('test_sales_channel_id', '025400006091b1ef6937598058c4e487')
             ->willReturn($payment);
 
+        $transaction = $order->getTransactions()->first();
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects($this->once())
             ->method('dispatch')
             ->with(new RefundChargeSend(
                 $order,
-                $order->getTransactions()->first(),
-                $order->getTransactions()->first()->getAmount()->getTotalPrice()
+                $transaction,
+                $transaction->getAmount()->getTotalPrice()
             ));
 
         $sut = new OrderRefund(
@@ -181,25 +181,22 @@ final class OrderRefundTest extends TestCase
         $invokedCount = $this->exactly(3);
         $api = $this->createMock(PaymentApi::class);
         $api
-            ->expects($this->exactly(3))
+            ->expects($invokedCount)
             ->method('refundCharge')
-            ->willReturnCallback(function ($parameters) use ($invokedCount) {
+            ->willReturnCallback(function (string $chargeId, PartialRefundCharge $refund) use ($invokedCount) {
                 if ($invokedCount->numberOfInvocations() === 1) {
-                    $this->assertSame(['test_charge_id 1', new PartialRefundCharge([
-                        new Item('refund 100', 1, 'pcs', 100, 100, 100, 'refund 100'),
-                    ])], $parameters);
+                    $this->assertSame('test_charge_1', $chargeId);
+                    $this->assertSame(100, $refund->getAmount());
                 }
 
                 if ($invokedCount->numberOfInvocations() === 2) {
-                    $this->assertSame(['test_charge_id 2', new PartialRefundCharge([
-                        new Item('refund 300', 1, 'pcs', 300, 300, 300, 'refund 100'),
-                    ])], $parameters);
+                    $this->assertSame('test_charge_2', $chargeId);
+                    $this->assertSame(300, $refund->getAmount());
                 }
 
                 if ($invokedCount->numberOfInvocations() === 3) {
-                    $this->assertSame(['test_charge_id 3', new PartialRefundCharge([
-                        new Item('refund 199', 1, 'pcs', 199, 199, 199, 'refund 199'),
-                    ])], $parameters);
+                    $this->assertSame('test_charge_3', $chargeId);
+                    $this->assertSame(199, $refund->getAmount());
                 }
 
                 return new RefundChargeResult('foo');
@@ -254,7 +251,7 @@ final class OrderRefundTest extends TestCase
                 'chargedItems' => [],
             ],
             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => [
-                'test_charge_id 3' => 400,
+                'test_charge_3' => 400,
             ],
         ]);
 
