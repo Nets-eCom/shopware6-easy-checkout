@@ -1,9 +1,23 @@
 {
+    "global": {
+        "error-codes": {
+            "error-charge-max-amount": "Amount is bigger than the max. amount that can be charged.",
+            "error-refund-max-amount": "Amount is bigger than the max. amount that can be refunded."
+        }
+    },
     "nexinets-charge-action": {
         "title": "Make Full Charge",
         "description": "Send charge request to Nexi/Nets"
     },
     "nexinets-payment-component": {
+        "api": {
+            "errors": {
+                "NEXI_NETS__CHARGE_FAILED": "Charge failed for a given payment. Payment ID: {paymentId}",
+                "NEXI_NETS__REFUND_FAILED": "Refund failed for a given charge. Charge ID: {chargeId}",
+                "NEXI_NETS__REFUND_AMOUNT_EXCEEDED": "Refund value must not exceed total amount of a given charge. Charge ID: {chargeId}",
+                "NEXI_NETS__CANCEL_FAILED": "Cancel failed for a given payment. Payment ID: {paymentId}"
+            }
+        },
         "payment-details": {
             "title": "Payment",
             "status-label": "Payment status",
@@ -50,7 +64,7 @@
         },
         "itemsTable": {
             "qty": "QTY",
-            "item": "Item",
+            "item": "Item name",
             "subtotal": "Subtotal",
             "chargeQty": "Charge QTY",
             "refundQty": "Refund QTY"
