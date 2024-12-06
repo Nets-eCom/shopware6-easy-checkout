@@ -12,6 +12,8 @@ use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Request\PartialRefundCharge;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Charge;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Item;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
@@ -80,7 +82,7 @@ class OrderRefund
                         $charge->getChargeId(),
                         $refundRequest
                     );
-                } catch (PaymentApiException|InternalErrorPaymentApiException $e) {
+                } catch (PaymentApiException $e) {
                     $this->logger->error('Full refund failed', [
                         'paymentId' => $paymentId,
                         'error' => $e->getMessage(),
@@ -140,6 +142,7 @@ class OrderRefund
                     'paymentId' => $paymentId,
                     'status' => $status->value,
                 ]);
+
                 continue;
             }
 
@@ -171,13 +174,15 @@ class OrderRefund
                                 : $partialRefund->getAmount(),
                         ],
                     ]);
-                } catch (InternalErrorPaymentApiException|PaymentApiException $e) {
+                } catch (PaymentApiException $e) {
                     $this->logger->error('Partial refund failed', [
                         'paymentId' => $paymentId,
                         'error' => $e->getMessage(),
                     ]);
 
                     $this->throwCorrespondingOrderRefundException($e, $chargeId);
+
+                    return;
                 }
 
                 $this->logger->info('Partial refund success', [
@@ -216,7 +221,17 @@ class OrderRefund
                 return [
                     $charge->getChargeId() => [
                         'amount' => $charge->getAmount(),
-                        'items' => $charge->getOrderItems(),
+                        'items' => array_map(fn (Item $chargeItem): ChargeItem => new ChargeItem(
+                            $charge->getChargeId(),
+                            $chargeItem->getName(),
+                            $chargeItem->getQuantity(),
+                            $chargeItem->getUnit(),
+                            $chargeItem->getUnitPrice(),
+                            $chargeItem->getGrossTotalAmount(),
+                            $chargeItem->getNetTotalAmount(),
+                            $chargeItem->getReference(),
+                            $chargeItem->getTaxRate(),
+                        ), $charge->getOrderItems()),
                     ],
                 ];
             }
