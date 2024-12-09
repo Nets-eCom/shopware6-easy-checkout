@@ -9,6 +9,7 @@ use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Fetcher\PaymentFetcher;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\Cache\CacheInterface;
 
 class PaymentFetcherTest extends TestCase
 {
@@ -18,11 +19,14 @@ class PaymentFetcherTest extends TestCase
 
     private PaymentApi|MockObject $paymentApi;
 
+    private CacheInterface|MockObject $cache;
+
     protected function setUp(): void
     {
         $this->paymentApiFactory = $this->createMock(PaymentApiFactory::class);
         $this->configurationProvider = $this->createMock(ConfigurationProvider::class);
         $this->paymentApi = $this->createMock(PaymentApi::class);
+        $this->cache = $this->createMock(CacheInterface::class);
     }
 
     public function testFetchPayment(): void
@@ -53,7 +57,8 @@ class PaymentFetcherTest extends TestCase
 
         $sut = new PaymentFetcher(
             $this->paymentApiFactory,
-            $this->configurationProvider
+            $this->configurationProvider,
+            $this->cache
         );
         $result = $sut->fetchPayment($salesChannelId, $paymentId);
 

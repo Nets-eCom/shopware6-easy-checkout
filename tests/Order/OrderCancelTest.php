@@ -23,6 +23,7 @@ use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class OrderCancelTest extends TestCase
 {
@@ -49,6 +50,7 @@ final class OrderCancelTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createCancelRequestBuilder(),
+            $this->createMock(EventDispatcherInterface::class),
             $this->createMock(LoggerInterface::class)
         );
 
@@ -73,6 +75,7 @@ final class OrderCancelTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createCancelRequestBuilder(),
+            $this->createMock(EventDispatcherInterface::class),
             $this->createMock(LoggerInterface::class)
         );
 

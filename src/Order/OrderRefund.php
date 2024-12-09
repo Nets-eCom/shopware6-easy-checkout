@@ -79,11 +79,11 @@ class OrderRefund
                     'error' => $e->getMessage(),
                 ]);
 
-                $this->throwCorrespondingOrderRefundException($e, $chargeId);
+                $this->createCorrespondingOrderRefundException($e, $chargeId);
             }
 
             $this->eventDispatcher->dispatch(
-                new RefundChargeSend($order, $transaction, $refundRequest->getAmount())
+                new RefundChargeSend($order, $transaction)
             );
         }
     }
@@ -99,6 +99,8 @@ class OrderRefund
         if (!$transactions instanceof OrderTransactionCollection) {
             throw new \LogicException('No order transactions found');
         }
+
+        $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
 
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
@@ -130,8 +132,6 @@ class OrderRefund
                 continue;
             }
 
-            $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
-
             foreach ($refundData->getCharges() as $chargeId => $items) {
                 $partialRefund = $this->refundRequest->buildPartialRefund(
                     $transaction,
@@ -145,19 +145,23 @@ class OrderRefund
 
                 try {
                     $response = $paymentApi->refundCharge($chargeId, $partialRefund);
-
-                    $this->logger->info('Partial refund success', [
-                        'paymentId' => $paymentId,
-                        'refundId' => $response->getRefundId(),
-                    ]);
                 } catch (InternalErrorPaymentApiException|PaymentApiException $e) {
                     $this->logFailure([
                         'paymentId' => $paymentId,
                         'error' => $e->getMessage(),
                     ]);
 
-                    $this->throwCorrespondingOrderRefundException($e, $chargeId);
+                    throw $this->createCorrespondingOrderRefundException($e, $chargeId);
                 }
+
+                $this->logger->info('Partial refund success', [
+                    'paymentId' => $paymentId,
+                    'refundId' => $response->getRefundId(),
+                ]);
+
+                $this->eventDispatcher->dispatch(
+                    new RefundChargeSend($order, $transaction)
+                );
             }
         }
     }
@@ -178,21 +182,17 @@ class OrderRefund
         $this->logger->error('Partial refund failed', $parameters);
     }
 
-    /**
-     * @throws OrderChargeRefundExceeded
-     * @throws OrderRefundException
-     */
-    private function throwCorrespondingOrderRefundException(
+    private function createCorrespondingOrderRefundException(
         PaymentApiException $exception,
         string $chargeId
-    ): void {
+    ): OrderRefundException {
         if (!$exception instanceof InternalErrorPaymentApiException) {
-            throw new OrderRefundException($chargeId, previous: $exception);
+            return new OrderRefundException($chargeId, previous: $exception);
         }
 
-        throw match ($exception->getInternalCode()) {
-            ErrorCodeEnum::InvalidRefundAmount => throw new OrderChargeRefundExceeded($chargeId, previous: $exception),
-            default => throw new OrderRefundException($chargeId, previous: $exception)
+        return match ($exception->getInternalCode()) {
+            ErrorCodeEnum::InvalidRefundAmount => new OrderChargeRefundExceeded($chargeId, previous: $exception),
+            default => new OrderRefundException($chargeId, previous: $exception)
         };
     }
 }

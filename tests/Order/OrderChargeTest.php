@@ -26,6 +26,7 @@ use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class OrderChargeTest extends TestCase
 {
@@ -61,7 +62,8 @@ final class OrderChargeTest extends TestCase
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
             $chargeRequestBuilder,
-            $this->createStub(LoggerInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createStub(LoggerInterface::class)
         );
 
         $sut->fullCharge($this->createOrderEntity());
@@ -83,7 +85,8 @@ final class OrderChargeTest extends TestCase
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
             $this->createChargeRequestBuilderMock(),
-            $this->createStub(LoggerInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createStub(LoggerInterface::class)
         );
 
         $sut->fullCharge($this->createOrderEntity());
@@ -111,7 +114,8 @@ final class OrderChargeTest extends TestCase
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
             $this->createChargeRequestBuilderMock(),
-            $this->createStub(LoggerInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createStub(LoggerInterface::class)
         );
 
         $sut->fullCharge($order);
@@ -139,7 +143,8 @@ final class OrderChargeTest extends TestCase
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
             $this->createChargeRequestBuilderMock(),
-            $this->createStub(LoggerInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createStub(LoggerInterface::class)
         );
 
         $sut->fullCharge($this->createOrderEntity());
@@ -178,7 +183,8 @@ final class OrderChargeTest extends TestCase
             $this->createPaymentApiFactoryMock($paymentApi),
             $configurationProvider,
             $chargeRequestBuilder,
-            $this->createStub(LoggerInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createStub(LoggerInterface::class)
         );
 
         $sut->partialCharge($this->createOrderEntity(), $chargeData);

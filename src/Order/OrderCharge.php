@@ -11,6 +11,7 @@ use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Core\Content\NetsCheckout\Event\ChargeSend;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\Order\Exception\OrderChargeException;
@@ -19,6 +20,7 @@ use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class OrderCharge
 {
@@ -27,6 +29,7 @@ class OrderCharge
         private readonly PaymentApiFactory $apiFactory,
         private readonly ConfigurationProvider $configurationProvider,
         private readonly ChargeRequest $chargeRequest,
+        private readonly EventDispatcherInterface $dispatcher,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -46,6 +49,8 @@ class OrderCharge
         if (!$transactions instanceof OrderTransactionCollection) {
             throw new \LogicException('No order transactions found');
         }
+
+        $paymentApi = $this->createPaymentApi($salesChannelId);
 
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
@@ -75,7 +80,6 @@ class OrderCharge
             ]);
 
             try {
-                $paymentApi = $this->createPaymentApi($salesChannelId);
                 $response = $paymentApi->charge($paymentId, $payload);
             } catch (PaymentApiException $e) {
                 $this->logger->error('Full charge failed', [
@@ -90,6 +94,10 @@ class OrderCharge
                 'paymentId' => $paymentId,
                 'chargeId' => $response->getChargeId(),
             ]);
+
+            $this->dispatcher->dispatch(
+                new ChargeSend($order, $transaction)
+            );
         }
     }
 
@@ -108,6 +116,8 @@ class OrderCharge
         if (!$transactions instanceof OrderTransactionCollection) {
             throw new \LogicException('No order transactions found');
         }
+
+        $paymentApi = $this->createPaymentApi($salesChannelId);
 
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
@@ -137,7 +147,6 @@ class OrderCharge
             ]);
 
             try {
-                $paymentApi = $this->createPaymentApi($salesChannelId);
                 $response = $paymentApi->charge($paymentId, $payload);
             } catch (PaymentApiException $e) {
                 $this->logger->error('Partial charge failed', [
@@ -152,6 +161,10 @@ class OrderCharge
                 'paymentId' => $paymentId,
                 'chargeId' => $response->getChargeId(),
             ]);
+
+            $this->dispatcher->dispatch(
+                new ChargeSend($order, $transaction)
+            );
         }
     }
 

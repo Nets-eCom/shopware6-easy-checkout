@@ -8,7 +8,7 @@ use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Item;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Fetcher\PaymentFetcher;
+use NexiNets\Fetcher\CachablePaymentFetcherInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderCollection;
 use Shopware\Core\Checkout\Order\OrderEntity;
@@ -34,7 +34,7 @@ class PaymentDetailController extends AbstractController
      */
     public function __construct(
         private readonly EntityRepository $orderRepository,
-        private readonly PaymentFetcher $paymentFetcher,
+        private readonly CachablePaymentFetcherInterface $paymentFetcher,
     ) {
     }
 

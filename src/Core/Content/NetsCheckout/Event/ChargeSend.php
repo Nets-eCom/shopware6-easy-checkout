@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace NexiNets\Core\Content\NetsCheckout\Event;
 
-final class RefundChargeSend extends PaymentUpdated
+class ChargeSend extends PaymentUpdated
 {
 }
