@@ -55,7 +55,6 @@ final class OrderRefundTest extends TestCase
             ->with(new RefundChargeSend(
                 $order,
                 $order->getTransactions()->first(),
-                10000
             ));
 
         $sut = new OrderRefund(

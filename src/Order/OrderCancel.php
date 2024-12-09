@@ -9,6 +9,7 @@ use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
+use NexiNets\Core\Content\NetsCheckout\Event\CancelSend;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\Fetcher\PaymentFetcherInterface;
 use NexiNets\Order\Exception\OrderCancelException;
@@ -17,6 +18,7 @@ use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class OrderCancel
 {
@@ -25,7 +27,8 @@ class OrderCancel
         private readonly PaymentApiFactory $apiFactory,
         private readonly ConfigurationProvider $configurationProvider,
         private readonly CancelRequest $requestBuilder,
-        private readonly LoggerInterface $logger
+        private readonly EventDispatcherInterface $dispatcher,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -39,6 +42,8 @@ class OrderCancel
         if (!$transactions instanceof OrderTransactionCollection) {
             throw new \LogicException('No order transactions found');
         }
+
+        $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
 
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
@@ -56,16 +61,15 @@ class OrderCancel
                 continue;
             }
 
-            $api = $this->createPaymentApi($order->getSalesChannelId());
             $payload = $this->requestBuilder->build($transaction);
 
-            $this->logger->error('Cancel request', [
+            $this->logger->info('Cancel request', [
                 'paymentId' => $paymentId,
                 'payload' => $payload,
             ]);
 
             try {
-                $api->cancel(
+                $paymentApi->cancel(
                     $paymentId,
                     $this->requestBuilder->build($transaction)
                 );
@@ -78,10 +82,14 @@ class OrderCancel
                 throw new OrderCancelException($paymentId, previous: $e);
             }
 
-            $this->logger->error('Cancel request success', [
+            $this->logger->info('Cancel request success', [
                 'paymentId' => $paymentId,
                 'payload' => $payload,
             ]);
+
+            $this->dispatcher->dispatch(
+                new CancelSend($order, $transaction)
+            );
         }
     }
 
