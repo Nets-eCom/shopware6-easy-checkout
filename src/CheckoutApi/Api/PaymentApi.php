@@ -11,6 +11,7 @@ use NexiNets\CheckoutApi\Http\HttpClient;
 use NexiNets\CheckoutApi\Http\HttpClientException;
 use NexiNets\CheckoutApi\Model\Request\Cancel;
 use NexiNets\CheckoutApi\Model\Request\Charge;
+use NexiNets\CheckoutApi\Model\Request\MyReference;
 use NexiNets\CheckoutApi\Model\Request\Payment;
 use NexiNets\CheckoutApi\Model\Request\ReferenceInformation;
 use NexiNets\CheckoutApi\Model\Request\RefundCharge;
@@ -28,6 +29,10 @@ class PaymentApi
     private const PAYMENT_CANCELS = '/cancels';
 
     private const PAYMENT_UPDATE_REFERENCE_INFORMATION = '/referenceinformation';
+
+    private const PAYMENT_UPDATE_MY_REFERENCE = '/myreference';
+
+    private const PAYMENT_TERMINATE = '/terminate';
 
     private const CHARGES_ENDPOINT = '/v1/charges';
 
@@ -89,28 +94,6 @@ class PaymentApi
         return RetrievePaymentResult::fromJson($contents);
     }
 
-    public function charge(string $paymentId, Charge $charge): ChargeResult
-    {
-        try {
-            $response = $this->client->post($this->getPaymentOperationEndpoint($paymentId, self::PAYMENT_CHARGES), json_encode($charge));
-        } catch (HttpClientException $httpClientException) {
-            throw new PaymentApiException(
-                \sprintf('Couldn\'t create charge for a given payment id: %s', $paymentId),
-                $httpClientException->getCode(),
-                $httpClientException
-            );
-        }
-
-        $code = $response->getStatusCode();
-        $contents = $response->getBody()->getContents();
-
-        if (!$this->isSuccessCode($code)) {
-            throw $this->createPaymentApiException($code, $contents);
-        }
-
-        return ChargeResult::fromJson($contents);
-    }
-
     /**
      * @throws PaymentApiException
      */
@@ -155,6 +138,79 @@ class PaymentApi
         if (!$this->isSuccessCode($code)) {
             throw $this->createPaymentApiException($code, $contents);
         }
+    }
+
+    /**
+     * @throws PaymentApiException
+     * @throws \JsonException
+     */
+    public function updateMyReference(string $paymentId, MyReference $myReference): void
+    {
+        try {
+            $response = $this->client->put(
+                $this->getPaymentOperationEndpoint($paymentId, self::PAYMENT_UPDATE_MY_REFERENCE),
+                json_encode($myReference)
+            );
+        } catch (HttpClientException $httpClientException) {
+            throw new PaymentApiException(
+                \sprintf('Couldn\'t update myReference information for a given payment id: %s', $paymentId),
+                $httpClientException->getCode(),
+                $httpClientException
+            );
+        }
+
+        $code = $response->getStatusCode();
+
+        if (!$this->isSuccessCode($code)) {
+            throw $this->createPaymentApiException($code, $response->getBody()->getContents());
+        }
+    }
+
+    /**
+     * @throws PaymentApiException
+     */
+    public function terminate(string $paymentId): void
+    {
+        try {
+            $response = $this->client->put(
+                $this->getPaymentOperationEndpoint($paymentId, self::PAYMENT_TERMINATE),
+                ''
+            );
+        } catch (HttpClientException $httpClientException) {
+            throw new PaymentApiException(
+                \sprintf('Couldn\'t terminate payment id: %s', $paymentId),
+                $httpClientException->getCode(),
+                $httpClientException
+            );
+        }
+
+        $code = $response->getStatusCode();
+
+        if (!$this->isSuccessCode($code)) {
+            throw $this->createPaymentApiException($code, $response->getBody()->getContents());
+        }
+    }
+
+    public function charge(string $paymentId, Charge $charge): ChargeResult
+    {
+        try {
+            $response = $this->client->post($this->getPaymentOperationEndpoint($paymentId, self::PAYMENT_CHARGES), json_encode($charge));
+        } catch (HttpClientException $httpClientException) {
+            throw new PaymentApiException(
+                \sprintf('Couldn\'t create charge for a given payment id: %s', $paymentId),
+                $httpClientException->getCode(),
+                $httpClientException
+            );
+        }
+
+        $code = $response->getStatusCode();
+        $contents = $response->getBody()->getContents();
+
+        if (!$this->isSuccessCode($code)) {
+            throw $this->createPaymentApiException($code, $contents);
+        }
+
+        return ChargeResult::fromJson($contents);
     }
 
     /**

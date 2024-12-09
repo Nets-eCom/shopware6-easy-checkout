@@ -88,9 +88,12 @@
             <argument>%kernel.shopware_version%</argument>
         </service>
 
+        <service id="NexiNets\Fetcher\CachablePaymentFetcherInterface" alias="NexiNets\Fetcher\PaymentFetcher"/>
+
         <service id="NexiNets\Fetcher\PaymentFetcher">
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="cache.nexi_nets.payment"/>
         </service>
 
         <service id="NexiNets\Order\OrderCharge">
@@ -115,6 +118,7 @@
             <argument type="service" id="NexiNets\CheckoutApi\Factory\PaymentApiFactory"/>
             <argument type="service" id="NexiNets\Configuration\ConfigurationProvider"/>
             <argument type="service" id="NexiNets\RequestBuilder\CancelRequest"/>
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
             <argument type="service" id="monolog.logger.nexinets_channel"/>
         </service>
 
@@ -122,6 +126,7 @@
         <service id="NexiNets\Storefront\Controller\WebhookController" public="true">
             <argument type="service" id="NexiNets\Security\WebhookVoter"/>
             <argument type="service" id="NexiNets\WebhookProcessor\WebhookProcessor"/>
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
             <argument type="service" id="monolog.logger.nexinets_channel"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -174,6 +179,31 @@
             <argument type="service" id="NexiNets\Order\OrderCancel"/>
             <argument type="service" id="order.repository"/>
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service id="NexiNets\Subscriber\CacheCleanupOnPaymentUpdateSubscriber" abstract="true">
+            <argument type="service" id="NexiNets\Fetcher\CachablePaymentFetcherInterface"/>
+        </service>
+
+        <service
+            id="NexiNets\Subscriber\CacheCleanupOnChargeSendSubscriber"
+            parent="NexiNets\Subscriber\CacheCleanupOnPaymentUpdateSubscriber"
+        >
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service
+            id="NexiNets\Subscriber\CacheCleanupOnRefundSendSubscriber"
+            parent="NexiNets\Subscriber\CacheCleanupOnPaymentUpdateSubscriber"
+        >
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service
+            id="NexiNets\Subscriber\CacheCleanupOnCancelSendSubscriber"
+            parent="NexiNets\Subscriber\CacheCleanupOnPaymentUpdateSubscriber"
+        >
             <tag name="kernel.event_subscriber"/>
         </service>
 
