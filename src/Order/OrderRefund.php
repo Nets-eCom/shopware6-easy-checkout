@@ -87,7 +87,7 @@ class OrderRefund
                         'error' => $e->getMessage(),
                     ]);
 
-                    throw $e;
+                    throw $this->createCorrespondingOrderRefundException($e, $charge->getChargeId());
                 }
 
                 $this->logger->info('Full refund success', [
@@ -113,6 +113,8 @@ class OrderRefund
         if (!$transactions instanceof OrderTransactionCollection) {
             throw new \LogicException('No order transactions found');
         }
+
+        $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
 
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
@@ -173,9 +175,7 @@ class OrderRefund
                         'error' => $e->getMessage(),
                     ]);
 
-                    $this->throwCorrespondingOrderRefundException($e, $chargeId);
-
-                    return;
+                    throw $this->createCorrespondingOrderRefundException($e, $chargeId);
                 }
 
                 $this->logger->info('Partial refund success', [
@@ -277,21 +277,17 @@ class OrderRefund
         );
     }
 
-    /**
-     * @throws OrderChargeRefundExceeded
-     * @throws OrderRefundException
-     */
-    private function throwCorrespondingOrderRefundException(
+    private function createCorrespondingOrderRefundException(
         PaymentApiException $exception,
         string $chargeId
-    ): void {
+    ): OrderRefundException {
         if (!$exception instanceof InternalErrorPaymentApiException) {
-            throw new OrderRefundException($chargeId, previous: $exception);
+            return new OrderRefundException($chargeId, previous: $exception);
         }
 
-        throw match ($exception->getInternalCode()) {
-            ErrorCodeEnum::InvalidRefundAmount => throw new OrderChargeRefundExceeded($chargeId, previous: $exception),
-            default => throw new OrderRefundException($chargeId, previous: $exception)
+        return match ($exception->getInternalCode()) {
+            ErrorCodeEnum::InvalidRefundAmount => new OrderChargeRefundExceeded($chargeId, previous: $exception),
+            default => new OrderRefundException($chargeId, previous: $exception)
         };
     }
 

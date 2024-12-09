@@ -2,19 +2,26 @@
 
 namespace NexiNets\Fetcher;
 
+use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\Configuration\ConfigurationProvider;
+use Psr\Cache\InvalidArgumentException;
+use Symfony\Contracts\Cache\CacheInterface;
 
 class PaymentFetcher implements PaymentFetcherInterface, CachablePaymentFetcherInterface
 {
     public function __construct(
         private readonly PaymentApiFactory $paymentApiFactory,
         private readonly ConfigurationProvider $configurationProvider,
+        private readonly CacheInterface $cache
     ) {
     }
 
+    /**
+     * @throws PaymentApiException
+     */
     public function fetchPayment(string $salesChannelId, string $paymentId): Payment
     {
         return $this
@@ -23,15 +30,23 @@ class PaymentFetcher implements PaymentFetcherInterface, CachablePaymentFetcherI
             ->getPayment();
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getCachedPayment(string $salesChannelId, string $paymentId): Payment
     {
-        // @todo Implement caching
-        return $this->fetchPayment($salesChannelId, $paymentId);
+        return $this->cache->get(
+            $paymentId,
+            fn (): Payment => $this->fetchPayment($salesChannelId, $paymentId)
+        );
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function removeCache(string $paymentId): void
     {
-        // @todo Implement caching
+        $this->cache->delete($paymentId);
     }
 
     private function createPaymentApi(string $salesChannelId): PaymentApi

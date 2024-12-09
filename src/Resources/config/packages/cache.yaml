@@ -1,0 +1,5 @@
+framework:
+  cache:
+    pools:
+      cache.nexi_nets.payment:
+        adapter: cache.app
