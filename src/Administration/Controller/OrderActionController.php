@@ -111,6 +111,8 @@ class OrderActionController extends AbstractController
             throw OrderException::orderNotFound($orderId);
         }
 
+        $refundData->setContext($context);
+
         try {
             $this->processRefund($order, $refundData);
         } catch (OrderRefundException $orderRefundException) {
