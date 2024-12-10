@@ -11,7 +11,7 @@ final class CacheCleanupOnChargeSendSubscriber extends BaseCacheCleanupSubscribe
     public static function getSubscribedEvents(): array
     {
         return [
-            ChargeSend::class => 'onPaymentUpdate',
+            ChargeSend::class => 'onChargeSend',
         ];
     }
 

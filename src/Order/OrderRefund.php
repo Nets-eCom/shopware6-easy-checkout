@@ -26,15 +26,21 @@ use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class OrderRefund
 {
+    /**
+     * @param EntityRepository<OrderTransactionCollection> $orderTransactionRepository
+     */
     public function __construct(
         private readonly PaymentFetcherInterface $fetcher,
         private readonly PaymentApiFactory $apiFactory,
         private readonly ConfigurationProvider $configurationProvider,
         private readonly RefundRequest $refundRequest,
+        private readonly EntityRepository $orderTransactionRepository,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly LoggerInterface $logger
     ) {
@@ -168,7 +174,7 @@ class OrderRefund
 
                 try {
                     $response = $paymentApi->refundCharge($chargeId, $partialRefund);
-                    $this->updateTransactionCustomFields($transaction, $chargeId, $alreadyRefunded, $partialRefund);
+                    $this->updateTransactionCustomFields($transaction, $chargeId, $partialRefund, $refundData->getContext());
                 } catch (PaymentApiException $e) {
                     $this->logger->error('Partial refund failed', [
                         'paymentId' => $paymentId,
@@ -291,11 +297,16 @@ class OrderRefund
         };
     }
 
-    /**
-     * @param array<string, int> $alreadyRefunded
-     */
-    private function updateTransactionCustomFields(OrderTransactionEntity $transaction, string $chargeId, array $alreadyRefunded, PartialRefundCharge $partialRefund): void
-    {
+    private function updateTransactionCustomFields(
+        OrderTransactionEntity $transaction,
+        string $chargeId,
+        PartialRefundCharge $partialRefund,
+        Context $context,
+    ): void {
+        $alreadyRefunded = $transaction->getCustomFieldsValue(
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED
+        );
+
         $transaction->changeCustomFields([
             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => $alreadyRefunded + [
                 $chargeId => isset($alreadyRefunded[$chargeId])
@@ -303,5 +314,11 @@ class OrderRefund
                     : $partialRefund->getAmount(),
             ],
         ]);
+
+        $data = [
+            'id' => $transaction->getId(),
+            'customFields' => $transaction->getCustomFields(),
+        ];
+        $this->orderTransactionRepository->update([$data], $context);
     }
 }

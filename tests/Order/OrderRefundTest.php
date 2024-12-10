@@ -28,6 +28,8 @@ use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class OrderRefundTest extends TestCase
@@ -66,6 +68,7 @@ final class OrderRefundTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
+            $this->createMock(EntityRepository::class),
             $eventDispatcher,
             $this->createMock(LoggerInterface::class)
         );
@@ -113,6 +116,7 @@ final class OrderRefundTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
+            $this->createMock(EntityRepository::class),
             $eventDispatcher,
             $this->createMock(LoggerInterface::class)
         );
@@ -140,6 +144,7 @@ final class OrderRefundTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
+            $this->createMock(EntityRepository::class),
             $this->createStub(EventDispatcherInterface::class),
             $this->createMock(LoggerInterface::class)
         );
@@ -167,6 +172,7 @@ final class OrderRefundTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
+            $this->createMock(EntityRepository::class),
             $this->createStub(EventDispatcherInterface::class),
             $this->createMock(LoggerInterface::class)
         );
@@ -222,11 +228,15 @@ final class OrderRefundTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createRefundChargeRequestBuilder(),
+            $this->createMock(EntityRepository::class),
             $eventDispatcher,
             $this->createMock(LoggerInterface::class)
         );
 
-        $sut->partialRefund($order, new RefundData(5.99));
+        $refundData = new RefundData(5.99);
+        $refundData->setContext(Context::createDefaultContext());
+
+        $sut->partialRefund($order, $refundData);
     }
 
     private function createOrderEntity(): OrderEntity
