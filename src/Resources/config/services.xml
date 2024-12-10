@@ -129,6 +129,7 @@
             <argument type="service" id="NexiNets\Security\WebhookVoter"/>
             <argument type="service" id="NexiNets\WebhookProcessor\WebhookProcessor"/>
             <argument type="service" id="monolog.logger.nexinets_channel"/>
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
@@ -205,6 +206,11 @@
             id="NexiNets\Subscriber\CacheCleanupOnCancelSendSubscriber"
             parent="NexiNets\Subscriber\BaseCacheCleanupSubscriber"
         >
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service id="NexiNets\Subscriber\CacheCleanupOnWebhookProcessedSubscriber">
+            <argument type="service" id="NexiNets\Fetcher\CachablePaymentFetcherInterface"/>
             <tag name="kernel.event_subscriber"/>
         </service>
 
