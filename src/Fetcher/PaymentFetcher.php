@@ -7,15 +7,15 @@ use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
 use NexiNets\Configuration\ConfigurationProvider;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
-use Symfony\Contracts\Cache\CacheInterface;
 
 class PaymentFetcher implements PaymentFetcherInterface, CachablePaymentFetcherInterface
 {
     public function __construct(
         private readonly PaymentApiFactory $paymentApiFactory,
         private readonly ConfigurationProvider $configurationProvider,
-        private readonly CacheInterface $cache
+        private readonly CacheItemPoolInterface $cache
     ) {
     }
 
@@ -35,10 +35,19 @@ class PaymentFetcher implements PaymentFetcherInterface, CachablePaymentFetcherI
      */
     public function getCachedPayment(string $salesChannelId, string $paymentId): Payment
     {
-        return $this->cache->get(
-            $paymentId,
-            fn (): Payment => $this->fetchPayment($salesChannelId, $paymentId)
-        );
+        $item = $this->cache->getItem($paymentId);
+        $payment = $item->get();
+
+        if (!$item->isHit() || $payment === null) {
+            $payment = $this->fetchPayment($salesChannelId, $paymentId);
+
+            $item->set($payment);
+            $this->cache->save($item);
+
+            return $payment;
+        }
+
+        return $payment;
     }
 
     /**
@@ -46,7 +55,11 @@ class PaymentFetcher implements PaymentFetcherInterface, CachablePaymentFetcherI
      */
     public function removeCache(string $paymentId): void
     {
-        $this->cache->delete($paymentId);
+        if (!$this->cache->hasItem($paymentId)) {
+            return;
+        }
+
+        $this->cache->deleteItem($paymentId);
     }
 
     private function createPaymentApi(string $salesChannelId): PaymentApi
