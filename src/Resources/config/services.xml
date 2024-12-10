@@ -128,7 +128,6 @@
         <service id="NexiNets\Storefront\Controller\WebhookController" public="true">
             <argument type="service" id="NexiNets\Security\WebhookVoter"/>
             <argument type="service" id="NexiNets\WebhookProcessor\WebhookProcessor"/>
-            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
             <argument type="service" id="monolog.logger.nexinets_channel"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -184,27 +183,27 @@
             <tag name="kernel.event_subscriber"/>
         </service>
 
-        <service id="NexiNets\Subscriber\CacheCleanupOnPaymentUpdateSubscriber" abstract="true">
+        <service id="NexiNets\Subscriber\BaseCacheCleanupSubscriber" abstract="true">
             <argument type="service" id="NexiNets\Fetcher\CachablePaymentFetcherInterface"/>
         </service>
 
         <service
             id="NexiNets\Subscriber\CacheCleanupOnChargeSendSubscriber"
-            parent="NexiNets\Subscriber\CacheCleanupOnPaymentUpdateSubscriber"
+            parent="NexiNets\Subscriber\BaseCacheCleanupSubscriber"
         >
             <tag name="kernel.event_subscriber"/>
         </service>
 
         <service
             id="NexiNets\Subscriber\CacheCleanupOnRefundSendSubscriber"
-            parent="NexiNets\Subscriber\CacheCleanupOnPaymentUpdateSubscriber"
+            parent="NexiNets\Subscriber\BaseCacheCleanupSubscriber"
         >
             <tag name="kernel.event_subscriber"/>
         </service>
 
         <service
             id="NexiNets\Subscriber\CacheCleanupOnCancelSendSubscriber"
-            parent="NexiNets\Subscriber\CacheCleanupOnPaymentUpdateSubscriber"
+            parent="NexiNets\Subscriber\BaseCacheCleanupSubscriber"
         >
             <tag name="kernel.event_subscriber"/>
         </service>
