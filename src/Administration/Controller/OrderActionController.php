@@ -111,6 +111,8 @@ class OrderActionController extends AbstractController
             throw OrderException::orderNotFound($orderId);
         }
 
+        $refundData->setContext($context);
+
         try {
             $this->processRefund($order, $refundData);
         } catch (OrderRefundException $orderRefundException) {
@@ -176,7 +178,7 @@ class OrderActionController extends AbstractController
      */
     private function processRefund(OrderEntity $order, RefundData $refundData): void
     {
-        if ($refundData->getAmount() < $order->getAmountTotal() && $refundData->getCharges() !== []) {
+        if ($refundData->getAmount() < $order->getAmountTotal()) {
             $this->orderRefund->partialRefund($order, $refundData);
 
             return;

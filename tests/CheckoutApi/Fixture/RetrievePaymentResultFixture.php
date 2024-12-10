@@ -51,7 +51,7 @@ class RetrievePaymentResultFixture
         return new RetrievePaymentResult(
             new Payment(
                 '025400006091b1ef6937598058c4e487',
-                new OrderDetails(100, 'EUR'),
+                new OrderDetails(10000, 'EUR'),
                 new Checkout('https://example.com/checkout', null),
                 new \DateTimeImmutable(),
                 new Consumer(
@@ -62,14 +62,46 @@ class RetrievePaymentResultFixture
                 ),
                 null,
                 self::createSummary(
-                    100,
-                    100,
+                    10000,
+                    10000,
                     0,
                     0
                 ),
                 null,
                 null,
-                [new Charge('test_charge_id', 100, new \DateTimeImmutable(), [])]
+                [new Charge('test_charge_id', 10000, new \DateTimeImmutable(), [])]
+            )
+        );
+    }
+
+    public static function fullyChargedWithMultipleCharges(): RetrievePaymentResult
+    {
+        return new RetrievePaymentResult(
+            new Payment(
+                '025400006091b1ef6937598058c4e487',
+                new OrderDetails(1000, 'EUR'),
+                new Checkout('https://example.com/checkout', null),
+                new \DateTimeImmutable(),
+                new Consumer(
+                    new Address(null, null, null, null, null),
+                    new Address(null, null, null, null, null),
+                    new PrivatePerson(null, null, null, null, null, null),
+                    new Company(null, null, null, null),
+                ),
+                null,
+                self::createSummary(
+                    1000,
+                    1000,
+                    0,
+                    0
+                ),
+                null,
+                null,
+                [
+                    new Charge('test_charge_1', 100, new \DateTimeImmutable(), []),
+                    new Charge('test_charge_2', 300, new \DateTimeImmutable(), []),
+                    new Charge('test_charge_3', 600, new \DateTimeImmutable(), []),
+                ]
             )
         );
     }

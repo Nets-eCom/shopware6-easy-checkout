@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace NexiNets\Order;
 
+use NexiNets\Administration\Model\ChargeItem;
 use NexiNets\Administration\Model\RefundData;
 use NexiNets\CheckoutApi\Api\ErrorCodeEnum;
 use NexiNets\CheckoutApi\Api\Exception\InternalErrorPaymentApiException;
 use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
 use NexiNets\CheckoutApi\Api\PaymentApi;
 use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
+use NexiNets\CheckoutApi\Model\Request\PartialRefundCharge;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Charge;
+use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Item;
 use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
@@ -22,15 +26,21 @@ use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class OrderRefund
 {
+    /**
+     * @param EntityRepository<OrderTransactionCollection> $orderTransactionRepository
+     */
     public function __construct(
         private readonly PaymentFetcherInterface $fetcher,
         private readonly PaymentApiFactory $apiFactory,
         private readonly ConfigurationProvider $configurationProvider,
         private readonly RefundRequest $refundRequest,
+        private readonly EntityRepository $orderTransactionRepository,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly LoggerInterface $logger
     ) {
@@ -64,26 +74,36 @@ class OrderRefund
                 continue;
             }
 
-            $api = $this->createPaymentApi($order->getSalesChannelId());
-            $refundRequest = $this->refundRequest->build($transaction);
-            $chargeId = $payment->getCharges()[0]->getChargeId();
-
-            try {
-                $api->refundCharge(
-                    $chargeId,
-                    $refundRequest
-                );
-            } catch (PaymentApiException|InternalErrorPaymentApiException $e) {
-                $this->logFailure([
+            $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
+            foreach ($payment->getCharges() as $charge) {
+                $refundRequest = $this->refundRequest->buildFullRefund($charge);
+                $this->logger->info('Full refund request', [
                     'paymentId' => $paymentId,
-                    'error' => $e->getMessage(),
+                    'refund' => $refundRequest,
                 ]);
 
-                $this->createCorrespondingOrderRefundException($e, $chargeId);
+                try {
+                    $response = $paymentApi->refundCharge(
+                        $charge->getChargeId(),
+                        $refundRequest
+                    );
+                } catch (PaymentApiException $e) {
+                    $this->logger->error('Full refund failed', [
+                        'paymentId' => $paymentId,
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    throw $this->createCorrespondingOrderRefundException($e, $charge->getChargeId());
+                }
+
+                $this->logger->info('Full refund success', [
+                    'paymentId' => $paymentId,
+                    'refundId' => $response->getRefundId(),
+                ]);
             }
 
             $this->eventDispatcher->dispatch(
-                new RefundChargeSend($order, $transaction)
+                new RefundChargeSend($order, $transaction, $transaction->getAmount()->getTotalPrice())
             );
         }
     }
@@ -129,14 +149,23 @@ class OrderRefund
                     'paymentId' => $paymentId,
                     'status' => $status->value,
                 ]);
+
                 continue;
             }
 
-            foreach ($refundData->getCharges() as $chargeId => $items) {
-                $partialRefund = $this->refundRequest->buildPartialRefund(
-                    $transaction,
-                    $items
-                );
+            $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
+
+            $alreadyRefunded = $transaction->getCustomFieldsValue(
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED
+            );
+
+            $charges = $refundData->getCharges();
+            if ($charges === []) {
+                $charges = $this->selectChargesForUnrelatedPartialRefund($refundData->getAmount(), $alreadyRefunded, $payment->getCharges() ?? []);
+            }
+
+            foreach ($charges as $chargeId => $items) {
+                $partialRefund = $this->buildPartialRefund($transaction, $items);
 
                 $this->logger->info('Partial refund request', [
                     'paymentId' => $paymentId,
@@ -145,8 +174,9 @@ class OrderRefund
 
                 try {
                     $response = $paymentApi->refundCharge($chargeId, $partialRefund);
-                } catch (InternalErrorPaymentApiException|PaymentApiException $e) {
-                    $this->logFailure([
+                    $this->updateTransactionCustomFields($transaction, $chargeId, $partialRefund, $refundData->getContext());
+                } catch (PaymentApiException $e) {
+                    $this->logger->error('Partial refund failed', [
                         'paymentId' => $paymentId,
                         'error' => $e->getMessage(),
                     ]);
@@ -158,11 +188,11 @@ class OrderRefund
                     'paymentId' => $paymentId,
                     'refundId' => $response->getRefundId(),
                 ]);
-
-                $this->eventDispatcher->dispatch(
-                    new RefundChargeSend($order, $transaction)
-                );
             }
+
+            $this->eventDispatcher->dispatch(
+                new RefundChargeSend($order, $transaction, $refundData->getAmount())
+            );
         }
     }
 
@@ -175,11 +205,82 @@ class OrderRefund
     }
 
     /**
-     * @param array<string, string> $parameters
+     * @param array<string, int> $alreadyRefunded
+     * @param array<Charge> $charges
+     *
+     * @return array<string, array{amount: int, items: array<ChargeItem>}>
      */
-    private function logFailure(array $parameters): void
+    private function selectChargesForUnrelatedPartialRefund(float $refundAmount, array $alreadyRefunded, array $charges): array
     {
-        $this->logger->error('Partial refund failed', $parameters);
+        $refundAmount = (int) ($refundAmount * 100);
+
+        // find charge matching refundAmount
+        foreach ($charges as $charge) {
+            if ($charge->getAmount() === $refundAmount && !isset($alreadyRefunded[$charge->getChargeId()])) {
+                return [
+                    $charge->getChargeId() => [
+                        'amount' => $charge->getAmount(),
+                        'items' => array_map(fn (Item $chargeItem): ChargeItem => new ChargeItem(
+                            $charge->getChargeId(),
+                            $chargeItem->getName(),
+                            $chargeItem->getQuantity(),
+                            $chargeItem->getUnit(),
+                            $chargeItem->getUnitPrice(),
+                            $chargeItem->getGrossTotalAmount(),
+                            $chargeItem->getNetTotalAmount(),
+                            $chargeItem->getReference(),
+                            $chargeItem->getTaxRate(),
+                        ), $charge->getOrderItems()),
+                    ],
+                ];
+            }
+        }
+
+        // calculate refund per multiple charges
+        $refunds = [];
+        $remaining = $refundAmount;
+        foreach ($charges as $charge) {
+            $chargeAvailableAmount = isset($alreadyRefunded[$charge->getChargeId()])
+                ? $charge->getAmount() - $alreadyRefunded[$charge->getChargeId()]
+                : $charge->getAmount();
+
+            if ($remaining === 0 || $chargeAvailableAmount === 0) {
+                break;
+            }
+
+            $refundPerCharge = $charge->getAmount();
+            if ($chargeAvailableAmount <= $remaining) {
+                $refundPerCharge = $chargeAvailableAmount;
+                $remaining -= $chargeAvailableAmount;
+            } elseif ($chargeAvailableAmount > $remaining) {
+                $refundPerCharge = $remaining;
+                $remaining = 0;
+            }
+
+            $refunds[$charge->getChargeId()] = [
+                'amount' => $refundPerCharge,
+                'items' => [],
+            ];
+        }
+
+        return $refunds;
+    }
+
+    /**
+     * @param array{amount: int, items: array<ChargeItem>} $items
+     */
+    private function buildPartialRefund(OrderTransactionEntity $transaction, array $items): PartialRefundCharge
+    {
+        if ($items['items'] === []) {
+            return $this->refundRequest->buildUnrelatedPartialRefund(
+                $items['amount']
+            );
+        }
+
+        return $this->refundRequest->buildPartialRefund(
+            $transaction,
+            $items
+        );
     }
 
     private function createCorrespondingOrderRefundException(
@@ -194,5 +295,30 @@ class OrderRefund
             ErrorCodeEnum::InvalidRefundAmount => new OrderChargeRefundExceeded($chargeId, previous: $exception),
             default => new OrderRefundException($chargeId, previous: $exception)
         };
+    }
+
+    private function updateTransactionCustomFields(
+        OrderTransactionEntity $transaction,
+        string $chargeId,
+        PartialRefundCharge $partialRefund,
+        Context $context,
+    ): void {
+        $alreadyRefunded = $transaction->getCustomFieldsValue(
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED
+        );
+
+        $transaction->changeCustomFields([
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => $alreadyRefunded + [
+                $chargeId => isset($alreadyRefunded[$chargeId])
+                    ? $alreadyRefunded[$chargeId] + $partialRefund->getAmount()
+                    : $partialRefund->getAmount(),
+            ],
+        ]);
+
+        $data = [
+            'id' => $transaction->getId(),
+            'customFields' => $transaction->getCustomFields(),
+        ];
+        $this->orderTransactionRepository->update([$data], $context);
     }
 }
