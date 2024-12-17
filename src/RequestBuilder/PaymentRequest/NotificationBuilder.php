@@ -8,13 +8,12 @@ use NexiNets\CheckoutApi\Model\Request\Payment\Notification;
 use NexiNets\CheckoutApi\Model\Request\Payment\Webhook;
 use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
 use NexiNets\Configuration\ConfigurationProvider;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class NotificationBuilder
 {
-    private const WEBHOOK_NAMES = [
+    private const array WEBHOOK_NAMES = [
         EventNameEnum::PAYMENT_CHARGE_CREATED,
         EventNameEnum::PAYMENT_REFUND_COMPLETED,
         EventNameEnum::PAYMENT_CANCEL_CREATED,
@@ -26,20 +25,20 @@ class NotificationBuilder
     ) {
     }
 
-    public function create(SalesChannelContext $salesChannelContext): Notification
+    public function create(string $salesChannelId): Notification
     {
         return new Notification(
-            $this->createWebhooks($salesChannelContext)
+            $this->createWebhooks($salesChannelId)
         );
     }
 
     /**
      * @return Webhook[]
      */
-    private function createWebhooks(SalesChannelContext $salesChannelContext): array
+    private function createWebhooks(string $salesChannelId): array
     {
         $webhooks = [];
-        $authorizationString = $this->configurationProvider->getWebhookAuthorizationHeader($salesChannelContext->getSalesChannelId());
+        $authorizationString = $this->configurationProvider->getWebhookAuthorizationHeader($salesChannelId);
         foreach (self::WEBHOOK_NAMES as $eventName) {
             $webhooks[] = new Webhook(
                 $eventName->value,

@@ -7,7 +7,8 @@ namespace NexiNets\RequestBuilder\PaymentRequest;
 use NexiNets\CheckoutApi\Model\Request\Payment\Company;
 use NexiNets\CheckoutApi\Model\Request\Payment\Consumer;
 use NexiNets\CheckoutApi\Model\Request\Payment\PrivatePerson;
-use Shopware\Core\Checkout\Customer\CustomerEntity;
+use Shopware\Core\Checkout\Customer\Exception\AddressNotFoundException;
+use Shopware\Core\Checkout\Order\OrderEntity;
 
 class CustomerBuilder
 {
@@ -18,27 +19,33 @@ class CustomerBuilder
     }
 
     public function create(
-        CustomerEntity $customer
+        OrderEntity $order
     ): Consumer {
-        $isCompany = $this->isCompany($customer->getActiveBillingAddress()->getCompany());
+        $orderCustomer = $order->getOrderCustomer();
+        $isCompany = $this->isCompany($orderCustomer->getCompany());
+
+        $orderShippingAddress = $order->getDeliveries()?->first()?->getShippingOrderAddress();
+        if ($orderShippingAddress === null) {
+            throw new AddressNotFoundException($order->getDeliveries()?->first()?->getShippingOrderAddressId() ?? '');
+        }
 
         return new Consumer(
-            $customer->getEmail(),
-            null,
-            $this->addressBuilder->create($customer->getActiveShippingAddress()),
-            null,
-            $this->phoneNumberBuilder->create($customer->getActiveShippingAddress()),
-            $isCompany ? null : new PrivatePerson($customer->getFirstName(), $customer->getLastName()),
+            $orderCustomer->getEmail(),
+            $orderCustomer->getCustomerNumber(),
+            $this->addressBuilder->create($orderShippingAddress),
+            $this->addressBuilder->create($order->getBillingAddress()),
+            $this->phoneNumberBuilder->create($order->getBillingAddress()),
+            $isCompany ? null : new PrivatePerson($orderCustomer->getFirstName(), $orderCustomer->getLastName()),
             $isCompany ? new Company(
-                $customer->getActiveBillingAddress()->getCompany(),
-                $customer->getFirstName(),
-                $customer->getLastName()
+                $orderCustomer->getCompany(),
+                $orderCustomer->getFirstName(),
+                $orderCustomer->getLastName()
             ) : null,
         );
     }
 
     private function isCompany(?string $name): bool
     {
-        return $name !== null && $name !== '' && $name !== '0';
+        return $name !== null && trim($name) !== '' && $name !== '0';
     }
 }

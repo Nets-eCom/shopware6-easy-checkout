@@ -3,10 +3,9 @@
 namespace NexiNets\RequestBuilder\PaymentRequest;
 
 use NexiNets\CheckoutApi\Model\Request\Payment\Checkout;
-use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 
 interface CheckoutBuilderInterface
 {
-    public function create(AsyncPaymentTransactionStruct $transaction, SalesChannelContext $salesChannelContext): Checkout;
+    public function create(OrderTransactionEntity $transaction, string $returnUrl, string $salesChannelId): Checkout;
 }

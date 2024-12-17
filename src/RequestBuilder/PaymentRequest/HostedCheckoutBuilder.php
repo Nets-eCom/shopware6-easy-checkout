@@ -6,8 +6,7 @@ namespace NexiNets\RequestBuilder\PaymentRequest;
 
 use NexiNets\CheckoutApi\Model\Request\Payment\HostedCheckout;
 use NexiNets\Configuration\ConfigurationProvider;
-use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -21,17 +20,18 @@ final readonly class HostedCheckoutBuilder implements CheckoutBuilderInterface
     }
 
     public function create(
-        AsyncPaymentTransactionStruct $transaction,
-        SalesChannelContext $salesChannelContext,
+        OrderTransactionEntity $transaction,
+        string $returnUrl,
+        string $salesChannelId,
     ): HostedCheckout {
-        $salesChannelId = $salesChannelContext->getSalesChannelId();
+        $order = $transaction->getOrder();
 
         return new HostedCheckout(
-            $transaction->getReturnUrl(),
+            $returnUrl,
             $this->createCancelUrl(),
             $this->configurationProvider->getTermsUrl($salesChannelId),
             $this->configurationProvider->getMerchantTermsUrl($salesChannelId),
-            $this->customerBuilder->create($salesChannelContext->getCustomer()),
+            $this->customerBuilder->create($order),
             $this->configurationProvider->isAutoCharge($salesChannelId),
             true
         );
