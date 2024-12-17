@@ -13,7 +13,7 @@ use Symfony\Component\Routing\RouterInterface;
 
 class NotificationBuilder
 {
-    private const array WEBHOOK_NAMES = [
+    private const WEBHOOK_NAMES = [
         EventNameEnum::PAYMENT_CHARGE_CREATED,
         EventNameEnum::PAYMENT_REFUND_COMPLETED,
         EventNameEnum::PAYMENT_CANCEL_CREATED,
