@@ -13,42 +13,55 @@ use NexiNets\Configuration\ConfigurationProvider;
 use NexiNets\Dictionary\OrderTransactionDictionary;
 use NexiNets\RequestBuilder\PaymentRequest;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
-use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
-use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AsynchronousPaymentHandlerInterface;
+use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler;
+use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\PaymentHandlerType;
+use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
+use Shopware\Core\Checkout\Payment\Cart\RefundPaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\PaymentException;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\Struct\Struct;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-final readonly class HostedPayment implements AsynchronousPaymentHandlerInterface
+final class HostedPayment extends AbstractPaymentHandler
 {
     /**
      * @param EntityRepository<OrderTransactionCollection> $orderTransactionRepository
      */
     public function __construct(
-        private PaymentRequest $paymentRequest,
-        private PaymentApiFactory $paymentApiFactory,
-        private ConfigurationProvider $configurationProvider,
-        private EntityRepository $orderTransactionRepository,
-        private OrderTransactionStateHandler $orderTransactionStateHandler
+        private readonly PaymentRequest $paymentRequest,
+        private readonly PaymentApiFactory $paymentApiFactory,
+        private readonly ConfigurationProvider $configurationProvider,
+        private readonly EntityRepository $orderTransactionRepository,
+        private readonly OrderTransactionStateHandler $orderTransactionStateHandler
     ) {
     }
 
+    public function supports(PaymentHandlerType $type, string $paymentMethodId, Context $context): bool
+    {
+        return $type !== PaymentHandlerType::RECURRING;
+    }
+
     public function pay(
-        AsyncPaymentTransactionStruct $transaction,
-        RequestDataBag $dataBag,
-        SalesChannelContext $salesChannelContext
+        Request $request,
+        PaymentTransactionStruct $transaction,
+        Context $context,
+        ?Struct $validateStruct
     ): RedirectResponse {
-        $paymentApi = $this->createPaymentApi($salesChannelContext->getSalesChannelId());
-        $transactionId = $transaction->getOrderTransaction()->getId();
+        $transactionId = $transaction->getOrderTransactionId();
+        $transactionEntity = $this->fetchOrderTransaction($transactionId, $context);
+        $salesChannelId = $transactionEntity->getOrder()->getSalesChannelId();
+        $paymentApi = $this->createPaymentApi($salesChannelId);
 
         try {
             $paymentRequest = $this->paymentRequest->build(
-                $transaction,
-                $salesChannelContext,
+                $transactionEntity,
+                $salesChannelId,
+                $transaction->getReturnUrl(),
                 IntegrationTypeEnum::HostedPaymentPage
             );
 
@@ -70,23 +83,24 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
             ],
         ];
 
-        $this->orderTransactionRepository->update([$data], $salesChannelContext->getContext());
+        $this->orderTransactionRepository->update([$data], $context);
 
         // TODO: return url with language query parameter
         return new RedirectResponse($payment->getHostedPaymentPageUrl());
     }
 
     public function finalize(
-        AsyncPaymentTransactionStruct $transaction,
         Request $request,
-        SalesChannelContext $salesChannelContext
+        PaymentTransactionStruct $transaction,
+        Context $context
     ): void {
-        $paymentApi = $this->createPaymentApi($salesChannelContext->getSalesChannelId());
-        $orderTransaction = $transaction->getOrderTransaction();
+        $orderTransaction = $this->fetchOrderTransaction($transaction->getOrderTransactionId(), $context);
         $orderTransactionId = $orderTransaction->getId();
         $paymentId = $orderTransaction->getCustomFieldsValue(
             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
         );
+
+        $paymentApi = $this->createPaymentApi($orderTransaction->getOrder()->getSalesChannelId());
 
         try {
             $payment = $paymentApi->retrievePayment($paymentId)->getPayment();
@@ -104,7 +118,32 @@ final readonly class HostedPayment implements AsynchronousPaymentHandlerInterfac
             throw PaymentException::asyncFinalizeInterrupted($orderTransactionId, 'Couldn\'t finalize transaction');
         }
 
-        $this->orderTransactionStateHandler->authorize($orderTransactionId, $salesChannelContext->getContext());
+        $this->orderTransactionStateHandler->authorize($orderTransactionId, $context);
+    }
+
+    public function refund(
+        RefundPaymentTransactionStruct $transaction,
+        Context $context
+    ): void {
+        throw PaymentException::paymentHandlerTypeUnsupported($this, PaymentHandlerType::REFUND);
+    }
+
+    private function fetchOrderTransaction(string $orderTransactionId, Context $context): OrderTransactionEntity
+    {
+        $criteria = (new Criteria([$orderTransactionId]))
+            ->addAssociation('order')
+            ->addAssociation('order.currency')
+            ->addAssociation('order.lineItems')
+            ->addAssociation('order.deliveries.shippingOrderAddress.country')
+            ->addAssociation('order.billingAddress.country')
+        ;
+        $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->first();
+
+        if ($orderTransaction === null) {
+            throw PaymentException::invalidTransaction($orderTransactionId);
+        }
+
+        return $orderTransaction;
     }
 
     private function createPaymentApi(string $salesChannelId): PaymentApi

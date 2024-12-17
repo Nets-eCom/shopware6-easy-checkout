@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace NexiNets\RequestBuilder\PaymentRequest;
 
 use NexiNets\CheckoutApi\Model\Request\Payment\Address;
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 
 class AddressBuilder
 {
     public function create(
-        CustomerAddressEntity $address
+        OrderAddressEntity $address
     ): Address {
         return new Address(
             $address->getStreet(),
