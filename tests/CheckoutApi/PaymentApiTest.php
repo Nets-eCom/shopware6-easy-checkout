@@ -21,9 +21,11 @@ use NexiNets\CheckoutApi\Model\Request\Payment\Order;
 use NexiNets\CheckoutApi\Model\Request\Payment\Webhook;
 use NexiNets\CheckoutApi\Model\Request\ReferenceInformation;
 use NexiNets\CheckoutApi\Model\Request\RefundCharge;
+use NexiNets\CheckoutApi\Model\Request\RefundPayment;
 use NexiNets\CheckoutApi\Model\Result\ChargeResult;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
 use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
+use NexiNets\CheckoutApi\Model\Result\RefundPaymentResult;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -258,9 +260,32 @@ final class PaymentApiTest extends TestCase
 
         $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
 
-        $result = $sut->refundCharge('1234', $this->createRefundRequest());
+        $result = $sut->refundCharge('1234', $this->createRefundChargeRequest());
 
         $this->assertInstanceOf(RefundChargeResult::class, $result);
+        $this->assertSame('1234', $result->getRefundId());
+    }
+
+    public function testItRefundsPayment(): void
+    {
+        $stream = $this->createStub(StreamInterface::class);
+        $stream
+            ->method('getContents')
+            ->willReturn(
+                json_encode([
+                    'refundId' => '1234',
+                ])
+            );
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getBody')->willReturn($stream);
+
+        $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
+
+        $result = $sut->refundPayment('1234', $this->createRefundPaymentRequest());
+
+        $this->assertInstanceOf(RefundPaymentResult::class, $result);
         $this->assertSame('1234', $result->getRefundId());
     }
 
@@ -339,9 +364,14 @@ final class PaymentApiTest extends TestCase
         return new MyReference('foo');
     }
 
-    private function createRefundRequest(): RefundCharge
+    private function createRefundChargeRequest(): RefundCharge
     {
         return new FullRefundCharge(1);
+    }
+
+    private function createRefundPaymentRequest(): RefundPayment
+    {
+        return new RefundPayment(1);
     }
 
     private function createRequestFactoryStub(): RequestFactoryInterface

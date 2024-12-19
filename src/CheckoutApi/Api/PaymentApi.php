@@ -15,9 +15,11 @@ use NexiNets\CheckoutApi\Model\Request\MyReference;
 use NexiNets\CheckoutApi\Model\Request\Payment;
 use NexiNets\CheckoutApi\Model\Request\ReferenceInformation;
 use NexiNets\CheckoutApi\Model\Request\RefundCharge;
+use NexiNets\CheckoutApi\Model\Request\RefundPayment;
 use NexiNets\CheckoutApi\Model\Result\ChargeResult;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
 use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
+use NexiNets\CheckoutApi\Model\Result\RefundPaymentResult;
 use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
 
 class PaymentApi
@@ -36,7 +38,7 @@ class PaymentApi
 
     private const CHARGES_ENDPOINT = '/v1/charges';
 
-    private const CHARGE_REFUNDS = '/refunds';
+    private const REFUNDS = '/refunds';
 
     public function __construct(
         private readonly HttpClient $client,
@@ -220,7 +222,7 @@ class PaymentApi
     {
         try {
             $response = $this->client->post(
-                $this->getChargesOperationEndpoint($chargeId, self::CHARGE_REFUNDS),
+                $this->getChargesOperationEndpoint($chargeId, self::REFUNDS),
                 json_encode($refund)
             );
         } catch (HttpClientException $httpClientException) {
@@ -239,6 +241,35 @@ class PaymentApi
         }
 
         return RefundChargeResult::fromJson($contents);
+    }
+
+    /**
+     * @throws PaymentApiException
+     * @throws \JsonException
+     */
+    public function refundPayment(string $paymentId, RefundPayment $refundPayment): RefundPaymentResult
+    {
+        try {
+            $response = $this->client->post(
+                $this->getPaymentOperationEndpoint($paymentId, self::REFUNDS),
+                json_encode($refundPayment)
+            );
+        } catch (HttpClientException $httpClientException) {
+            throw new PaymentApiException(
+                \sprintf('Couldn\'t refund payment with id: %s', $paymentId),
+                $httpClientException->getCode(),
+                $httpClientException
+            );
+        }
+
+        $code = $response->getStatusCode();
+        $contents = $response->getBody()->getContents();
+
+        if (!$this->isSuccessCode($code)) {
+            throw $this->createPaymentApiException($code, $contents);
+        }
+
+        return RefundPaymentResult::fromJson($contents);
     }
 
     private function getPaymentOperationEndpoint(string $paymentId, string $operation): string
