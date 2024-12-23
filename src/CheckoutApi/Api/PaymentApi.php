@@ -16,6 +16,7 @@ use NexiNets\CheckoutApi\Model\Request\Payment;
 use NexiNets\CheckoutApi\Model\Request\ReferenceInformation;
 use NexiNets\CheckoutApi\Model\Request\RefundCharge;
 use NexiNets\CheckoutApi\Model\Request\RefundPayment;
+use NexiNets\CheckoutApi\Model\Request\UpdateOrder;
 use NexiNets\CheckoutApi\Model\Result\ChargeResult;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
 use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
@@ -33,6 +34,8 @@ class PaymentApi
     private const PAYMENT_UPDATE_REFERENCE_INFORMATION = '/referenceinformation';
 
     private const PAYMENT_UPDATE_MY_REFERENCE = '/myreference';
+
+    private const PAYMENT_UPDATE_ORDER = '/orderitems';
 
     private const PAYMENT_TERMINATE = '/terminate';
 
@@ -156,6 +159,34 @@ class PaymentApi
         } catch (HttpClientException $httpClientException) {
             throw new PaymentApiException(
                 \sprintf('Couldn\'t update myReference information for a given payment id: %s', $paymentId),
+                $httpClientException->getCode(),
+                $httpClientException
+            );
+        }
+
+        $code = $response->getStatusCode();
+
+        if (!$this->isSuccessCode($code)) {
+            throw $this->createPaymentApiException($code, $response->getBody()->getContents());
+        }
+    }
+
+    /**
+     * @throws PaymentApiException
+     * @throws \JsonException
+     */
+    public function updatePaymentOrder(
+        string $paymentId,
+        UpdateOrder $updateOrder
+    ): void {
+        try {
+            $response = $this->client->put(
+                $this->getPaymentOperationEndpoint($paymentId, self::PAYMENT_UPDATE_ORDER),
+                json_encode($updateOrder)
+            );
+        } catch (HttpClientException $httpClientException) {
+            throw new PaymentApiException(
+                \sprintf('Couldn\'t update payment order for a given payment id: %s', $paymentId),
                 $httpClientException->getCode(),
                 $httpClientException
             );
