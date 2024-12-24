@@ -306,6 +306,21 @@ final class PaymentApiTest extends TestCase
         $this->assertSame('1234', $result->getRefundId());
     }
 
+    public function testItCancelsPendingRefund(): void
+    {
+        $stream = $this->createStub(StreamInterface::class);
+        $stream
+            ->method('getContents')
+            ->willReturn('');
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())->method('getStatusCode')->willReturn(204);
+
+        $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
+
+        $sut->cancelPendingRefund('1234');
+    }
+
     private function createPsrClient(ResponseInterface $response): ClientInterface
     {
         return new class($response) implements ClientInterface {
@@ -429,7 +444,7 @@ final class PaymentApiTest extends TestCase
                 $streamFactory,
                 new Configuration('1234')
             ),
-            'https://api.example.com/'
+            'https://api.example.com'
         );
     }
 

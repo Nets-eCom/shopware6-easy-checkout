@@ -43,6 +43,10 @@ class PaymentApi
 
     private const REFUNDS = '/refunds';
 
+    private const PENDING_REFUNDS_ENDPOINT = '/v1/pending-refunds';
+
+    private const REFUND_CANCELS = '/cancel';
+
     public function __construct(
         private readonly HttpClient $client,
         private readonly string $baseUrl,
@@ -301,6 +305,43 @@ class PaymentApi
         }
 
         return RefundPaymentResult::fromJson($contents);
+    }
+
+    /**
+     * @throws PaymentApiException
+     * @throws \JsonException
+     */
+    public function cancelPendingRefund(string $refundId): void
+    {
+        try {
+            $response = $this->client->post(
+                $this->getPendingRefundsEndpoint($refundId, self::REFUND_CANCELS),
+                ''
+            );
+        } catch (HttpClientException $httpClientException) {
+            throw new PaymentApiException(
+                \sprintf('Couldn\'t cancel pending refund with id: %s', $refundId),
+                $httpClientException->getCode(),
+                $httpClientException
+            );
+        }
+
+        $code = $response->getStatusCode();
+
+        if (!$this->isSuccessCode($code)) {
+            throw $this->createPaymentApiException($code, $response->getBody()->getContents());
+        }
+    }
+
+    private function getPendingRefundsEndpoint(string $refundId, string $operation): string
+    {
+        return \sprintf(
+            '%s%s/%s%s',
+            $this->baseUrl,
+            self::PENDING_REFUNDS_ENDPOINT,
+            $refundId,
+            $operation
+        );
     }
 
     private function getPaymentOperationEndpoint(string $paymentId, string $operation): string
