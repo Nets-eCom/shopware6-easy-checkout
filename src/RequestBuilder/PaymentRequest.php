@@ -29,18 +29,20 @@ class PaymentRequest
         string $returnUrl,
         IntegrationTypeEnum $integrationType,
     ): Payment {
+        $orderEntity = $transaction->getOrder();
+
         return new Payment(
             new Order(
-                $this->itemsBuilder->create($transaction->getOrder()),
-                $transaction->getOrder()->getCurrency()->getIsoCode(),
+                $this->itemsBuilder->create($orderEntity),
+                $orderEntity->getCurrency()->getIsoCode(),
                 $this->formatHelper->priceToInt($transaction->getAmount()->getTotalPrice()),
-                $transaction->getOrder()->getOrderNumber()
+                $orderEntity->getOrderNumber()
             ),
             $this
                 ->checkoutBuilderFactory
                 ->build($integrationType)
                 ->create(
-                    $transaction,
+                    $orderEntity,
                     $returnUrl,
                     $salesChannelId
                 ),

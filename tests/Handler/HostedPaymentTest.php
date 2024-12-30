@@ -25,11 +25,13 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionColl
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\OrderEntity;
-use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
+use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\PaymentException;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Test\Generator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -55,16 +57,21 @@ final class HostedPaymentTest extends TestCase
         $paymentApiFactory = $this->createStub(PaymentApiFactory::class);
         $paymentApiFactory->method('create')->willReturn($paymentApi);
 
+        $salesChannelContext = Generator::createSalesChannelContext();
+        $context = $salesChannelContext->getContext();
+
+        $order = new OrderEntity();
+        $order->setSalesChannelId($salesChannelContext->getSalesChannelId());
+
         $orderTransactionEntity = new OrderTransactionEntity();
         $orderTransactionEntity->setId(self::ORDER_TRANSACTION_ID);
+        $orderTransactionEntity->setOrder($order);
 
         $paymentRequest = $this->createPaymentRequest();
         $requestBuilder = $this->createStub(PaymentRequest::class);
         $requestBuilder->method('build')->willReturn($paymentRequest);
 
-        $salesChannelContext = Generator::createSalesChannelContext();
-
-        $orderTransactionRepository = $this->createOrderTransactionRepository();
+        $orderTransactionRepository = $this->createOrderTransactionRepository($orderTransactionEntity, $context);
         $orderTransactionRepository
             ->expects($this->once())
             ->method('update')
@@ -79,7 +86,7 @@ final class HostedPaymentTest extends TestCase
                         ],
                     ],
                 ],
-                $salesChannelContext->getContext()
+                $context
             );
 
         $sut = new HostedPayment(
@@ -91,13 +98,10 @@ final class HostedPaymentTest extends TestCase
         );
 
         $result = $sut->pay(
-            new AsyncPaymentTransactionStruct(
-                $orderTransactionEntity,
-                new OrderEntity(),
-                self::HOSTED_PAYMENT_RETURN_URL
-            ),
-            $this->createStub(RequestDataBag::class),
-            $salesChannelContext
+            new Request(),
+            new PaymentTransactionStruct(self::ORDER_TRANSACTION_ID, 'returnUrl'),
+            $context,
+            null
         );
 
         $this->assertInstanceOf(RedirectResponse::class, $result);
@@ -118,31 +122,20 @@ final class HostedPaymentTest extends TestCase
             $this->createStub(PaymentRequest::class),
             $paymentApiFactory,
             $this->createStub(ConfigurationProvider::class),
-            $this->createOrderTransactionRepository(),
+            $this->createStub(EntityRepository::class),
             $this->createStub(OrderTransactionStateHandler::class),
         );
 
         $sut->pay(
-            $this->createStub(AsyncPaymentTransactionStruct::class),
-            $this->createStub(RequestDataBag::class),
-            $this->createStub(SalesChannelContext::class),
+            new Request(),
+            new PaymentTransactionStruct(self::ORDER_TRANSACTION_ID, 'returnUrl'),
+            Generator::createSalesChannelContext()->getContext(),
+            null
         );
     }
 
     public function testFinalize(): void
     {
-        $orderTransaction = new OrderTransactionEntity();
-        $orderTransaction->setId(self::ORDER_TRANSACTION_ID);
-        $orderTransaction->setCustomFields([
-            'nexi_nets_payment_id' => self::PAYMENT_ID,
-        ]);
-
-        $asyncPaymentTransaction = new AsyncPaymentTransactionStruct(
-            $orderTransaction,
-            new OrderEntity(),
-            self::HOSTED_PAYMENT_RETURN_URL
-        );
-
         $payment = $this->createStub(Payment::class);
         $payment->method('getPaymentId')->willReturn(self::PAYMENT_ID);
         $payment->method('getSummary')->willReturn(
@@ -159,25 +152,36 @@ final class HostedPaymentTest extends TestCase
         $paymentApiFactory->method('create')->willReturn($paymentApi);
 
         $salesChannelContext = Generator::createSalesChannelContext();
+        $context = $salesChannelContext->getContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler
             ->expects($this->once())
             ->method('authorize')
-            ->with(self::ORDER_TRANSACTION_ID, $salesChannelContext->getContext());
+            ->with(self::ORDER_TRANSACTION_ID, $context);
+
+        $order = new OrderEntity();
+        $order->setSalesChannelId($salesChannelContext->getSalesChannelId());
+
+        $orderTransaction = new OrderTransactionEntity();
+        $orderTransaction->setOrder($order);
+        $orderTransaction->setId(self::ORDER_TRANSACTION_ID);
+        $orderTransaction->setCustomFields([
+            'nexi_nets_payment_id' => self::PAYMENT_ID,
+        ]);
 
         $sut = new HostedPayment(
             $this->createStub(PaymentRequest::class),
             $paymentApiFactory,
             $this->createStub(ConfigurationProvider::class),
-            $this->createOrderTransactionRepository(),
+            $this->createOrderTransactionRepository($orderTransaction, $context),
             $orderTransactionStateHandler,
         );
 
         $sut->finalize(
-            $asyncPaymentTransaction,
-            $this->createStub(Request::class),
-            $salesChannelContext,
+            new Request(),
+            new PaymentTransactionStruct(self::ORDER_TRANSACTION_ID, 'returnUrl'),
+            $context,
         );
     }
 
@@ -190,12 +194,6 @@ final class HostedPaymentTest extends TestCase
         $orderTransaction->setCustomFields([
             'nexi_nets_payment_id' => self::PAYMENT_ID,
         ]);
-
-        $asyncPaymentTransaction = new AsyncPaymentTransactionStruct(
-            $orderTransaction,
-            new OrderEntity(),
-            self::HOSTED_PAYMENT_RETURN_URL
-        );
 
         $payment = $this->createStub(Payment::class);
         $payment->method('getPaymentId')->willReturn(self::PAYMENT_ID);
@@ -210,31 +208,39 @@ final class HostedPaymentTest extends TestCase
         $paymentApiFactory = $this->createStub(PaymentApiFactory::class);
         $paymentApiFactory->method('create')->willReturn($paymentApi);
 
-        $salesChannelContext = Generator::createSalesChannelContext();
-
-        $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
-
         $sut = new HostedPayment(
             $this->createStub(PaymentRequest::class),
             $paymentApiFactory,
             $this->createStub(ConfigurationProvider::class),
-            $this->createOrderTransactionRepository(),
-            $orderTransactionStateHandler,
+            $this->createStub(EntityRepository::class),
+            $this->createMock(OrderTransactionStateHandler::class),
         );
 
         $sut->finalize(
-            $asyncPaymentTransaction,
             new Request(),
-            $salesChannelContext,
+            new PaymentTransactionStruct(self::ORDER_TRANSACTION_ID, 'returnUrl'),
+            Generator::createSalesChannelContext()->getContext(),
         );
     }
 
     /**
      * @return EntityRepository<OrderTransactionCollection>|MockObject
      */
-    private function createOrderTransactionRepository(): EntityRepository|MockObject
+    private function createOrderTransactionRepository(OrderTransactionEntity $orderTransactionEntity, Context $context): EntityRepository|MockObject
     {
-        return $this->createMock(EntityRepository::class);
+        $repository = $this->createMock(EntityRepository::class);
+        $repository->method('search')->willReturn(
+            new EntitySearchResult(
+                OrderTransactionEntity::class,
+                1,
+                new EntityCollection([$orderTransactionEntity]),
+                null,
+                new Criteria(),
+                $context
+            )
+        );
+
+        return $repository;
     }
 
     private function createPaymentRequest(): RequestPayment

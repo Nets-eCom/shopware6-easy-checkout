@@ -6,7 +6,7 @@ namespace NexiNets\RequestBuilder\PaymentRequest;
 
 use NexiNets\CheckoutApi\Model\Request\Payment\HostedCheckout;
 use NexiNets\Configuration\ConfigurationProvider;
-use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
+use Shopware\Core\Checkout\Order\OrderEntity;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -20,12 +20,10 @@ final readonly class HostedCheckoutBuilder implements CheckoutBuilderInterface
     }
 
     public function create(
-        OrderTransactionEntity $transaction,
+        OrderEntity $order,
         string $returnUrl,
         string $salesChannelId,
     ): HostedCheckout {
-        $order = $transaction->getOrder();
-
         return new HostedCheckout(
             $returnUrl,
             $this->createCancelUrl(),
