@@ -135,8 +135,9 @@ final class HostedPayment extends AbstractPaymentHandler
             ->addAssociation('order.currency')
             ->addAssociation('order.lineItems')
             ->addAssociation('order.deliveries.shippingOrderAddress.country')
-            ->addAssociation('order.billingAddress.country')
-        ;
+            ->addAssociation('order.billingAddress.country');
+
+        /** @var OrderTransactionEntity|null $orderTransaction */
         $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->first();
 
         if ($orderTransaction === null) {
