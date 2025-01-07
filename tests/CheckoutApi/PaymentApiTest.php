@@ -22,6 +22,9 @@ use NexiNets\CheckoutApi\Model\Request\Payment\Webhook;
 use NexiNets\CheckoutApi\Model\Request\ReferenceInformation;
 use NexiNets\CheckoutApi\Model\Request\RefundCharge;
 use NexiNets\CheckoutApi\Model\Request\RefundPayment;
+use NexiNets\CheckoutApi\Model\Request\UpdateOrder;
+use NexiNets\CheckoutApi\Model\Request\UpdateOrder\PaymentMethod;
+use NexiNets\CheckoutApi\Model\Request\UpdateOrder\Shipping;
 use NexiNets\CheckoutApi\Model\Result\ChargeResult;
 use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
 use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
@@ -228,6 +231,20 @@ final class PaymentApiTest extends TestCase
         $sut->updateMyReference('1234', $this->createMyReferenceRequest());
     }
 
+    public function testItUpdatesOrder(): void
+    {
+        $stream = $this->createStub(StreamInterface::class);
+        $stream
+            ->method('getContents')
+            ->willReturn('');
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())->method('getStatusCode')->willReturn(204);
+
+        $sut = $this->createPaymentApi($response, $this->createStreamFactory($stream));
+        $sut->updatePaymentOrder('1234', $this->createUpdateOrderRequest());
+    }
+
     public function testItTerminatesPayment(): void
     {
         $stream = $this->createStub(StreamInterface::class);
@@ -367,6 +384,23 @@ final class PaymentApiTest extends TestCase
     private function createRefundChargeRequest(): RefundCharge
     {
         return new FullRefundCharge(1);
+    }
+
+    private function createUpdateOrderRequest(): UpdateOrder
+    {
+        $item = new Item('bar', 1, 'pcs', 1, 1, 1, 'foo');
+
+        return new UpdateOrder(
+            1,
+            [$item],
+            new Shipping(false),
+            [
+                new PaymentMethod(
+                    'foo',
+                    $item
+                ),
+            ]
+        );
     }
 
     private function createRefundPaymentRequest(): RefundPayment
