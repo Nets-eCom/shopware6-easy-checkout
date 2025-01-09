@@ -24,7 +24,7 @@ final readonly class CheckoutCompleted implements WebhookProcessorInterface
 {
     use ProcessorLogTrait;
 
-    private const SUPPORTED_PAYMENT_METHODS = ['Swish'];
+    private const SUPPORTED_PAYMENT_METHODS = ['Swish', 'Sofort', 'Trustly'];
 
     /**
      * @param EntityRepository<OrderTransactionCollection> $orderTransactionEntityRepository
