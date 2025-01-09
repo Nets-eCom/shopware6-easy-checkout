@@ -17,7 +17,6 @@ return RectorConfig::configure()
         codingStyle: true,
         strictBooleans: true
     )
-    ->withPhpSets(php83: true)
     ->withRules([
         AddVoidReturnTypeWhereNoReturnRector::class,
     ])

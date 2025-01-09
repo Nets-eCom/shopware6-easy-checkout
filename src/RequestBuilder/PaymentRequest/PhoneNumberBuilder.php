@@ -7,12 +7,12 @@ namespace NexiNets\RequestBuilder\PaymentRequest;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberUtil;
 use NexiNets\CheckoutApi\Model\Request\Payment\PhoneNumber;
-use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 
 class PhoneNumberBuilder
 {
     public function create(
-        CustomerAddressEntity $customerAddress,
+        OrderAddressEntity $customerAddress,
     ): ?PhoneNumber {
         $phoneNumber = $customerAddress->getPhoneNumber();
 

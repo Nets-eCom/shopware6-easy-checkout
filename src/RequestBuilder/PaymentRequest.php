@@ -11,8 +11,7 @@ use NexiNets\RequestBuilder\Helper\FormatHelper;
 use NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory;
 use NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder;
 use NexiNets\RequestBuilder\PaymentRequest\NotificationBuilder;
-use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 
 class PaymentRequest
 {
@@ -25,27 +24,31 @@ class PaymentRequest
     }
 
     public function build(
-        AsyncPaymentTransactionStruct $transaction,
-        SalesChannelContext $salesChannelContext,
+        OrderTransactionEntity $transaction,
+        string $salesChannelId,
+        string $returnUrl,
         IntegrationTypeEnum $integrationType,
     ): Payment {
+        $orderEntity = $transaction->getOrder();
+
         return new Payment(
             new Order(
-                $this->itemsBuilder->create($transaction->getOrder()),
-                $salesChannelContext->getCurrency()->getIsoCode(),
-                $this->formatHelper->priceToInt($transaction->getOrderTransaction()->getAmount()->getTotalPrice()),
-                $transaction->getOrder()->getOrderNumber()
+                $this->itemsBuilder->create($orderEntity),
+                $orderEntity->getCurrency()->getIsoCode(),
+                $this->formatHelper->priceToInt($transaction->getAmount()->getTotalPrice()),
+                $orderEntity->getOrderNumber()
             ),
             $this
                 ->checkoutBuilderFactory
                 ->build($integrationType)
                 ->create(
-                    $transaction,
-                    $salesChannelContext
+                    $orderEntity,
+                    $returnUrl,
+                    $salesChannelId
                 ),
             $this
                 ->notificationBuilder
-                ->create($salesChannelContext)
+                ->create($salesChannelId)
         );
     }
 }
