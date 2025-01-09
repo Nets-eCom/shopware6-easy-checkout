@@ -19,7 +19,7 @@ ecs-check: ## ECS analysis
 	vendor/bin/ecs
 
 rector-check: ## Rector analysis
-	vendor/bin/rector
+	vendor/bin/rector process --dry-run
 
 ecs-fix: ## ECS fix
 	vendor/bin/ecs --fix
