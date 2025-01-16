@@ -1,23 +1,31 @@
 # NexiNets Payment Module for Shopware 6
 
-Our plugin is the perfect extension that enables you to use the NexiNets Checkout to its full potential for your Shopware store.
+Enhance your Shopware store with the NexiNets Checkout, a comprehensive solution for seamless payment integration.
 
 For more details, visit our [GitHub wiki](#).
+
+---
+
 ## Requirements
 
-This plugin supports Shopware >= 6.6.x.
+- **Shopware Version**: Compatible with Shopware **6.6.x and above**.
+- **PHP Version**: Requires at least **PHP 8.2**.
 
-**Note:** For versions of Shopware 6.4.x and 6.5.x, please use our [Nets Checkout Module](https://github.com/Nets-eCom/shopware6-easy-checkout).
+> **Note:** For Shopware versions **6.4.x** and **6.5.x**  (e.g., 6.4.1, 6.5.2), please use the [Nets Checkout Module](https://github.com/Nets-eCom/shopware6-easy-checkout).
+
+---
 
 ## Customer Service
 
-NexiNets provides support for both test and live accounts. Contact information can be found [here](https://developer.nexigroup.com/nexi-checkout/en-EU/support/).
+NexiNets provides support for both test and live accounts. For assistance, visit our [Support Page](https://developer.nexigroup.com/nexi-checkout/en-EU/support/).
+
+---
 
 ## For Developers
 
-### General guide
+### General Guide
 
-- [NexiNets Docs](#)
+- Access the [NexiNets Documentation](#).
 
 ### Integration Options
 
@@ -28,4 +36,4 @@ NexiNets provides support for both test and live accounts. Contact information c
 
 ### API
 
-- [Nexi|Nets API Reference](https://developer.nexigroup.com/nexi-checkout/en-EU/api/)
+- Access the [Nexi|Nets API Reference](https://developer.nexigroup.com/nexi-checkout/en-EU/api/).
