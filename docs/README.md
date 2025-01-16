@@ -1,6 +1,6 @@
 # Checkout for Shopware
 
-This guide describes how to install, configure, and use the Checkout webshop module for Shopware 6.
+This guide describes how to install, configure, and use the Nexi Checkout webshop module for Shopware 6.6.
 
 
 ## Before you start
@@ -9,11 +9,13 @@ This guide describes how to install, configure, and use the Checkout webshop mod
 
 ## Overview
 
-Our Shopware plugin is the perfect extension to enable the Checkout checkout to its full potential for your Shopware store. Checkout supports most popular payment methods.
+Our Shopware plugin is the perfect extension to enable the Nexi Checkout to its full potential for your Shopware store. Checkout supports most popular payment methods.
 
 You may see below all the payment methods offered by Checkout. This list refers to all markets.
 
-Depending on your country or region, the list may vary. If you are uncertain about a specific payment method and whether it is available in your country or region, please contact Support for more information.
+Depending on your country or region, the list may vary. If you are uncertain about a specific payment method and whether it is available in your country or region, please [contact Support](https://developer.nexigroup.com/nexi-checkout/en-EU/support/) for more information.
+
+![Nexi Payment Methods](./images/NexiPaymentMethods.png)
 
 ## Shop features
 
