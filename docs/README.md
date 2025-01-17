@@ -80,7 +80,7 @@ To learn more, visit Shopware 6's documentation.
 
 ## Important Note
 
-We do not support third-party plugins that provide phone number functionality, and we cannot guarantee that their solution will be compatible with the Klarna payment method.
+> We do not support third-party plugins that provide phone number functionality, and we cannot guarantee that their solution will be compatible with the Klarna payment method.
 
 ## Troubleshooting
 
