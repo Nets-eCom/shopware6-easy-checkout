@@ -9,7 +9,6 @@ For more details, visit our [GitHub wiki](#).
 ## Requirements
 
 - **Shopware Version**: Compatible with Shopware **6.6.x and above**.
-- **PHP Version**: Requires at least **PHP 8.2**.
 
 > **Note:** For Shopware versions **6.4.x** and **6.5.x**  (e.g., 6.4.1, 6.5.2), please use the [Nexi Checkout Module](https://github.com/Nets-eCom/shopware6-easy-checkout).
 
