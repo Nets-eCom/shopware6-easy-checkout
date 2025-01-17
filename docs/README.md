@@ -46,7 +46,7 @@ The module is now installed and ready to be configured for your Checkout account
 
 After installing the module, you need to do some basic configuration of the module in Shopware Admin:
 
-1. Navigate to `Settings > System > Plugins`
+1. Navigate to `Extensions > My extensions > Nexi Payment Plugin`
 2. Locate the Nexi Group payment plugin and press the button with three dots (...) to access the configuration.
 3. Fill out the required fields, such as merchant ID and integration keys (secret keys and checkout keys).
 4. (Optional) Customize the module according to your needs using the additional settings on the configuration page.
