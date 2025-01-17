@@ -15,21 +15,21 @@ You may see below all the payment methods offered by Checkout. This list refers 
 
 Depending on your country or region, the list may vary. If you are uncertain about a specific payment method and whether it is available in your country or region, please [contact Support](https://developer.nexigroup.com/nexi-checkout/en-EU/support/) for more information.
 
-![Nexi Payment Methods](./images/NexiPaymentMethods.png)
+![Nexi Payment Methods](./images/nexiPaymentMethods.png)
 
 ## Shop features
 
-- The fast checkout with "remember me" functionality.
-- Embedded checkout for an optimized user experience. Users are not redirected outside Shopware.
 - A smart mix of payment methods to suit all preferences.
 - Multiple checkout languages and currencies for selling in your domestic market and abroad.
 
 ## Administration features
 
 - Quick setup and flexible configuration.
-- Intuitive order management with synchronized captures and refunds.
+- Intuitive order management with synchronized payments status via webhooks.
+- Refund and capture available with new items list feature.
 - Compatibility with discounts, tax (VAT), and shipping options.
 - Compatible with multi-shop setups.
+- Automate various processes with the flow builder functionality.
 
 ## Installation
 
