@@ -36,8 +36,8 @@ Depending on your country or region, the list may vary. If you are uncertain abo
 How to install the Checkout module for Shopware 6:
 
 1. Connect with an SSH client and navigate to the root directory of your Shopware 6 installation.
-2. Install the plugin by running the command: `bin/console plugin:install NetsCheckout`
-3. Activate the plugin by running the command: `bin/console plugin:activate NetsCheckout`
+2. Install the plugin by running the command: `bin/console plugin:install netseu/checkout`
+3. Activate the plugin by running the command: `bin/console plugin:activate netseu/checkout`
 4. Clear the cache by running the command: `bin/console cache:clear`
 
 The module is now installed and ready to be configured for your Checkout account.
@@ -46,15 +46,17 @@ The module is now installed and ready to be configured for your Checkout account
 
 After installing the module, you need to do some basic configuration of the module in Shopware Admin:
 
-1. Navigate to `Extensions > My extensions > Nexi Payment Plugin`
+1. Navigate to `Extensions > My extensions > NexiNets Checkout`
 2. Locate the Nexi Group payment plugin and press the button with three dots (...) to access the configuration.
-3. Fill out the required fields, such as merchant ID and integration keys (secret keys and checkout keys).
+3. Fill out the required fields, such integration keys (secret keys and checkout keys), and Webhook Code.
 4. (Optional) Customize the module according to your needs using the additional settings on the configuration page.
 
-Both the merchant ID and the integration keys can be found in Checkout Portal. See the following pages for more help:
+Both integration keys can be found in Checkout Portal. See the following pages for more help:
 
-- [Where can I find my merchant number (merchant ID)?](#)
-- [Access your integration keys](#)
+- [Where can I find my merchant number (merchant ID)?](https://developer.nexigroup.com/nexi-checkout/en-EU/support/where-can-i-find-my-merchant-number-merchant-id/)
+- [Access your integration keys](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/access-your-integration-keys/)
+
+> Integration Type: Embedded is not a valid option yet. Please use Hosted Payment.
 
 ## Order management
 
@@ -62,7 +64,22 @@ It's possible to manage orders directly in the Shopware administration:
 
 1. Navigate to `Admin > Orders > Overview`.
 2. Press on an order line to access order details.
-3. Choose your desired action: cancel, capture, or refund. The Checkout plugin will synchronize automatically. The payment status will also be updated in Checkout portal.
+3. Go the `Details` section, with new Nexi order management component.
+
+![Nexi Order details](./images/order-details.png)
+
+Now all the actions (Charge, Refund, Cancel) can be done via new modal component.
+
+![Charge modal](./images/charge-modal.png)
+
+Clicking on `Max. amount` will automatically pass maximum value to the amount field.  
+
+### Partials Charge & Refund
+
+The biggest change from the currently used component is that partial charge and refund will be able to be made by selecting the item from the order list rather than manually typing out the value into the field.
+List can be accessed by checkbox field. 
+
+![Partials modal](./images/nexi-partials.png)
 
 All transactions performed by Nexi Group are accessible in Checkout Portal.
 
@@ -78,9 +95,11 @@ To add the phone number field in Shopware 6, follow these steps:
 
 To learn more, visit Shopware 6's documentation.
 
-## Important Note
-
 > We do not support third-party plugins that provide phone number functionality, and we cannot guarantee that their solution will be compatible with the Klarna payment method.
+
+## Apple Pay
+
+Apple Pay configuration for Shopware plugin is described on the [Apple Pay payment method page.](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/apple-pay/#build-shopware-65)
 
 ## Troubleshooting
 
@@ -106,7 +125,7 @@ Below are some of the most common configuration errors, their cause, and steps t
 
 ## Go live checklist
 
-For more information, refer to the section [Go-live checklist](#).
+For more information, refer to the section [Go-live checklist](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/go-live-checklist/).
 
 ## See also
 
@@ -115,5 +134,3 @@ For more information, refer to the section [Go-live checklist](#).
 - [Test card processing](#)
 - [Test invoice & installment processing](#)
 - [Support](#)
-
-Was this helpful?
