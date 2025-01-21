@@ -48,4 +48,3 @@ Nexi Nets Payment Plugin allows administrators to automate various processes wit
 ![Digital Goods Schema](../images/digital-goods-schema.png)
 
 ## Troubleshooting
-

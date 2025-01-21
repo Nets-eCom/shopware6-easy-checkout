@@ -81,6 +81,11 @@ The biggest change from the currently used component is that partial charge and 
 
 All transactions performed by Nexi Group are accessible in Checkout Portal.
 
+## Flow Builder
+
+With Shopware 6.6, our Nexi flow can be aligned with Shopware flow to automate various processes within the payment system.
+[Getting Started with Flow Builder](./flow-builder/getting-started.md)
+
 ## Klarna
 
 The payment method Klarna requires a phone number to function properly. To ensure that Klarna will appear as a payment option in the Nexi Group payment window, it is essential to configure the phone number field correctly. For more information, please refer to the Klarna guide.
