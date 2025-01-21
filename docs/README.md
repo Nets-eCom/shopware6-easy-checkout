@@ -129,8 +129,8 @@ For more information, refer to the section [Go-live checklist](https://developer
 
 ## See also
 
-- [Create account](#)
-- [Test environment](#)
-- [Test card processing](#)
-- [Test invoice & installment processing](#)
-- [Support](#)
+- [Create account](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/create-a-checkout-portal-account/)
+- [Test environment](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/test-environment/)
+- [Test card processing](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/test-card-processing/)
+- [Test invoice & installment processing](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/test-invoice-installment-processing/)
+- [Support](https://developer.nexigroup.com/nexi-checkout/en-EU/support/)
