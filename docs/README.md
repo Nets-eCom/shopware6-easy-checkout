@@ -1,7 +1,6 @@
 # Checkout for Shopware
 
-This guide describes how to install, configure, and use the Nexi Checkout webshop module for Shopware 6.6.
-
+This guide describes how to install, configure, and use the Nexi Checkout web shop module for Shopware 6.6.
 
 ## Before you start
 
@@ -48,7 +47,7 @@ After installing the module, you need to do some basic configuration of the modu
 
 1. Navigate to `Extensions > My extensions > NexiNets Checkout`
 2. Locate the Nexi Group payment plugin and press the button with three dots (...) to access the configuration.
-3. Fill out the required fields, such integration keys (secret keys and checkout keys), and Webhook Code.
+3. Fill out the required fields, such as integration keys (secret keys and checkout keys), and Webhook Code.
 4. (Optional) Customize the module according to your needs using the additional settings on the configuration page.
 
 Both integration keys can be found in Checkout Portal. See the following pages for more help:
@@ -64,20 +63,19 @@ It's possible to manage orders directly in the Shopware administration:
 
 1. Navigate to `Admin > Orders > Overview`.
 2. Press on an order line to access order details.
-3. Go the `Details` section, with new Nexi order management component.
+3. Go to the `Details` section, with the new Nexi order management component.
 
 ![Nexi Order details](./images/order-details.png)
 
-Now all the actions (Charge, Refund, Cancel) can be done via new modal component.
+Now all the actions (Charge, Refund, Cancel) can be done via the new modal component.
 
 ![Charge modal](./images/charge-modal.png)
 
-Clicking on `Max. amount` will automatically pass maximum value to the amount field.  
+Clicking on `Max. amount` will automatically pass the maximum value to the amount field.
 
 ### Partials Charge & Refund
 
-The biggest change from the currently used component is that partial charge and refund will be able to be made by selecting the item from the order list rather than manually typing out the value into the field.
-List can be accessed by checkbox field. 
+The biggest change from the currently used component is that partial charge and refund will be able to be made by selecting the item from the order list rather than manually typing out the value into the field. The list can be accessed by the checkbox field.
 
 ![Partials modal](./images/nexi-partials.png)
 
@@ -99,7 +97,7 @@ To learn more, visit Shopware 6's documentation.
 
 ## Apple Pay
 
-Apple Pay configuration for Shopware plugin is described on the [Apple Pay payment method page.](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/apple-pay/#build-shopware-65)
+Apple Pay configuration for Shopware plugin is described on the [Apple Pay payment method page](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/apple-pay/#build-shopware-65).
 
 ## Troubleshooting
 
@@ -108,7 +106,7 @@ Below are some of the most common configuration errors, their cause, and steps t
 ### Nexi Group payment plugin is not visible as a payment method
 
 - Ensure the Nexi Group module is available in the right Sales Channel in the plugin configuration.
-- Under the Sales Channel section, select your Shop Name under General settings. Add plugin in Payment methods.
+- Under the Sales Channel section, select your Shop Name under General settings. Add the plugin in Payment methods.
 - Temporarily switch to the Shopware 6 standard template. Custom templates might need additional changes to ensure correct display. Consult with your web designer or developer.
 
 ### Nexi Group payment window is blank
