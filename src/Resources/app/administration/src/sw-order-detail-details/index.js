@@ -193,7 +193,7 @@ Shopware.Component.override("sw-order-detail-details", {
       const error = errors[0];
 
       this.createNotificationError({
-        title: this.$t(`nexinets-payment-component.notification.action-error-title`),
+        title: this.$t(`nexinets-payment-component.notification.${error.code}`),
         message: this.$t(`nexinets-payment-component.api.errors.${error.code}`, error.meta.parameters),
       })
     },
