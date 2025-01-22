@@ -1,9 +1,9 @@
 const ApiService = Shopware.Classes.ApiService;
 
-class NexiNetsCheckoutApiPaymentService extends ApiService {
+class NexiCheckoutApiPaymentService extends ApiService {
   constructor(httpClient, loginService) {
     super(httpClient, loginService, "");
-    this.name = "nexiNetsPaymentActionsService";
+    this.name = "nexiPaymentActionsService";
   }
 
   charge(orderId, { amount, items }) {
@@ -45,10 +45,10 @@ class NexiNetsCheckoutApiPaymentService extends ApiService {
     }
 }
 
-Shopware.Service().register("nexiNetsPaymentActionsService", (container) => {
+Shopware.Service().register("nexiPaymentActionsService", (container) => {
   const initContainer = Shopware.Application.getContainer("init");
-  return new NexiNetsCheckoutApiPaymentService(initContainer.httpClient, container.loginService);
+  return new NexiCheckoutApiPaymentService(initContainer.httpClient, container.loginService);
 });
 
 // eslint-disable-next-line sw-deprecation-rules/private-feature-declarations
-export default nexiNetsPaymentActionsService;
+export default nexiPaymentActionsService;

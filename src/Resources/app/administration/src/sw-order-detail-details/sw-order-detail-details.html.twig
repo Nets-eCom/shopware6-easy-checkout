@@ -1,32 +1,32 @@
 {% block sw_order_detail_details_payment %}
-  <template v-if="!isNexiNetsPayment">
+  <template v-if="!isNexiPayment">
     {% parent %}
   </template>
 
   <template v-else>
-    {% block nexinets_payment_component %}
-      <sw-card :title="$tc('nexinets-payment-component.payment-details.title')" :isLoading="isLoading" :key="reloadKey">
-        <div class="nexinets-details__header-wrapper">
+    {% block nexi_payment_component %}
+      <sw-card :title="$tc('nexi-payment-component.payment-details.title')" :isLoading="isLoading" :key="reloadKey">
+        <div class="nexi-details__header-wrapper">
           <div>
-            <p class="nexinets-details__status-text">
-              {{ $tc('nexinets-payment-component.payment-details.status-label') }}
+            <p class="nexi-details__status-text">
+              {{ $tc('nexi-payment-component.payment-details.status-label') }}
             </p>
-            <sw-label :variant="statusVariant" size="default" appearance="pill" class="nexinets-details__status-label">
+            <sw-label :variant="statusVariant" size="default" appearance="pill" class="nexi-details__status-label">
               {{ $tc(statusTcString) }}
             </sw-label>
           </div>
-          <div class="nexinets-details__history-link">
+          <div class="nexi-details__history-link">
             <sw-internal-link
               :routerLink="undefined"
               :inline="false"
               :hideIcon="true"
               @click="showStateHistoryModal = true"
             >
-              {{ $tc('nexinets-payment-component.payment-details.history-link') }}
+              {{ $tc('nexi-payment-component.payment-details.history-link') }}
             </sw-internal-link>
           </div>
         </div>
-        <sw-container columns="1fr 1fr" class="nexinets-details__main-wrapper">
+        <sw-container columns="1fr 1fr" class="nexi-details__main-wrapper">
 
           {% block sw_order_detail_details_payment_billing_address %}
             <sw-order-address-selection
@@ -53,25 +53,25 @@
             />
           {% endblock %}
 
-          {% block nexinets_payment_component_payment_details %}
+          {% block nexi_payment_component_payment_details %}
             <template v-if="!hasFetchError">
               <div>
                 <sw-text-field
-                  :label="$tc('nexinets-payment-component.payment-details.payment-via')"
+                  :label="$tc('nexi-payment-component.payment-details.payment-via')"
                   :value="paymentDetails.paymentVia"
                   disabled
                 />
               </div>
               <div>
                 <sw-text-field
-                  :label="$tc('nexinets-payment-component.payment-details.payment-id')"
+                  :label="$tc('nexi-payment-component.payment-details.payment-id')"
                   :value="paymentDetails.paymentId"
                   disabled
                 />
               </div>
               <div>
                 <sw-text-field
-                  :label="$tc('nexinets-payment-component.payment-details.order-amount')"
+                  :label="$tc('nexi-payment-component.payment-details.order-amount')"
                   :value="paymentDetails.orderAmount"
                   disabled
                 >
@@ -80,7 +80,7 @@
               </div>
               <div>
                 <sw-text-field
-                  :label="$tc('nexinets-payment-component.payment-details.time-order')"
+                  :label="$tc('nexi-payment-component.payment-details.time-order')"
                   :value="paymentDetails.orderTime"
                   type="date"
                   disabled
@@ -90,20 +90,20 @@
               </div>
               <div v-if="!isNewPayment">
                 <sw-text-field
-                  :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
+                  :label="$tc('nexi-payment-component.payment-details.charged-amount')"
                   :value="paymentDetails.chargedAmount"
                   disabled
-                  :helpText="$tc('nexinets-payment-component.payment-details.charged-help-text')"
+                  :helpText="$tc('nexi-payment-component.payment-details.charged-help-text')"
                 >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
                 </sw-text-field>
               </div>
               <div v-if="shouldDisplayRefundField">
                 <sw-text-field
-                  :label="$tc('nexinets-payment-component.payment-details.refunded-amount')"
+                  :label="$tc('nexi-payment-component.payment-details.refunded-amount')"
                   :value="paymentDetails.refundedAmount"
                   disabled
-                  :helpText="$tc('nexinets-payment-component.payment-details.refunded-help-text')"
+                  :helpText="$tc('nexi-payment-component.payment-details.refunded-help-text')"
                 >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
                 </sw-text-field>
@@ -111,29 +111,29 @@
             </template>
           {% endblock %}
         </sw-container>
-        {% block nexinets_payment_component_footer %}
+        {% block nexi_payment_component_footer %}
           <template #footer>
-            <div class="nexinets-details__action-buttons" v-if="shouldDisplayButtonsSection">
+            <div class="nexi-details__action-buttons" v-if="shouldDisplayButtonsSection">
               <div>
-                <sw-button v-if="shouldDisplayCancelBtn" :isLoading="isLoading" @click="toggleCancelModal">{{ $tc('nexinets-payment-component.cancel.button-title') }}</sw-button>
-                <sw-button v-if="shouldDisplayRefundBtn" :isLoading="isLoading" @click="toggleRefundModal">{{ $tc('nexinets-payment-component.refund.button-title') }}</sw-button>
-                <sw-button v-if="shouldDisplayChargeBtn" :isLoading="isLoading" @click="toggleChargeModal">{{ $tc('nexinets-payment-component.charge.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayCancelBtn" :isLoading="isLoading" @click="toggleCancelModal">{{ $tc('nexi-payment-component.cancel.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayRefundBtn" :isLoading="isLoading" @click="toggleRefundModal">{{ $tc('nexi-payment-component.refund.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayChargeBtn" :isLoading="isLoading" @click="toggleChargeModal">{{ $tc('nexi-payment-component.charge.button-title') }}</sw-button>
               </div>
             </div>
           </template>
         {% endblock %}
-        {% block nexinets_charge_modal %}
+        {% block nexi_charge_modal %}
           <sw-modal
                   v-if="isChargeModalVisible"
-                  :title="$tc('nexinets-payment-component.charge.title')"
+                  :title="$tc('nexi-payment-component.charge.title')"
                   @modal-close="toggleChargeModal"
           >
-            <p>{{ $tc('nexinets-payment-component.charge.info', { orderNumber: order.orderNumber }) }}</p>
-            <div class="nexinets-modal__wrapper">
+            <p>{{ $tc('nexi-payment-component.charge.info', { orderNumber: order.orderNumber }) }}</p>
+            <div class="nexi-modal__wrapper">
               <div>
                 <sw-number-field
-                  class="nexinets-modal__input"
-                  :label="$tc('nexinets-payment-component.payment-details.charged-amount')"
+                  class="nexi-modal__input"
+                  :label="$tc('nexi-payment-component.payment-details.charged-amount')"
                   v-model:value="charge.amount"
                   :min="0"
                   numberType="float"
@@ -144,48 +144,48 @@
                 >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
                 </sw-number-field>
-                <p class="nexinets-modal__full-amount">
-                  {{ $tc('nexinets-payment-component.charge.max-charge-info') }}
+                <p class="nexi-modal__full-amount">
+                  {{ $tc('nexi-payment-component.charge.max-charge-info') }}
                   <span @click="onClickMaxCharge" data-testid="maxChargeBtn">{{ order.currency.symbol + paymentDetails.remainingChargeAmount }}</span>
                 </p>
               </div>
               <sw-checkbox-field
-                class="nexinets-modal__checkbox"
+                class="nexi-modal__checkbox"
                 :class="{ 'error-margin': chargeAmountError }"
                 :value="isItemsListVisible"
                 @update:value="isItemsListVisible = $event"
-                :label="$tc('nexinets-payment-component.charge.items-list')"
+                :label="$tc('nexi-payment-component.charge.items-list')"
               >
               </sw-checkbox-field>
             </div>
-            <div v-if="isItemsListVisible" class="nexinets-modal__items-list">
+            <div v-if="isItemsListVisible" class="nexi-modal__items-list">
               <sw-grid :selectable="false" :items="paymentDetails.orderItems">
                 <template #columns="{ item }">
                   <sw-grid-column
                     flex="minmax(50px, 1.3fr)"
-                    class="nexinets-modal__end-col"
-                    :label="$tc('nexinets-payment-component.itemsTable.qty')"
+                    class="nexi-modal__end-col"
+                    :label="$tc('nexi-payment-component.itemsTable.qty')"
                   >
                     {{ item.quantity }}x
                   </sw-grid-column>
-                  <sw-grid-column flex="minmax(200px, 4.3fr)" :label="$tc('nexinets-payment-component.itemsTable.item')">
+                  <sw-grid-column flex="minmax(200px, 4.3fr)" :label="$tc('nexi-payment-component.itemsTable.item')">
                     {{ item.name }}
                   </sw-grid-column>
                   <sw-grid-column
                     flex="minmax(100px, 2.1fr)"
-                    class="nexinets-modal__end-col"
-                    :label="$tc('nexinets-payment-component.itemsTable.subtotal')"
+                    class="nexi-modal__end-col"
+                    :label="$tc('nexi-payment-component.itemsTable.subtotal')"
                   >
                     {{ order.currency.symbol + item.grossTotalAmount }}
                   </sw-grid-column>
                   <sw-grid-column
                     flex="minmax(100px, 2.3fr)"
-                    :label="$tc('nexinets-payment-component.itemsTable.chargeQty')"
-                    class="nexinets-modal__qty-col"
+                    :label="$tc('nexi-payment-component.itemsTable.chargeQty')"
+                    class="nexi-modal__qty-col"
                   >
                     <sw-select-field
                       placeholder="0"
-                      class="nexinets-modal__qty-select"
+                      class="nexi-modal__qty-select"
                       @update:value="$quantity => updateChargeItem(item, $quantity)"
                     >
                       <option v-for="n in (parseInt(item.quantity) - parseInt(item.qtyCharged))" :key="n" :value="n">{{ n }}</option>
@@ -195,28 +195,28 @@
               </sw-grid>
             </div>
             <template #modal-footer>
-              <sw-button @click="toggleChargeModal" class="nexinets-modal__btn">
-                {{ $tc('nexinets-payment-component.cancel.button-action-title') }}
+              <sw-button @click="toggleChargeModal" class="nexi-modal__btn">
+                {{ $tc('nexi-payment-component.cancel.button-action-title') }}
               </sw-button>
-              <sw-button @click="handleCharge" class="nexinets-modal__btn" :isLoading="isLoading" variant="primary" :disabled="chargeAmountError">
-                {{ $tc('nexinets-payment-component.charge.button-title') }}
+              <sw-button @click="handleCharge" class="nexi-modal__btn" :isLoading="isLoading" variant="primary" :disabled="chargeAmountError">
+                {{ $tc('nexi-payment-component.charge.button-title') }}
               </sw-button>
             </template>
           </sw-modal>
         {% endblock %}
 
-        {% block nexinets_refund_modal %}
+        {% block nexi_refund_modal %}
           <sw-modal
             v-if="isRefundModalVisible"
-            :title="$tc('nexinets-payment-component.refund.title')"
+            :title="$tc('nexi-payment-component.refund.title')"
             @modal-close="toggleRefundModal"
           >
-            <p>{{ $tc('nexinets-payment-component.refund.info', { orderNumber: order.orderNumber }) }}</p>
-            <div class="nexinets-modal__wrapper">
+            <p>{{ $tc('nexi-payment-component.refund.info', { orderNumber: order.orderNumber }) }}</p>
+            <div class="nexi-modal__wrapper">
               <div>
                 <sw-number-field
-                  class="nexinets-modal__input"
-                  :label="$tc('nexinets-payment-component.refund.input-label')"
+                  class="nexi-modal__input"
+                  :label="$tc('nexi-payment-component.refund.input-label')"
                   v-model:value="refund.amount"
                   :min="0"
                   numberType="float"
@@ -227,51 +227,51 @@
                 >
                   <template v-slot:suffix>{{ order.currency.symbol }}</template>
                 </sw-number-field>
-                <p class="nexinets-modal__full-amount">
-                  {{ $tc('nexinets-payment-component.refund.max-refund-info') }}
+                <p class="nexi-modal__full-amount">
+                  {{ $tc('nexi-payment-component.refund.max-refund-info') }}
                   <span @click="onClickMaxRefund" data-testid="maxRefundBtn">{{ order.currency.symbol + paymentDetails.remainingRefundAmount }}</span>
                 </p>
               </div>
               <sw-checkbox-field
-                class="nexinets-modal__checkbox"
+                class="nexi-modal__checkbox"
                 :class="{ 'error-margin': refundAmountError }"
                 :value="isItemsListVisible"
                 @update:value="isItemsListVisible = $event"
-                :label="$tc('nexinets-payment-component.refund.items-list')"
+                :label="$tc('nexi-payment-component.refund.items-list')"
               >
               </sw-checkbox-field>
             </div>
-            <div v-if="isItemsListVisible" class="nexinets-modal__items-list">
+            <div v-if="isItemsListVisible" class="nexi-modal__items-list">
               <sw-grid :selectable="false" :items="paymentDetails.charges">
                 <template #columns="{ item }">
                   <sw-grid-column
                     flex="minmax(50px, 1.3fr)"
-                    :label="$tc('nexinets-payment-component.itemsTable.qty')"
-                    class="nexinets-modal__end-col"
+                    :label="$tc('nexi-payment-component.itemsTable.qty')"
+                    class="nexi-modal__end-col"
                   >
                     {{ item.quantity }}x
                   </sw-grid-column>
                   <sw-grid-column
                     flex="minmax(220px, 4.3fr)"
-                    :label="$tc('nexinets-payment-component.itemsTable.item')"
+                    :label="$tc('nexi-payment-component.itemsTable.item')"
                   >
-                    <p>{{ item.name }}<br><span class="nexinets-modal__charge-id">{{ item.chargeId }}</span></p>
+                    <p>{{ item.name }}<br><span class="nexi-modal__charge-id">{{ item.chargeId }}</span></p>
                   </sw-grid-column>
                   <sw-grid-column
                     flex="minmax(100px, 2.1fr)"
-                    class="nexinets-modal__end-col"
-                    :label="$tc('nexinets-payment-component.itemsTable.subtotal')"
+                    class="nexi-modal__end-col"
+                    :label="$tc('nexi-payment-component.itemsTable.subtotal')"
                   >
                     {{ order.currency.symbol + item.grossTotalAmount }}
                   </sw-grid-column>
                   <sw-grid-column
                     flex="minmax(100px, 2.3fr)"
-                    :label="$tc('nexinets-payment-component.itemsTable.refundQty')"
-                    class="nexinets-modal__qty-col"
+                    :label="$tc('nexi-payment-component.itemsTable.refundQty')"
+                    class="nexi-modal__qty-col"
                   >
                     <sw-select-field
                       placeholder="0"
-                      class="nexinets-modal__qty-select"
+                      class="nexi-modal__qty-select"
                       @update:value="$quantity => updateRefundItem(item, $quantity)"
                     >
                       <option v-for="n in (parseInt(item.quantity) - parseInt(item.qtyRefunded))" :key="n" :value="n">{{ n }}</option>
@@ -281,22 +281,22 @@
               </sw-grid>
             </div>
             <template #modal-footer>
-              <sw-button @click="toggleRefundModal" class="nexinets-modal__btn">
-                {{ $tc('nexinets-payment-component.cancel.button-action-title') }}
+              <sw-button @click="toggleRefundModal" class="nexi-modal__btn">
+                {{ $tc('nexi-payment-component.cancel.button-action-title') }}
               </sw-button>
-              <sw-button @click="handleRefund" class="nexinets-modal__btn" :isLoading="isLoading" variant="primary" :disabled="refundAmountError">
-                {{ $tc('nexinets-payment-component.refund.button-title') }}
+              <sw-button @click="handleRefund" class="nexi-modal__btn" :isLoading="isLoading" variant="primary" :disabled="refundAmountError">
+                {{ $tc('nexi-payment-component.refund.button-title') }}
               </sw-button>
             </template>
           </sw-modal>
         {% endblock %}
 
-        {% block nexinets_cancel_modal %}
+        {% block nexi_cancel_modal %}
           <sw-confirm-modal
             v-if="isCancelModalVisible"
             type="confirm"
-            :text="$t('nexinets-payment-component.cancel.confirmation', { amount: paymentDetails.orderAmount, currency: order.currency.symbol })"
-            :title="$t('nexinets-payment-component.cancel.title')"
+            :text="$t('nexi-payment-component.cancel.confirmation', { amount: paymentDetails.orderAmount, currency: order.currency.symbol })"
+            :title="$t('nexi-payment-component.cancel.title')"
             @confirm="handleCancel"
             @cancel="closeCancelModal"
             @close="closeCancelModal">

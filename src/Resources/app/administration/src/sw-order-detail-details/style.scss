@@ -13,7 +13,7 @@ $border-color: #d1d9e0;
 }
 
 // Payment details styling
-.nexinets-details {
+.nexi-details {
   &__header-wrapper {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -40,7 +40,7 @@ $border-color: #d1d9e0;
   }
 }
 
-.nexinets-details {
+.nexi-details {
   &__main-wrapper {
     column-gap: $column-gap;
     padding-top: 2.5rem;
@@ -48,7 +48,7 @@ $border-color: #d1d9e0;
   }
 }
 
-.nexinets-details {
+.nexi-details {
   &__action-buttons {
     display: flex;
     justify-content: flex-end;
@@ -69,7 +69,7 @@ $border-color: #d1d9e0;
 }
 
 // Modal styling
-.nexinets-modal {
+.nexi-modal {
   &__wrapper {
     display: grid;
     grid-template-columns: 1fr;
