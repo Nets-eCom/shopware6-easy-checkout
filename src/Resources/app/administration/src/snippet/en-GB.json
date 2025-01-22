@@ -5,11 +5,11 @@
             "error-refund-max-amount": "Maximum amount exceeded. Please adjust and try again."
         }
     },
-    "nexinets-charge-action": {
+    "nexi-charge-action": {
         "title": "Make Full Charge",
-        "description": "Send charge request to Nexi/Nets"
+        "description": "Send charge request to Nexi"
     },
-    "nexinets-payment-component": {
+    "nexi-payment-component": {
         "api": {
             "errors": {
                 "NEXI_NETS__CHARGE_FAILED": "Please verify the details and try again. Alternatively, check the logs using this payment ID: {paymentId}.",
@@ -21,14 +21,14 @@
         "payment-details": {
             "title": "Payment",
             "status-label": "Payment status",
-            "history-link": "Show NexiNets Payment history",
+            "history-link": "Show Nexi Payment history",
             "payment-via": "Payment via",
-            "payment-id": "Nets payment id",
+            "payment-id": "Nexi payment id",
             "order-amount": "Order amount",
             "time-order": "Time of order",
             "charged-amount": "Charged amount",
             "refunded-amount": "Refunded amount",
-            "charged-help-text": "Charge amount is what you've already collected to your Nets account.",
+            "charged-help-text": "Charge amount is what you've already collected to your Nexi account.",
             "status": {
                 "new": "New",
                 "reserved": "Reserved",
@@ -43,7 +43,7 @@
         },
         "charge": {
             "button-title": "Charge",
-            "title": "Charge (NexiNets payment plugin)",
+            "title": "Charge (Nexi payment plugin)",
             "info": "You're about to charge Order {orderNumber}. This means the payment will be collected and processed.",
             "items-list": "Select items to charge",
             "max-charge-info": "Max. chargable amount is "
@@ -51,7 +51,7 @@
         "refund": {
             "button-title": "Refund",
             "input-label": "Refund Amount",
-            "title": "Refund (NexiNets payment plugin)",
+            "title": "Refund (Nexi payment plugin)",
             "info": "You're about to initiate Refund for Order {orderNumber}.",
             "items-list": "Select items to refund",
             "max-refund-info": "Max. refundable amount is:"
@@ -60,7 +60,7 @@
             "button-title": "Cancel payment",
             "button-action-title": "Cancel",
             "confirmation": "You're about to cancel payment with amount of {currency}{amount}.",
-            "title": "Cancel (NexiNets payment plugin)"
+            "title": "Cancel (Nexi payment plugin)"
         },
         "itemsTable": {
             "qty": "QTY",
