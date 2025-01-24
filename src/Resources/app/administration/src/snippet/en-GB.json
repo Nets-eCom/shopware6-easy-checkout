@@ -73,7 +73,7 @@
             "charge-title": "Capture is being processed",
             "charge-message": "You have successfully initiated a capture.",
             "refund-title": "Refund is being processed",
-            "refund-message": "It may take 1-3 bank days to show in the recipient’s account.",
+            "refund-message": "It may take 1-3 bank days for the amount show in the recipient’s account.",
             "action-error-title": "Something went wrong",
             "NEXI_NETS__CHARGE_FAILED": "Charge failed",
             "NEXI_NETS__REFUND_FAILED": "Refund failed",
