@@ -35,9 +35,10 @@ Depending on your country or region, the list may vary. If you are uncertain abo
 How to install the Checkout module for Shopware 6:
 
 1. Connect with an SSH client and navigate to the root directory of your Shopware 6 installation.
-2. Install the plugin by running the command: `bin/console plugin:install netseu/checkout`
-3. Activate the plugin by running the command: `bin/console plugin:activate netseu/checkout`
-4. Clear the cache by running the command: `bin/console cache:clear`
+2. Install the required package by running the command: `composer require netseu/checkout`
+3. Install the plugin by running the command: `bin/console plugin:install netseu/checkout`
+4. Activate the plugin by running the command: `bin/console plugin:activate netseu/checkout`
+5. Clear the cache by running the command: `bin/console cache:clear`
 
 The module is now installed and ready to be configured for your Checkout account.
 
