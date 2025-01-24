@@ -4,7 +4,7 @@ import "./style.scss";
 
 Shopware.Component.override("sw-order-detail-details", {
   template,
-  inject: ["nexiNetsPaymentDetailService", "nexiNetsPaymentActionsService"],
+  inject: ["nexiPaymentDetailService", "nexiPaymentActionsService"],
   mixins: [Mixin.getByName("notification")],
   data() {
     return {
@@ -22,12 +22,12 @@ Shopware.Component.override("sw-order-detail-details", {
     };
   },
   created() {
-    if (this.isNexiNetsPayment) {
+    if (this.isNexiPayment) {
       this.fetchPaymentDetails(this.orderId);
     }
   },
   computed: {
-    isNexiNetsPayment() {
+    isNexiPayment() {
       return !!this.transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id");
     },
 
@@ -68,7 +68,7 @@ Shopware.Component.override("sw-order-detail-details", {
         return "Undefined";
       }
 
-      return `nexinets-payment-component.payment-details.status.${status}`;
+      return `nexi-payment-component.payment-details.status.${status}`;
     },
 
     statusVariant() {
@@ -111,13 +111,13 @@ Shopware.Component.override("sw-order-detail-details", {
   methods: {
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
-      this.paymentDetails = await this.nexiNetsPaymentDetailService.getPaymentDetails(orderId)
+      this.paymentDetails = await this.nexiPaymentDetailService.getPaymentDetails(orderId)
           .catch(({response}) => {
             const errors = response.data.errors;
             const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
             this.hasFetchError = true;
             console.error(
-                `Error while fetching NexiNets payment details for paymentID: ${netsPaymentId}`,
+                `Error while fetching Nexi payment details for paymentID: ${netsPaymentId}`,
                 errors,
             );
             this.handleErrors(errors);
@@ -129,11 +129,11 @@ Shopware.Component.override("sw-order-detail-details", {
 
     async handleCharge() {
       this.isLoading = true;
-      await this.nexiNetsPaymentActionsService.charge(this.order.id, this.charge)
+      await this.nexiPaymentActionsService.charge(this.order.id, this.charge)
           .then(() => {
             this.createNotificationSuccess({
-              title: this.$tc("nexinets-payment-component.notification.charge-title"),
-              message: this.$tc("nexinets-payment-component.notification.charge-message"),
+              title: this.$tc("nexi-payment-component.notification.charge-title"),
+              message: this.$tc("nexi-payment-component.notification.charge-message"),
             });
 
             this.closeChargeModal();
@@ -146,11 +146,11 @@ Shopware.Component.override("sw-order-detail-details", {
 
     async handleRefund() {
       this.isLoading = true;
-      await this.nexiNetsPaymentActionsService.refund(this.order.id, this.refund)
+      await this.nexiPaymentActionsService.refund(this.order.id, this.refund)
           .then(() => {
             this.createNotificationSuccess({
-              title: this.$tc("nexinets-payment-component.notification.refund-title"),
-              message: this.$tc("nexinets-payment-component.notification.refund-message"),
+              title: this.$tc("nexi-payment-component.notification.refund-title"),
+              message: this.$tc("nexi-payment-component.notification.refund-message"),
             });
             this.closeRefundModal();
             this.reloadComponent();
@@ -163,7 +163,7 @@ Shopware.Component.override("sw-order-detail-details", {
 
     async handleCancel() {
       this.isLoading = true;
-      await this.nexiNetsPaymentActionsService.cancel(this.order.id)
+      await this.nexiPaymentActionsService.cancel(this.order.id)
           .then(() => {
             this.closeCancelModal();
             this.reloadComponent();
@@ -183,8 +183,8 @@ Shopware.Component.override("sw-order-detail-details", {
       console.error("index.js error:", errors);
       if (!errors) {
         this.createNotificationError({
-          title: this.$t("nexinets-payment-component.notification.action-error-title"),
-          message: this.$t("nexinets-payment-component.notification.action-error-message"),
+          title: this.$t("nexi-payment-component.notification.action-error-title"),
+          message: this.$t("nexi-payment-component.notification.action-error-message"),
         });
 
         return;
@@ -193,8 +193,8 @@ Shopware.Component.override("sw-order-detail-details", {
       const error = errors[0];
 
       this.createNotificationError({
-        title: this.$t("nexinets-payment-component.notification.action-error-title"),
-        message: this.$t(`nexinets-payment-component.api.errors.${error.code}`, error.meta.parameters),
+        title: this.$t(`nexi-payment-component.notification.${error.code}`),
+        message: this.$t(`nexi-payment-component.api.errors.${error.code}`, error.meta.parameters),
       })
     },
 
