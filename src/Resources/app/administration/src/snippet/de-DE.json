@@ -5,17 +5,17 @@
             "error-refund-max-amount": "Maximalbetrag überschritten. Bitte anpassen und erneut versuchen."
         }
     },
-    "nexinets-charge-action": {
+    "nexi-charge-action": {
         "title": "Gesamten Betrag abbuchen",
         "description": "Buchungsanfrage an Nexi abschicken"
     },
-    "nexinets-payment-component": {
+    "nexi-payment-component": {
         "api": {
             "errors": {
-                "NEXI_NETS__CHARGE_FAILED": "Bitte überprüfe die Details und versuche es erneut. Alternativ kannst du die Logs mit dieser Zahlungs-ID überprüfen: {paymentId}.",
-                "NEXI_NETS__REFUND_FAILED": "Bitte überprüfe die Details und versuche es erneut. Alternativ kannst du die Logs mit dieser Rückerstattungs-ID überprüfen: {paymentId}.",
-                "NEXI_NETS__REFUND_AMOUNT_EXCEEDED": "Bitte überprüfe den Betrag und versuche es erneut. Alternativ kannst du die Logs mit dieser Rückerstattungs-ID überprüfen: {paymentId}.",
-                "NEXI_NETS__CANCEL_FAILED": "Bitte überprüfe den Betrag und versuche es erneut. Alternativ kannst du die Logs mit dieser Belastungs-ID überprüfen: {paymentId}."
+                "NEXI__CHARGE_FAILED": "Bitte überprüfe die Details und versuche es erneut. Alternativ kannst du die Logs mit dieser Zahlungs-ID überprüfen: {paymentId}.",
+                "NEXI__REFUND_FAILED": "Bitte überprüfe die Details und versuche es erneut. Alternativ kannst du die Logs mit dieser Rückerstattungs-ID überprüfen: {paymentId}.",
+                "NEXI__REFUND_AMOUNT_EXCEEDED": "Bitte überprüfe den Betrag und versuche es erneut. Alternativ kannst du die Logs mit dieser Rückerstattungs-ID überprüfen: {paymentId}.",
+                "NEXI__CANCEL_FAILED": "Bitte überprüfe den Betrag und versuche es erneut. Alternativ kannst du die Logs mit dieser Belastungs-ID überprüfen: {paymentId}."
             }
         },
         "payment-details": {
@@ -75,10 +75,10 @@
             "refund-title": "Rückerstattung wird bearbeitet",
             "refund-message": "Es kann 1-3 Werktage dauern, bis der Betrag auf dem Konto des Empfängers angezeigt wird.",
             "action-error-title": "Ein Fehler ist aufgetreten.",
-            "NEXI_NETS__CHARGE_FAILED": "Belastung fehlgeschlagen",
-            "NEXI_NETS__REFUND_FAILED": "Erstattung fehlgeschlagen",
-            "NEXI_NETS__REFUND_AMOUNT_EXCEEDED": "Die Rückerstattung übersteigt die Gesamtsumme.",
-            "NEXI_NETS__CANCEL_FAILED": "Stornierung fehlgeschlagen",
+            "NEXI__CHARGE_FAILED": "Belastung fehlgeschlagen",
+            "NEXI__REFUND_FAILED": "Erstattung fehlgeschlagen",
+            "NEXI__REFUND_AMOUNT_EXCEEDED": "Die Rückerstattung übersteigt die Gesamtsumme.",
+            "NEXI__CANCEL_FAILED": "Stornierung fehlgeschlagen",
             "action-error-message": "Bitte versuche es erneut oder überprüfe die Logs für weitere Details.",
             "fetch-error-title": "Zahlungsdetails nicht gefunden",
             "fetch-error-message": "Bitte versuche es erneut oder überprüfe die Logs für weitere Details."
