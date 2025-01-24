@@ -13,8 +13,8 @@
         "api": {
             "errors": {
                 "NEXI_NETS__CHARGE_FAILED": "Please verify the details and try again. Alternatively, check the logs using this payment ID: {paymentId}.",
-                "NEXI_NETS__REFUND_FAILED": "Please verify the details and try again. Alternatively, check the logs using this charge ID: {paymentId}.",
-                "NEXI_NETS__REFUND_AMOUNT_EXCEEDED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {paymentId}.",
+                "NEXI_NETS__REFUND_FAILED": "Please verify the details and try again. Alternatively, check the logs using this charge ID: {chargeId}.",
+                "NEXI_NETS__REFUND_AMOUNT_EXCEEDED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {chargeId}.",
                 "NEXI_NETS__CANCEL_FAILED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {paymentId}."
             }
         },
@@ -37,12 +37,12 @@
                 "refunded": "Refunded",
                 "partially_refunded": "Partially Refunded",
                 "pending_refund": "Refund Pending",
-                "cancelled": "Canceled",
+                "cancelled": "Cancelled",
                 "terminated": "Terminated"
             }
         },
         "charge": {
-            "button-title": "Charge",
+            "button-title": "Charge amount",
             "title": "Charge (Nexi payment plugin)",
             "info": "You're about to charge Order {orderNumber}. This means the payment will be collected and processed.",
             "items-list": "Select items to charge",
