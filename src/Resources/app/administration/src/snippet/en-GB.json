@@ -12,10 +12,10 @@
     "nexi-payment-component": {
         "api": {
             "errors": {
-                "NEXI_NETS__CHARGE_FAILED": "Please verify the details and try again. Alternatively, check the logs using this payment ID: {paymentId}.",
-                "NEXI_NETS__REFUND_FAILED": "Please verify the details and try again. Alternatively, check the logs using this charge ID: {chargeId}.",
-                "NEXI_NETS__REFUND_AMOUNT_EXCEEDED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {chargeId}.",
-                "NEXI_NETS__CANCEL_FAILED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {paymentId}."
+                "NEXI__CHARGE_FAILED": "Please verify the details and try again. Alternatively, check the logs using this payment ID: {paymentId}.",
+                "NEXI__REFUND_FAILED": "Please verify the details and try again. Alternatively, check the logs using this charge ID: {chargeId}.",
+                "NEXI__REFUND_AMOUNT_EXCEEDED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {chargeId}.",
+                "NEXI__CANCEL_FAILED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {paymentId}."
             }
         },
         "payment-details": {
@@ -75,10 +75,10 @@
             "refund-title": "Refund is being processed",
             "refund-message": "It may take 1-3 bank days for the amount show in the recipient’s account.",
             "action-error-title": "Something went wrong",
-            "NEXI_NETS__CHARGE_FAILED": "Charge failed",
-            "NEXI_NETS__REFUND_FAILED": "Refund failed",
-            "NEXI_NETS__REFUND_AMOUNT_EXCEEDED": "Refund exceeds total amount",
-            "NEXI_NETS__CANCEL_FAILED": "Cancel failed",
+            "NEXI__CHARGE_FAILED": "Charge failed",
+            "NEXI__REFUND_FAILED": "Refund failed",
+            "NEXI__REFUND_AMOUNT_EXCEEDED": "Refund exceeds total amount",
+            "NEXI__CANCEL_FAILED": "Cancel failed",
             "action-error-message": "Please try again, or check the logs for more details.",
             "fetch-error-title": "Payment details not found",
             "fetch-error-message": "Please try again, or check the logs for more details."
