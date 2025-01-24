@@ -1,34 +1,34 @@
 {
     "global": {
         "error-codes": {
-            "error-charge-max-amount": "Amount is bigger than the max. amount that can be charged.",
-            "error-refund-max-amount": "Amount is bigger than the max. amount that can be refunded."
+            "error-charge-max-amount": "Maximum amount exceeded. Please adjust and try again.",
+            "error-refund-max-amount": "Maximum amount exceeded. Please adjust and try again."
         }
     },
-    "nexinets-charge-action": {
+    "nexi-charge-action": {
         "title": "Make Full Charge",
-        "description": "Send charge request to Nexi/Nets"
+        "description": "Send charge request to Nexi"
     },
-    "nexinets-payment-component": {
+    "nexi-payment-component": {
         "api": {
             "errors": {
-                "NEXI_NETS__CHARGE_FAILED": "Charge failed for a given payment. Payment ID: {paymentId}",
-                "NEXI_NETS__REFUND_FAILED": "Refund failed for a given charge. Charge ID: {chargeId}",
-                "NEXI_NETS__REFUND_AMOUNT_EXCEEDED": "Refund value must not exceed total amount of a given charge. Charge ID: {chargeId}",
-                "NEXI_NETS__CANCEL_FAILED": "Cancel failed for a given payment. Payment ID: {paymentId}"
+                "NEXI__CHARGE_FAILED": "Please verify the details and try again. Alternatively, check the logs using this payment ID: {paymentId}.",
+                "NEXI__REFUND_FAILED": "Please verify the details and try again. Alternatively, check the logs using this charge ID: {chargeId}.",
+                "NEXI__REFUND_AMOUNT_EXCEEDED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {chargeId}.",
+                "NEXI__CANCEL_FAILED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {paymentId}."
             }
         },
         "payment-details": {
             "title": "Payment",
             "status-label": "Payment status",
-            "history-link": "Show NexiNets Payment history",
+            "history-link": "Show Nexi Payment history",
             "payment-via": "Payment via",
-            "payment-id": "Nets payment id",
+            "payment-id": "Nexi payment id",
             "order-amount": "Order amount",
             "time-order": "Time of order",
             "charged-amount": "Charged amount",
             "refunded-amount": "Refunded amount",
-            "charged-help-text": "Charge amount is what you've already collected to your Nets account.",
+            "charged-help-text": "Charge amount is what you've already collected to your Nexi account.",
             "status": {
                 "new": "New",
                 "reserved": "Reserved",
@@ -37,13 +37,13 @@
                 "refunded": "Refunded",
                 "partially_refunded": "Partially Refunded",
                 "pending_refund": "Refund Pending",
-                "cancelled": "Canceled",
+                "cancelled": "Cancelled",
                 "terminated": "Terminated"
             }
         },
         "charge": {
-            "button-title": "Charge",
-            "title": "Charge (NexiNets payment plugin)",
+            "button-title": "Charge amount",
+            "title": "Charge (Nexi payment plugin)",
             "info": "You're about to charge Order {orderNumber}. This means the payment will be collected and processed.",
             "items-list": "Select items to charge",
             "max-charge-info": "Max. chargable amount is "
@@ -51,7 +51,7 @@
         "refund": {
             "button-title": "Refund",
             "input-label": "Refund Amount",
-            "title": "Refund (NexiNets payment plugin)",
+            "title": "Refund (Nexi payment plugin)",
             "info": "You're about to initiate Refund for Order {orderNumber}.",
             "items-list": "Select items to refund",
             "max-refund-info": "Max. refundable amount is:"
@@ -60,7 +60,7 @@
             "button-title": "Cancel payment",
             "button-action-title": "Cancel",
             "confirmation": "You're about to cancel payment with amount of {currency}{amount}.",
-            "title": "Cancel (NexiNets payment plugin)"
+            "title": "Cancel (Nexi payment plugin)"
         },
         "itemsTable": {
             "qty": "QTY",
@@ -70,14 +70,18 @@
             "refundQty": "Refund QTY"
         },
         "notification": {
-            "charge-title": "NexiNets - Capture has been initiated",
-            "charge-message": "You have successfully initiated a capture",
-            "refund-title": "NexiNets - The refund has been initiated",
-            "refund-message": "It can take up to 3 bank days before refunds are available on receivers account.",
-            "action-error-title": "NexiNets - Action failed",
-            "action-error-message": "An error occurred while processing the action. Please check the logs.",
-            "fetch-error-title": "NexiNets - Fetching Payment Details failed",
-            "fetch-error-message": "See the logs for more information."
+            "charge-title": "Capture is being processed",
+            "charge-message": "You have successfully initiated a capture.",
+            "refund-title": "Refund is being processed",
+            "refund-message": "It may take 1-3 bank days for the amount show in the recipient’s account.",
+            "action-error-title": "Something went wrong",
+            "NEXI__CHARGE_FAILED": "Charge failed",
+            "NEXI__REFUND_FAILED": "Refund failed",
+            "NEXI__REFUND_AMOUNT_EXCEEDED": "Refund exceeds total amount",
+            "NEXI__CANCEL_FAILED": "Cancel failed",
+            "action-error-message": "Please try again, or check the logs for more details.",
+            "fetch-error-title": "Payment details not found",
+            "fetch-error-message": "Please try again, or check the logs for more details."
         }
     }
 }
