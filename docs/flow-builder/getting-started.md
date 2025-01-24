@@ -4,7 +4,7 @@
 
 Nexi Nets Payment Plugin allows administrators to automate various processes within the payment system with help of flow builder. 
 
-[Read more about Flow builder](https://developer.shopware.com/docs/guides/plugins/plugins/framework/flow/add-flow-builder-action.html).
+[Read more about Flow builder.](https://developer.shopware.com/docs/guides/plugins/plugins/framework/flow/add-flow-builder-action.html)
 
 ## Key Features
 
@@ -48,4 +48,3 @@ Nexi Nets Payment Plugin allows administrators to automate various processes wit
 ![Digital Goods Schema](../images/digital-goods-schema.png)
 
 ## Troubleshooting
-
