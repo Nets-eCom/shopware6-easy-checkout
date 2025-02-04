@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\Tests\RequestBuilder\PaymentRequest;
+namespace Nexi\Checkout\Tests\RequestBuilder\PaymentRequest;
 
-use NexiNets\CheckoutApi\Model\Request\Item;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
-use NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder;
+use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder;
+use NexiCheckout\Model\Request\Item;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;

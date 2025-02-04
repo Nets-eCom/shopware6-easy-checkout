@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Administration\Serializer;
+namespace Nexi\Checkout\Administration\Serializer;
 
-use NexiNets\Administration\Model\ChargeItem;
-use NexiNets\Administration\Model\RefundData;
+use Nexi\Checkout\Administration\Model\ChargeItem;
+use Nexi\Checkout\Administration\Model\RefundData;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class RefundDataDenormalizer implements DenormalizerInterface

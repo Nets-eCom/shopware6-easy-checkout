@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\Administration\Controller;
+namespace Nexi\Checkout\Administration\Controller;
 
-use NexiNets\CheckoutApi\Model\Request\Item as RequestItem;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Charge;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Item;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Fetcher\CachablePaymentFetcherInterface;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
+use NexiCheckout\Model\Request\Item as RequestItem;
+use NexiCheckout\Model\Result\RetrievePayment\Charge;
+use NexiCheckout\Model\Result\RetrievePayment\Item;
+use NexiCheckout\Model\Result\RetrievePayment\Payment;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderCollection;
 use Shopware\Core\Checkout\Order\OrderEntity;
@@ -39,8 +39,8 @@ class PaymentDetailController extends AbstractController
     }
 
     #[Route(
-        path: '/api/order/{orderId}/nexinets-payment-detail',
-        name: 'api.nexinets.payment.detail',
+        path: '/api/order/{orderId}/nexi-payment-detail',
+        name: 'api.nexicheckout.payment.detail',
         defaults: [
             '_acl' => ['order:read'],
         ],
@@ -61,14 +61,14 @@ class PaymentDetailController extends AbstractController
 
         // @todo handle multiple transactions per order
         $transaction = $order->getTransactions()->firstWhere(
-            fn (OrderTransactionEntity $transaction) => $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID) !== null
+            fn (OrderTransactionEntity $transaction) => $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID) !== null
         );
 
         if (!$transaction) {
             throw OrderException::orderTransactionNotFound($orderId);
         }
 
-        $paymentId = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID);
+        $paymentId = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID);
         $payment = $this->paymentFetcher->getCachedPayment($order->getSalesChannelId(), $paymentId);
 
         $summary = $payment->getSummary();
@@ -153,7 +153,7 @@ class PaymentDetailController extends AbstractController
      */
     private function buildItems(Payment $payment, OrderTransactionEntity $transaction): array
     {
-        $orderArray = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER);
+        $orderArray = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_ORDER);
 
         return array_map(
             fn (array $requestItem) => [

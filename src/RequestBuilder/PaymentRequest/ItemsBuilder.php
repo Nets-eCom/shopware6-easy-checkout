@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder\PaymentRequest;
+namespace Nexi\Checkout\RequestBuilder\PaymentRequest;
 
-use NexiNets\CheckoutApi\Model\Request\Item;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use NexiCheckout\Model\Request\Item;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;

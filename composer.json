@@ -1,29 +1,30 @@
 {
-    "name": "netseu/checkout",
-    "description": "netseu/checkout",
+    "name": "nexi-checkout/shopware6-checkout",
+    "description": "Nexi Checkout integration for Shopware 6",
     "type": "shopware-platform-plugin",
     "version": "2.0.0",
     "license": "MIT",
     "require": {
         "php": "~8.2.0 || ~8.3.0",
         "shopware/core": "~6.6.0",
-        "giggsey/libphonenumber-for-php-lite": "*"
+        "giggsey/libphonenumber-for-php-lite": "^8.12",
+        "nexi-checkout/php-payment-sdk": "^0.1"
     },
     "extra": {
-        "shopware-plugin-class": "NexiNets\\NetsCheckout",
+        "shopware-plugin-class": "Nexi\\Checkout\\NexiCheckout",
         "label": {
-            "de-DE": "NexiNets Checkout",
-            "en-GB": "NexiNets Checkout"
+            "de-DE": "Nexi Checkout",
+            "en-GB": "Nexi Checkout"
         }
     },
     "autoload": {
         "psr-4": {
-            "NexiNets\\": "src/"
+            "Nexi\\Checkout\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "NexiNets\\Tests\\": "tests/"
+            "Nexi\\Checkout\\Tests\\": "tests/"
         }
     },
     "config": {

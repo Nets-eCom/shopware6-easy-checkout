@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace NexiNets\Subscriber;
+namespace Nexi\Checkout\Subscriber;
 
-use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
+use Nexi\Checkout\Core\Content\NexiCheckout\Event\RefundChargeSend;
 
 final class CacheCleanupOnRefundSendSubscriber extends BaseCacheCleanupSubscriber
 {

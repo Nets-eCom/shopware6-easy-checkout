@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Order\Exception;
+namespace Nexi\Checkout\Order\Exception;
 
 abstract class OrderException extends \Exception
 {

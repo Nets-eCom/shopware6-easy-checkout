@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\Order;
+namespace Nexi\Checkout\Tests\Order;
 
-use NexiNets\Administration\Model\ChargeData;
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Request\FullCharge;
-use NexiNets\CheckoutApi\Model\Request\Item;
-use NexiNets\CheckoutApi\Model\Request\PartialCharge;
-use NexiNets\CheckoutApi\Model\Result\ChargeResult;
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Fetcher\PaymentFetcherInterface;
-use NexiNets\Order\OrderCharge;
-use NexiNets\RequestBuilder\ChargeRequest;
-use NexiNets\Tests\CheckoutApi\Fixture\RetrievePaymentResultFixture;
+use Nexi\Checkout\Administration\Model\ChargeData;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Fetcher\PaymentFetcherInterface;
+use Nexi\Checkout\Order\OrderCharge;
+use Nexi\Checkout\RequestBuilder\ChargeRequest;
+use Nexi\Checkout\Tests\Fixture\RetrievePaymentResultFixture;
+use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\FullCharge;
+use NexiCheckout\Model\Request\Item;
+use NexiCheckout\Model\Request\PartialCharge;
+use NexiCheckout\Model\Result\ChargeResult;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -198,7 +198,7 @@ final class OrderChargeTest extends TestCase
             new CalculatedPrice(100, 100, new CalculatedTaxCollection(), new TaxRuleCollection([]), 1)
         );
         $transaction->setCustomFields([
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
         ]);
 
         $order = new OrderEntity();

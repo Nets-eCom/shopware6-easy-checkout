@@ -2,6 +2,9 @@
 $column-gap: 2rem;
 $font-size: 14px;
 $border-color: #d1d9e0;
+$focus-outline-color: #118cff;
+$text-color-light: #c6cfd9;
+$text-color-dark: #8599ad;
 
 // Mixin for Shopware breakpoint
 @mixin respond-to($breakpoint) {
@@ -13,16 +16,22 @@ $border-color: #d1d9e0;
 }
 
 // Payment details styling
-.nexi-details {
+.nexi-checkout-details {
+  &__header-wrapper,
+  &__main-wrapper,
+  &__action-buttons {
+    column-gap: $column-gap;
+  }
+
   &__header-wrapper {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    column-gap: $column-gap;
     margin-bottom: 2rem;
     margin-top: 0.6rem;
-  }
-  @include respond-to(lg) {
-    margin-top: 0;
+
+    @include respond-to(lg) {
+      margin-top: 0;
+    }
   }
 
   &__status-text {
@@ -38,17 +47,16 @@ $border-color: #d1d9e0;
     align-self: center;
     margin-top: 1rem;
   }
-}
 
-.nexi-details {
   &__main-wrapper {
-    column-gap: $column-gap;
     padding-top: 2.5rem;
     border-top: 1px $border-color solid;
-  }
-}
 
-.nexi-details {
+    .sw-order-detail-details__billing-address {
+      grid-column: 1;
+    }
+  }
+
   &__action-buttons {
     display: flex;
     justify-content: flex-end;
@@ -62,14 +70,14 @@ $border-color: #d1d9e0;
     }
 
     .sw-button:focus-visible {
-      outline: 2px solid #118cff;
+      outline: 2px solid $focus-outline-color;
       outline-offset: 2px;
     }
   }
 }
 
 // Modal styling
-.nexi-modal {
+.nexi-checkout-modal {
   &__wrapper {
     display: grid;
     grid-template-columns: 1fr;
@@ -99,7 +107,7 @@ $border-color: #d1d9e0;
   }
 
   &__full-amount {
-    color: #c6cfd9;
+    color: $text-color-light;
     font-size: $font-size;
 
     span {
@@ -118,7 +126,7 @@ $border-color: #d1d9e0;
   }
 
   &__charge-id {
-    color: #8599ad;
+    color: $text-color-dark;
     font-size: 12px;
   }
 
@@ -135,7 +143,7 @@ $border-color: #d1d9e0;
   }
 
   &__btn:focus-visible {
-    outline: 2px solid #118cff;
+    outline: 2px solid $focus-outline-color;
     outline-offset: 2px;
   }
 }

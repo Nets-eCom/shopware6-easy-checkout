@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder\ChargeRequest;
+namespace Nexi\Checkout\RequestBuilder\ChargeRequest;
 
-use NexiNets\Administration\Model\ChargeData;
-use NexiNets\CheckoutApi\Model\Request\Item;
-use NexiNets\CheckoutApi\Model\Request\Payment\Order;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Administration\Model\ChargeData;
+use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use NexiCheckout\Model\Request\Item;
+use NexiCheckout\Model\Request\Payment\Order;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 
 /**

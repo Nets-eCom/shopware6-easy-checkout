@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder;
+namespace Nexi\Checkout\RequestBuilder;
 
-use NexiNets\Administration\Model\ChargeData;
-use NexiNets\CheckoutApi\Model\Request\FullCharge;
-use NexiNets\CheckoutApi\Model\Request\PartialCharge;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\RequestBuilder\ChargeRequest\ItemsBuilder;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Administration\Model\ChargeData;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\RequestBuilder\ChargeRequest\ItemsBuilder;
+use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use NexiCheckout\Model\Request\FullCharge;
+use NexiCheckout\Model\Request\PartialCharge;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 
 class ChargeRequest
@@ -41,7 +41,7 @@ class ChargeRequest
             );
         }
 
-        $orderArray = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER);
+        $orderArray = $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_ORDER);
 
         return new PartialCharge(
             $this->itemsBuilder->createForCharge($chargeData, $orderArray)

@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Order;
+namespace Nexi\Checkout\Order;
 
-use NexiNets\Administration\Model\ChargeItem;
-use NexiNets\Administration\Model\RefundData;
-use NexiNets\CheckoutApi\Api\ErrorCodeEnum;
-use NexiNets\CheckoutApi\Api\Exception\InternalErrorPaymentApiException;
-use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Request\PartialRefundCharge;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Charge;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Item;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Fetcher\PaymentFetcherInterface;
-use NexiNets\Order\Exception\OrderChargeRefundExceeded;
-use NexiNets\Order\Exception\OrderRefundException;
-use NexiNets\RequestBuilder\RefundRequest;
+use Nexi\Checkout\Administration\Model\ChargeItem;
+use Nexi\Checkout\Administration\Model\RefundData;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Core\Content\NexiCheckout\Event\RefundChargeSend;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Fetcher\PaymentFetcherInterface;
+use Nexi\Checkout\Order\Exception\OrderChargeRefundExceeded;
+use Nexi\Checkout\Order\Exception\OrderRefundException;
+use Nexi\Checkout\RequestBuilder\RefundRequest;
+use NexiCheckout\Api\ErrorCodeEnum;
+use NexiCheckout\Api\Exception\InternalErrorPaymentApiException;
+use NexiCheckout\Api\Exception\PaymentApiException;
+use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\PartialRefundCharge;
+use NexiCheckout\Model\Result\RetrievePayment\Charge;
+use NexiCheckout\Model\Result\RetrievePayment\Item;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -61,7 +61,7 @@ class OrderRefund
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
             $paymentId = $transaction->getCustomFieldsValue(
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
             );
 
             if ($paymentId === null) {
@@ -125,7 +125,7 @@ class OrderRefund
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
             $paymentId = $transaction->getCustomFieldsValue(
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
             );
 
             if ($paymentId === null) {
@@ -156,7 +156,7 @@ class OrderRefund
             $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
 
             $alreadyRefunded = $transaction->getCustomFieldsValue(
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_REFUNDED
             );
 
             $charges = $refundData->getCharges();
@@ -304,11 +304,11 @@ class OrderRefund
         Context $context,
     ): void {
         $alreadyRefunded = $transaction->getCustomFieldsValue(
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_REFUNDED
         );
 
         $transaction->changeCustomFields([
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => $alreadyRefunded + [
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_REFUNDED => $alreadyRefunded + [
                 $chargeId => isset($alreadyRefunded[$chargeId])
                     ? $alreadyRefunded[$chargeId] + $partialRefund->getAmount()
                     : $partialRefund->getAmount(),

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\Subscriber;
+namespace Nexi\Checkout\Tests\Subscriber;
 
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Order\OrderCancel;
-use NexiNets\Subscriber\PaymentCancelSubscriber;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Order\OrderCancel;
+use Nexi\Checkout\Subscriber\PaymentCancelSubscriber;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
@@ -113,7 +113,7 @@ final class PaymentCancelSubscriberTest extends TestCase
         $transaction->setId($transactionId);
         $transaction->setCustomFields(
             [
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => $paymentId,
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => $paymentId,
             ]
         );
         $transaction->setStateMachineState($state);

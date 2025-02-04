@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Order;
+namespace Nexi\Checkout\Order;
 
-use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Core\Content\NetsCheckout\Event\CancelSend;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Fetcher\PaymentFetcherInterface;
-use NexiNets\Order\Exception\OrderCancelException;
-use NexiNets\RequestBuilder\CancelRequest;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Core\Content\NexiCheckout\Event\CancelSend;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Fetcher\PaymentFetcherInterface;
+use Nexi\Checkout\Order\Exception\OrderCancelException;
+use Nexi\Checkout\RequestBuilder\CancelRequest;
+use NexiCheckout\Api\Exception\PaymentApiException;
+use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -48,7 +48,7 @@ class OrderCancel
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
             $paymentId = $transaction->getCustomFieldsValue(
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
             );
 
             if ($paymentId === null) {

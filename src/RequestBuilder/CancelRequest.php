@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder;
+namespace Nexi\Checkout\RequestBuilder;
 
-use NexiNets\CheckoutApi\Model\Request\Cancel;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use NexiCheckout\Model\Request\Cancel;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 
 class CancelRequest

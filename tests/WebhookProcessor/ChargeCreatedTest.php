@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\WebhookProcessor;
+namespace Nexi\Checkout\Tests\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
-use NexiNets\CheckoutApi\Model\Webhook\ChargeCreated as ChargeCreatedModel;
-use NexiNets\CheckoutApi\Model\Webhook\Data\ChargeCreatedData;
-use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
-use NexiNets\Fetcher\CachablePaymentFetcherInterface;
-use NexiNets\WebhookProcessor\Processor\ChargeCreated;
-use NexiNets\WebhookProcessor\WebhookProcessorException;
+use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
+use Nexi\Checkout\WebhookProcessor\Processor\ChargeCreated;
+use Nexi\Checkout\WebhookProcessor\WebhookProcessorException;
+use NexiCheckout\Model\Result\RetrievePayment\Payment;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
+use NexiCheckout\Model\Webhook\ChargeCreated as ChargeCreatedModel;
+use NexiCheckout\Model\Webhook\Data\ChargeCreatedData;
+use NexiCheckout\Model\Webhook\EventNameEnum;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;

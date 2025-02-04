@@ -2,28 +2,28 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
     <card>
-        <title>NexiNets Checkout configuration</title>
-        <title lang="de-DE">NexiNets Checkout configuration</title>
-        <title lang="da-DK">NexiNets Checkout konfiguration</title>
-        <title lang="sv-SE">NexiNets Checkout konfigurering</title>
-        <title lang="nb-NO">NexiNets Checkout konfigurasjon</title>
+        <title>Nexi Checkout configuration</title>
+        <title lang="de-DE">Nexi Checkout configuration</title>
+        <title lang="da-DK">Nexi Checkout konfiguration</title>
+        <title lang="sv-SE">Nexi Checkout konfigurering</title>
+        <title lang="nb-NO">Nexi Checkout konfigurasjon</title>
 
         <input-field type="password">
             <name>liveSecretKey</name>
             <label>Live secret key</label>
             <placeholder>00000000000000000000000000000000</placeholder>
-            <helpText>All keys can be found in : Nets Easy Administration > Company > Integration</helpText>
+            <helpText>All keys can be found in : Nexi Easy Administration > Company > Integration</helpText>
             <helpText lang="de-DE">
-                Alle Schlüssel finden Sie in : Nets Easy Administration > Unternehmen > Integration
+                Alle Schlüssel finden Sie in : Nexi Easy Administration > Unternehmen > Integration
             </helpText>
             <helpText lang="da-DK">
-                Alle nøgler kan findes i : Nets Easy Administration > Firmaet > Integration
+                Alle nøgler kan findes i : Nexi Easy Administration > Firmaet > Integration
             </helpText>
             <helpText lang="sv-SE">
-                Alla nycklar finns i : Nets Easy Administration > Företag > Integration
+                Alla nycklar finns i : Nexi Easy Administration > Företag > Integration
             </helpText>
             <helpText lang="nb-NO">
-                Alle nøkler finnes i : Nets Easy Administration > Firmaet > Integration
+                Alle nøkler finnes i : Nexi Easy Administration > Firmaet > Integration
             </helpText>
         </input-field>
         <input-field type="password">
@@ -54,18 +54,18 @@
                 legislation.
             </helpText>
             <helpText lang="de-DE">
-                Wenn aktiviert, belastet Nets Easy Ihren Kunden sofort nach Abschluss der Zahlung.
+                Wenn aktiviert, belastet Nexi Easy Ihren Kunden sofort nach Abschluss der Zahlung.
                 Nur für konforme/kompatible Produkte / Dienstleistungen aktivierbar.
             </helpText>
             <helpText lang="da-DK">
                 Debiter din kunde umiddelbart efter betaling er gennemført. Kun produkter/ydelser efter lovgivning.
             </helpText>
             <helpText lang="sv-SE">
-                Om aktiverad debiterar Nets Easy kunderna direkt efter att betalningen är genomförd.
+                Om aktiverad debiterar Nexi Easy kunderna direkt efter att betalningen är genomförd.
                 Aktivera endast detta för behöriga produkter/tjänster.
             </helpText>
             <helpText lang="nb-NO">
-                Hvis tillatt Nets Easy vil belaste sluttkunden umiddelbart etter at betalingen er
+                Hvis tillatt Nexi Easy vil belaste sluttkunden umiddelbart etter at betalingen er
                 utført. Bare tillatt for kompatible produkter / tjenester.
             </helpText>
         </input-field>

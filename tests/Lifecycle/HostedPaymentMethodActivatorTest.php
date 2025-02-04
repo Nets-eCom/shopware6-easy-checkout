@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\Lifecycle;
+namespace Nexi\Checkout\Tests\Lifecycle;
 
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Handler\HostedPayment;
-use NexiNets\Lifecycle\HostedPaymentMethodActivator;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Handler\HostedPayment;
+use Nexi\Checkout\Lifecycle\HostedPaymentMethodActivator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Rule\InvokedCount;

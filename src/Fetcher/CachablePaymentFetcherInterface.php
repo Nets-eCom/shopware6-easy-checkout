@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\Fetcher;
+namespace Nexi\Checkout\Fetcher;
 
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
+use NexiCheckout\Model\Result\RetrievePayment\Payment;
 
 interface CachablePaymentFetcherInterface
 {

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\Security;
+namespace Nexi\Checkout\Security;
 
-use NexiNets\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class WebhookVoter extends NexiVoter
 {
-    public const HEADER_MATCH = 'nexinets_header_match';
+    public const HEADER_MATCH = 'nexicheckout_header_match';
 
     public function __construct(
         private readonly ConfigurationProvider $configurationProvider,

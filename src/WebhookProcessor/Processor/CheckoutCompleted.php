@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\WebhookProcessor\Processor;
+namespace Nexi\Checkout\WebhookProcessor\Processor;
 
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
-use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
-use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
-use NexiNets\Fetcher\CachablePaymentFetcherInterface;
-use NexiNets\WebhookProcessor\WebhookProcessorException;
-use NexiNets\WebhookProcessor\WebhookProcessorInterface;
+use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
+use Nexi\Checkout\WebhookProcessor\WebhookProcessorException;
+use Nexi\Checkout\WebhookProcessor\WebhookProcessorInterface;
+use NexiCheckout\Model\Result\RetrievePayment\Payment;
+use NexiCheckout\Model\Webhook\EventNameEnum;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
@@ -54,7 +54,7 @@ final readonly class CheckoutCompleted implements WebhookProcessorInterface
 
         $criteria = (new Criteria())
             ->addAssociation('stateMachineState')
-            ->addFilter(new EqualsFilter('customFields.nexi_nets_payment_id', $paymentId));
+            ->addFilter(new EqualsFilter('customFields.nexi_checkout_payment_id', $paymentId));
 
         /** @var OrderTransactionCollection $transactions */
         $transactions = $this->orderTransactionEntityRepository->search($criteria, $context)->getEntities();

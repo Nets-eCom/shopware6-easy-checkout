@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\Security;
+namespace Nexi\Checkout\Security;
 
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 

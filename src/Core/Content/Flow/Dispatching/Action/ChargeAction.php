@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Core\Content\Flow\Dispatching\Action;
+namespace Nexi\Checkout\Core\Content\Flow\Dispatching\Action;
 
-use NexiNets\Order\OrderCharge;
+use Nexi\Checkout\Order\OrderCharge;
 use Shopware\Core\Content\Flow\Dispatching\Action\FlowAction;
 use Shopware\Core\Content\Flow\Dispatching\StorableFlow;
 use Shopware\Core\Framework\Event\OrderAware;
@@ -18,7 +18,7 @@ class ChargeAction extends FlowAction
 
     public static function getName(): string
     {
-        return 'action.nexinets.charge';
+        return 'action.nexicheckout.charge';
     }
 
     public function requirements(): array

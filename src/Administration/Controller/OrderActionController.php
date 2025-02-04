@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Administration\Controller;
+namespace Nexi\Checkout\Administration\Controller;
 
-use NexiNets\Administration\Exception\OrderActionHttpException;
-use NexiNets\Administration\Model\ChargeData;
-use NexiNets\Administration\Model\RefundData;
-use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
-use NexiNets\Order\Exception\OrderCancelException;
-use NexiNets\Order\Exception\OrderChargeException;
-use NexiNets\Order\Exception\OrderChargeRefundExceeded;
-use NexiNets\Order\Exception\OrderRefundException;
-use NexiNets\Order\OrderCancel;
-use NexiNets\Order\OrderCharge;
-use NexiNets\Order\OrderRefund;
+use Nexi\Checkout\Administration\Exception\OrderActionHttpException;
+use Nexi\Checkout\Administration\Model\ChargeData;
+use Nexi\Checkout\Administration\Model\RefundData;
+use Nexi\Checkout\Order\Exception\OrderCancelException;
+use Nexi\Checkout\Order\Exception\OrderChargeException;
+use Nexi\Checkout\Order\Exception\OrderChargeRefundExceeded;
+use Nexi\Checkout\Order\Exception\OrderRefundException;
+use Nexi\Checkout\Order\OrderCancel;
+use Nexi\Checkout\Order\OrderCharge;
+use Nexi\Checkout\Order\OrderRefund;
+use NexiCheckout\Api\Exception\PaymentApiException;
 use Shopware\Core\Checkout\Order\OrderCollection;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Order\OrderException;
@@ -44,8 +44,8 @@ class OrderActionController extends AbstractController
 
     #[
         Route(
-            path: '/api/order/{orderId}/nexinets-payment-charge',
-            name: 'api.nexinets.payment.charge',
+            path: '/api/order/{orderId}/nexi-payment-charge',
+            name: 'api.nexi.payment.charge',
             defaults: [
                 '_acl' => [
                     'order:read',
@@ -83,8 +83,8 @@ class OrderActionController extends AbstractController
 
     #[
         Route(
-            path: '/api/order/{orderId}/nexinets-payment-refund',
-            name: 'api.nexinets.payment.refund',
+            path: '/api/order/{orderId}/nexi-payment-refund',
+            name: 'api.nexi.payment.refund',
             defaults: [
                 '_acl' => [
                     'order:read',
@@ -124,8 +124,8 @@ class OrderActionController extends AbstractController
 
     #[
         Route(
-            path: '/api/order/{orderId}/nexinets-payment-cancel',
-            name: 'api.nexinets.payment.cancel',
+            path: '/api/order/{orderId}/nexi-payment-cancel',
+            name: 'api.nexi.payment.cancel',
             defaults: [
                 '_acl' => [
                     'order:read',

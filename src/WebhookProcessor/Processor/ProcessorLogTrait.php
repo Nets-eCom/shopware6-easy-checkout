@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace NexiNets\WebhookProcessor\Processor;
+namespace Nexi\Checkout\WebhookProcessor\Processor;
 
-use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
+use NexiCheckout\Model\Webhook\EventNameEnum;
 use Shopware\Core\System\StateMachine\StateMachineException;
 
 trait ProcessorLogTrait

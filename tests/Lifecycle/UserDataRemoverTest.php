@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\Lifecycle;
+namespace Nexi\Checkout\Tests\Lifecycle;
 
 use Doctrine\DBAL\Connection;
-use NexiNets\Lifecycle\UserDataRemover;
+use Nexi\Checkout\Lifecycle\UserDataRemover;
 use PHPUnit\Framework\TestCase;
 
 final class UserDataRemoverTest extends TestCase

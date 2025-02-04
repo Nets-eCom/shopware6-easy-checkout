@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Subscriber;
+namespace Nexi\Checkout\Subscriber;
 
-use NexiNets\Core\Content\NetsCheckout\Event\ChargeSend;
+use Nexi\Checkout\Core\Content\NexiCheckout\Event\ChargeSend;
 
 final class CacheCleanupOnChargeSendSubscriber extends BaseCacheCleanupSubscriber
 {

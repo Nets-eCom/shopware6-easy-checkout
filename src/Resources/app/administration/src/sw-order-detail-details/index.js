@@ -4,7 +4,7 @@ import "./style.scss";
 
 Shopware.Component.override("sw-order-detail-details", {
   template,
-  inject: ["nexiPaymentDetailService", "nexiPaymentActionsService"],
+  inject: ["nexiCheckoutPaymentDetailService", "nexiCheckoutPaymentActionsService"],
   mixins: [Mixin.getByName("notification")],
   data() {
     return {
@@ -22,13 +22,13 @@ Shopware.Component.override("sw-order-detail-details", {
     };
   },
   created() {
-    if (this.isNexiPayment) {
+    if (this.isNexiCheckoutPayment) {
       this.fetchPaymentDetails(this.orderId);
     }
   },
   computed: {
-    isNexiPayment() {
-      return !!this.transaction?.customFields?.hasOwnProperty("nexi_nets_payment_id");
+    isNexiCheckoutPayment() {
+      return !!this.transaction?.customFields?.hasOwnProperty("nexi_payment_id");
     },
 
     // @todo use PaymentStatusEnum
@@ -68,7 +68,7 @@ Shopware.Component.override("sw-order-detail-details", {
         return "Undefined";
       }
 
-      return `nexi-payment-component.payment-details.status.${status}`;
+      return `nexi-checkout-payment-component.payment-details.status.${status}`;
     },
 
     statusVariant() {
@@ -111,13 +111,13 @@ Shopware.Component.override("sw-order-detail-details", {
   methods: {
     async fetchPaymentDetails(orderId) {
       this.isLoading = true;
-      this.paymentDetails = await this.nexiPaymentDetailService.getPaymentDetails(orderId)
+      this.paymentDetails = await this.nexiCheckoutPaymentDetailService.getPaymentDetails(orderId)
           .catch(({response}) => {
             const errors = response.data.errors;
-            const netsPaymentId = this.transaction.customFields["nexi_nets_payment_id"];
+            const nexiCheckoutPaymentId = this.transaction.customFields["nexi_payment_id"];
             this.hasFetchError = true;
             console.error(
-                `Error while fetching Nexi payment details for paymentID: ${netsPaymentId}`,
+                `Error while fetching Nexi payment details for paymentID: ${nexiCheckoutPaymentId}`,
                 errors,
             );
             this.handleErrors(errors);
@@ -129,11 +129,11 @@ Shopware.Component.override("sw-order-detail-details", {
 
     async handleCharge() {
       this.isLoading = true;
-      await this.nexiPaymentActionsService.charge(this.order.id, this.charge)
+      await this.nexiCheckoutPaymentActionsService.charge(this.order.id, this.charge)
           .then(() => {
             this.createNotificationSuccess({
-              title: this.$tc("nexi-payment-component.notification.charge-title"),
-              message: this.$tc("nexi-payment-component.notification.charge-message"),
+              title: this.$tc("nexi-checkout-payment-component.notification.charge-title"),
+              message: this.$tc("nexi-checkout-payment-component.notification.charge-message"),
             });
 
             this.closeChargeModal();
@@ -146,11 +146,11 @@ Shopware.Component.override("sw-order-detail-details", {
 
     async handleRefund() {
       this.isLoading = true;
-      await this.nexiPaymentActionsService.refund(this.order.id, this.refund)
+      await this.nexiCheckoutPaymentActionsService.refund(this.order.id, this.refund)
           .then(() => {
             this.createNotificationSuccess({
-              title: this.$tc("nexi-payment-component.notification.refund-title"),
-              message: this.$tc("nexi-payment-component.notification.refund-message"),
+              title: this.$tc("nexi-checkout-payment-component.notification.refund-title"),
+              message: this.$tc("nexi-checkout-payment-component.notification.refund-message"),
             });
             this.closeRefundModal();
             this.reloadComponent();
@@ -163,7 +163,7 @@ Shopware.Component.override("sw-order-detail-details", {
 
     async handleCancel() {
       this.isLoading = true;
-      await this.nexiPaymentActionsService.cancel(this.order.id)
+      await this.nexiCheckoutPaymentActionsService.cancel(this.order.id)
           .then(() => {
             this.closeCancelModal();
             this.reloadComponent();
@@ -183,8 +183,8 @@ Shopware.Component.override("sw-order-detail-details", {
       console.error("index.js error:", errors);
       if (!errors) {
         this.createNotificationError({
-          title: this.$t("nexi-payment-component.notification.action-error-title"),
-          message: this.$t("nexi-payment-component.notification.action-error-message"),
+          title: this.$t("nexi-checkout-payment-component.notification.action-error-title"),
+          message: this.$t("nexi-checkout-payment-component.notification.action-error-message"),
         });
 
         return;
@@ -193,8 +193,8 @@ Shopware.Component.override("sw-order-detail-details", {
       const error = errors[0];
 
       this.createNotificationError({
-        title: this.$t(`nexi-payment-component.notification.${error.code}`),
-        message: this.$t(`nexi-payment-component.api.errors.${error.code}`, error.meta.parameters),
+        title: this.$t(`nexi-checkout-payment-component.notification.${error.code}`),
+        message: this.$t(`nexi-checkout-payment-component.api.errors.${error.code}`, error.meta.parameters),
       })
     },
 

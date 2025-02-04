@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\Order;
+namespace Nexi\Checkout\Tests\Order;
 
-use NexiNets\Administration\Model\RefundData;
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
-use NexiNets\CheckoutApi\Model\Request\PartialRefundCharge;
-use NexiNets\CheckoutApi\Model\Request\RefundCharge;
-use NexiNets\CheckoutApi\Model\Result\RefundChargeResult;
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Core\Content\NetsCheckout\Event\RefundChargeSend;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Fetcher\PaymentFetcherInterface;
-use NexiNets\Order\OrderRefund;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
-use NexiNets\RequestBuilder\RefundRequest;
-use NexiNets\Tests\CheckoutApi\Fixture\RetrievePaymentResultFixture;
+use Nexi\Checkout\Administration\Model\RefundData;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Core\Content\NexiCheckout\Event\RefundChargeSend;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Fetcher\PaymentFetcherInterface;
+use Nexi\Checkout\Order\OrderRefund;
+use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\RequestBuilder\RefundRequest;
+use Nexi\Checkout\Tests\Fixture\RetrievePaymentResultFixture;
+use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\FullRefundCharge;
+use NexiCheckout\Model\Request\PartialRefundCharge;
+use NexiCheckout\Model\Request\RefundCharge;
+use NexiCheckout\Model\Result\RefundChargeResult;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -247,8 +247,8 @@ final class OrderRefundTest extends TestCase
             new CalculatedPrice(100, 100, new CalculatedTaxCollection(), new TaxRuleCollection([]), 1)
         );
         $transaction->setCustomFields([
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER => [
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_ORDER => [
                 'items' => [
                     [
                         'reference' => 'foo',
@@ -260,7 +260,7 @@ final class OrderRefundTest extends TestCase
                 'refundedItems' => [],
                 'chargedItems' => [],
             ],
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => [
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_REFUNDED => [
                 'test_charge_3' => 400,
             ],
         ]);

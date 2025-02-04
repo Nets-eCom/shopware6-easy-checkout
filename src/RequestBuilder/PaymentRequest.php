@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder;
+namespace Nexi\Checkout\RequestBuilder;
 
-use NexiNets\CheckoutApi\Model\Request\Payment;
-use NexiNets\CheckoutApi\Model\Request\Payment\IntegrationTypeEnum;
-use NexiNets\CheckoutApi\Model\Request\Payment\Order;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
-use NexiNets\RequestBuilder\PaymentRequest\CheckoutBuilderFactory;
-use NexiNets\RequestBuilder\PaymentRequest\ItemsBuilder;
-use NexiNets\RequestBuilder\PaymentRequest\NotificationBuilder;
+use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilderFactory;
+use Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder;
+use Nexi\Checkout\RequestBuilder\PaymentRequest\NotificationBuilder;
+use NexiCheckout\Model\Request\Payment;
+use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
+use NexiCheckout\Model\Request\Payment\Order;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 
 class PaymentRequest

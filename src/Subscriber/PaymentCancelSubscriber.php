@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Subscriber;
+namespace Nexi\Checkout\Subscriber;
 
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Order\OrderCancel;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Order\OrderCancel;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
@@ -71,7 +71,7 @@ final readonly class PaymentCancelSubscriber implements EventSubscriberInterface
         }
 
         $paymentId = $transaction->getCustomFieldsValue(
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
         );
 
         if ($paymentId === null) {

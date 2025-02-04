@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\Tests\RequestBuilder\ChargeRequest;
+namespace Nexi\Checkout\Tests\RequestBuilder\ChargeRequest;
 
-use NexiNets\Administration\Model\ChargeData;
-use NexiNets\CheckoutApi\Model\Request\Item;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\RequestBuilder\ChargeRequest\ItemsBuilder;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Administration\Model\ChargeData;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\RequestBuilder\ChargeRequest\ItemsBuilder;
+use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use NexiCheckout\Model\Request\Item;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransactionCapture\OrderTransactionCaptureCollection;
@@ -105,7 +105,7 @@ final class ItemsBuilderTest extends TestCase
         $transaction = new OrderTransactionEntity();
         $transaction->setId('transaction_uuid');
         $transaction->setCustomFields([
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
         ]);
         $transaction->setCaptures(new OrderTransactionCaptureCollection([]));
 

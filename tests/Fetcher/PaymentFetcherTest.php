@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\Tests\Fetcher;
+namespace Nexi\Checkout\Tests\Fetcher;
 
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Fetcher\PaymentFetcher;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Fetcher\PaymentFetcher;
+use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Result\RetrievePaymentResult;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;

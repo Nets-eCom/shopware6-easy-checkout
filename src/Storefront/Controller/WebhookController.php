@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\Storefront\Controller;
+namespace Nexi\Checkout\Storefront\Controller;
 
-use NexiNets\CheckoutApi\Model\Webhook\WebhookBuilder;
-use NexiNets\Core\Content\NetsCheckout\Event\WebhookProcessed;
-use NexiNets\Security\WebhookVoter;
-use NexiNets\WebhookProcessor\WebhookProcessor;
-use NexiNets\WebhookProcessor\WebhookProcessorException;
+use Nexi\Checkout\Core\Content\NexiCheckout\Event\WebhookProcessed;
+use Nexi\Checkout\Security\WebhookVoter;
+use Nexi\Checkout\WebhookProcessor\WebhookProcessor;
+use Nexi\Checkout\WebhookProcessor\WebhookProcessorException;
+use NexiCheckout\Model\Webhook\WebhookBuilder;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/nexinets', name: 'nexinets_', defaults: [
+#[Route('/nexicheckout', name: 'nexicheckout_', defaults: [
     '_routeScope' => ['storefront'],
 ])]
 class WebhookController extends AbstractController
@@ -30,7 +30,7 @@ class WebhookController extends AbstractController
     ) {
     }
 
-    #[Route(path: '/webhook', name: 'payment.nexinets.webhook', methods: ['POST'])]
+    #[Route(path: '/webhook', name: 'payment.nexicheckout.webhook', methods: ['POST'])]
     public function webhook(Request $request, SalesChannelContext $salesChannelContext): Response
     {
         $this->webhookVoter->denyAccessUnlessGranted(WebhookVoter::HEADER_MATCH, $salesChannelContext);
