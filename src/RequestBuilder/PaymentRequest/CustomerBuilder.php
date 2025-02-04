@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder\PaymentRequest;
+namespace Nexi\Checkout\RequestBuilder\PaymentRequest;
 
-use NexiNets\CheckoutApi\Model\Request\Payment\Company;
-use NexiNets\CheckoutApi\Model\Request\Payment\Consumer;
-use NexiNets\CheckoutApi\Model\Request\Payment\PrivatePerson;
+use NexiCheckout\Model\Request\Payment\Company;
+use NexiCheckout\Model\Request\Payment\Consumer;
+use NexiCheckout\Model\Request\Payment\PrivatePerson;
 use Shopware\Core\Checkout\Customer\Exception\AddressNotFoundException;
 use Shopware\Core\Checkout\Order\OrderEntity;
 

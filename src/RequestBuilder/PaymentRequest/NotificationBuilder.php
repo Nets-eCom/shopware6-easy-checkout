@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder\PaymentRequest;
+namespace Nexi\Checkout\RequestBuilder\PaymentRequest;
 
-use NexiNets\CheckoutApi\Model\Request\Payment\Notification;
-use NexiNets\CheckoutApi\Model\Request\Payment\Webhook;
-use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
-use NexiNets\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use NexiCheckout\Model\Request\Payment\Notification;
+use NexiCheckout\Model\Request\Payment\Webhook;
+use NexiCheckout\Model\Webhook\EventNameEnum;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -52,6 +52,6 @@ class NotificationBuilder
 
     private function createWebhookUrl(): string
     {
-        return $this->router->generate('nexinets_payment.nexinets.webhook', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        return $this->router->generate('nexicheckout_payment.nexicheckout.webhook', [], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 }

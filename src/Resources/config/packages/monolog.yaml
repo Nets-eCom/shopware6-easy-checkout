@@ -1,9 +1,9 @@
 monolog:
-  channels: ['nexinets_channel']
+  channels: ['nexicheckout_channel']
 
   handlers:
-    nexiNetsLogHandler:
+    nexiCheckoutLogHandler:
         type: stream
         path: "%kernel.logs_dir%/nexi_checkout_log.log"
         level: info
-        channels: [ "nexinets_channel"]
+        channels: [ "nexicheckout_channel"]

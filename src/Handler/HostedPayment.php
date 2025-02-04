@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Handler;
+namespace Nexi\Checkout\Handler;
 
-use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Request\Payment\IntegrationTypeEnum;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Summary;
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\RequestBuilder\PaymentRequest;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\RequestBuilder\PaymentRequest;
+use NexiCheckout\Api\Exception\PaymentApiException;
+use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
+use NexiCheckout\Model\Result\RetrievePayment\Summary;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
@@ -77,9 +77,9 @@ final class HostedPayment extends AbstractPaymentHandler
         $data = [
             'id' => $transactionId,
             'customFields' => [
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => $payment->getPaymentId(),
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER => $paymentRequest->getOrder(),
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => [],
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => $payment->getPaymentId(),
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_ORDER => $paymentRequest->getOrder(),
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_REFUNDED => [],
             ],
         ];
 
@@ -97,13 +97,13 @@ final class HostedPayment extends AbstractPaymentHandler
         $orderTransaction = $this->fetchOrderTransaction($transaction->getOrderTransactionId(), $context);
         $orderTransactionId = $orderTransaction->getId();
         $paymentId = $orderTransaction->getCustomFieldsValue(
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
         );
 
         $paymentApi = $this->createPaymentApi($orderTransaction->getOrder()->getSalesChannelId());
 
         try {
-            $payment = $paymentApi->retrievePayment($paymentId)->getPayment();
+            $payment = $paymentApi->retrievePayment((string) $paymentId)->getPayment();
         } catch (PaymentApiException $paymentApiException) {
             throw PaymentException::asyncFinalizeInterrupted(
                 $orderTransaction->getId(),

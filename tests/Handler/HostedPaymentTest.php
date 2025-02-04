@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\Handler;
+namespace Nexi\Checkout\Tests\Handler;
 
-use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Request\Item;
-use NexiNets\CheckoutApi\Model\Request\Payment as RequestPayment;
-use NexiNets\CheckoutApi\Model\Request\Payment\HostedCheckout;
-use NexiNets\CheckoutApi\Model\Request\Payment\Order;
-use NexiNets\CheckoutApi\Model\Result\Payment\PaymentWithHostedCheckoutResult;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Summary;
-use NexiNets\CheckoutApi\Model\Result\RetrievePaymentResult;
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Handler\HostedPayment;
-use NexiNets\RequestBuilder\PaymentRequest;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Handler\HostedPayment;
+use Nexi\Checkout\RequestBuilder\PaymentRequest;
+use NexiCheckout\Api\Exception\PaymentApiException;
+use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\Item;
+use NexiCheckout\Model\Request\Payment as RequestPayment;
+use NexiCheckout\Model\Request\Payment\HostedCheckout;
+use NexiCheckout\Model\Request\Payment\Order;
+use NexiCheckout\Model\Result\Payment\PaymentWithHostedCheckoutResult;
+use NexiCheckout\Model\Result\RetrievePayment\Payment;
+use NexiCheckout\Model\Result\RetrievePayment\Summary;
+use NexiCheckout\Model\Result\RetrievePaymentResult;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
@@ -80,9 +80,9 @@ final class HostedPaymentTest extends TestCase
                     [
                         'id' => self::ORDER_TRANSACTION_ID,
                         'customFields' => [
-                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => self::PAYMENT_ID,
-                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER => $paymentRequest->getOrder(),
-                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_REFUNDED => [],
+                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => self::PAYMENT_ID,
+                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_ORDER => $paymentRequest->getOrder(),
+                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_REFUNDED => [],
                         ],
                     ],
                 ],
@@ -167,7 +167,7 @@ final class HostedPaymentTest extends TestCase
         $orderTransaction->setOrder($order);
         $orderTransaction->setId(self::ORDER_TRANSACTION_ID);
         $orderTransaction->setCustomFields([
-            'nexi_nets_payment_id' => self::PAYMENT_ID,
+            'nexi_checkout_payment_id' => self::PAYMENT_ID,
         ]);
 
         $sut = new HostedPayment(
@@ -192,7 +192,7 @@ final class HostedPaymentTest extends TestCase
         $orderTransaction = new OrderTransactionEntity();
         $orderTransaction->setId(self::ORDER_TRANSACTION_ID);
         $orderTransaction->setCustomFields([
-            'nexi_nets_payment_id' => self::PAYMENT_ID,
+            'nexi_checkout_payment_id' => self::PAYMENT_ID,
         ]);
 
         $payment = $this->createStub(Payment::class);

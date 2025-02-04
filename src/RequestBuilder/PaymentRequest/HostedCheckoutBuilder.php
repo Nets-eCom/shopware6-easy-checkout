@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder\PaymentRequest;
+namespace Nexi\Checkout\RequestBuilder\PaymentRequest;
 
-use NexiNets\CheckoutApi\Model\Request\Payment\HostedCheckout;
-use NexiNets\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use NexiCheckout\Model\Request\Payment\HostedCheckout;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;

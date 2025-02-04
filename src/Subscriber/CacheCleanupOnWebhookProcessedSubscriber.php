@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Subscriber;
+namespace Nexi\Checkout\Subscriber;
 
-use NexiNets\Core\Content\NetsCheckout\Event\WebhookProcessed;
-use NexiNets\Fetcher\CachablePaymentFetcherInterface;
+use Nexi\Checkout\Core\Content\NexiCheckout\Event\WebhookProcessed;
+use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 final readonly class CacheCleanupOnWebhookProcessedSubscriber implements EventSubscriberInterface

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Configuration;
+namespace Nexi\Checkout\Configuration;
 
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ConfigurationProvider
 {
-    private const CONFIG_DOMAIN = 'NetsCheckout.config.';
+    private const CONFIG_DOMAIN = 'NexiCheckout.config.';
 
     public const LIVE_SECRET_KEY = self::CONFIG_DOMAIN . 'liveSecretKey';
 

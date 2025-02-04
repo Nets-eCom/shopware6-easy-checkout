@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\WebhookProcessor;
+namespace Nexi\Checkout\Tests\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
-use NexiNets\CheckoutApi\Model\Webhook\Data\Amount;
-use NexiNets\CheckoutApi\Model\Webhook\Data\RefundCompletedData;
-use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
-use NexiNets\CheckoutApi\Model\Webhook\RefundCompleted as RefundCompletedModel;
-use NexiNets\Fetcher\CachablePaymentFetcherInterface;
-use NexiNets\WebhookProcessor\Processor\RefundCompleted;
-use NexiNets\WebhookProcessor\WebhookProcessorException;
+use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
+use Nexi\Checkout\WebhookProcessor\Processor\RefundCompleted;
+use Nexi\Checkout\WebhookProcessor\WebhookProcessorException;
+use NexiCheckout\Model\Result\RetrievePayment\Payment;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
+use NexiCheckout\Model\Webhook\Data\Amount;
+use NexiCheckout\Model\Webhook\Data\RefundCompletedData;
+use NexiCheckout\Model\Webhook\EventNameEnum;
+use NexiCheckout\Model\Webhook\RefundCompleted as RefundCompletedModel;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;

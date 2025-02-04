@@ -6,8 +6,8 @@
   displayDetailsOnTestsThatTriggerWarnings="true"
 >
   <testsuites>
-    <testsuite name="NetsCheckout Unit">
-      <directory>tests</directory>
+    <testsuite name="NexiCheckout Unit">
+      <directory>./tests/</directory>
     </testsuite>
   </testsuites>
   <source>

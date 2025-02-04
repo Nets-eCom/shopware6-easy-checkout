@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Lifecycle;
+namespace Nexi\Checkout\Lifecycle;
 
-use NexiNets\Handler\HostedPayment;
-use NexiNets\NetsCheckout;
+use Nexi\Checkout\Handler\HostedPayment;
+use Nexi\Checkout\NexiCheckout;
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -31,10 +31,10 @@ final readonly class HostedPaymentMethodInstaller implements PaymentMethodInstal
         $methodData = [
             'id' => Uuid::randomHex(),
             'handlerIdentifier' => HostedPayment::class,
-            'name' => 'NexiNets Hosted Checkout',
-            'description' => 'NexiNets Hosted Checkout',
-            'technicalName' => 'nexi_nets_hosted_checkout',
-            'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NetsCheckout::class, $context),
+            'name' => 'Nexi Checkout Hosted',
+            'description' => 'Nexi Checkout Hosted',
+            'technicalName' => 'nexi_checkout_hosted',
+            'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NexiCheckout::class, $context),
         ];
 
         $previousMethodId = $this->getMethodIdSearchResult($context, HostedPayment::class)->firstId();

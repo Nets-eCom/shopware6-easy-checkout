@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder\Helper;
+namespace Nexi\Checkout\RequestBuilder\Helper;
 
 class FormatHelper
 {

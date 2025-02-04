@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\WebhookProcessor;
+namespace Nexi\Checkout\Tests\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Model\Webhook\CancelCreated as CancelCreatedModel;
-use NexiNets\CheckoutApi\Model\Webhook\Data\CancelCreatedData;
-use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
-use NexiNets\WebhookProcessor\Processor\CancelCreated;
-use NexiNets\WebhookProcessor\WebhookProcessorException;
+use Nexi\Checkout\WebhookProcessor\Processor\CancelCreated;
+use Nexi\Checkout\WebhookProcessor\WebhookProcessorException;
+use NexiCheckout\Model\Webhook\CancelCreated as CancelCreatedModel;
+use NexiCheckout\Model\Webhook\Data\CancelCreatedData;
+use NexiCheckout\Model\Webhook\EventNameEnum;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;

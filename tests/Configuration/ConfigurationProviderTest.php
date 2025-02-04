@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\Configuration;
+namespace Nexi\Checkout\Tests\Configuration;
 
-use NexiNets\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Test\Stub\SystemConfigService\StaticSystemConfigService;
 

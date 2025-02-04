@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Lifecycle;
+namespace Nexi\Checkout\Lifecycle;
 
 use Shopware\Core\Framework\Context;
 

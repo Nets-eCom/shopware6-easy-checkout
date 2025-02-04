@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Subscriber;
+namespace Nexi\Checkout\Subscriber;
 
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Fetcher\CachablePaymentFetcherInterface;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -19,7 +19,7 @@ abstract class BaseCacheCleanupSubscriber implements EventSubscriberInterface
     {
         $this->paymentFetcher->removeCache(
             $transaction->getCustomFieldsValue(
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
             )
         );
     }

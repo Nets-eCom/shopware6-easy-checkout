@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder\PaymentRequest;
+namespace Nexi\Checkout\RequestBuilder\PaymentRequest;
 
-use NexiNets\CheckoutApi\Model\Request\Payment\IntegrationTypeEnum;
-use NexiNets\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use Symfony\Component\Routing\RouterInterface;
 
 class CheckoutBuilderFactory

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\Tests\Core\Content\Flow\Dispatching\Action;
+namespace Nexi\Checkout\Tests\Core\Content\Flow\Dispatching\Action;
 
-use NexiNets\Core\Content\Flow\Dispatching\Action\ChargeAction;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Order\OrderCharge;
+use Nexi\Checkout\Core\Content\Flow\Dispatching\Action\ChargeAction;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Order\OrderCharge;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -21,7 +21,7 @@ final class ChargeActionTest extends TestCase
         $transaction = new OrderTransactionEntity();
         $transaction->setId('transaction_uuid');
         $transaction->setCustomFields([
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
         ]);
         $order->getTransactions()->add($transaction);
 

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace NexiNets\WebhookProcessor;
+namespace Nexi\Checkout\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Model\Webhook\WebhookInterface;
+use NexiCheckout\Model\Webhook\WebhookInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 interface WebhookProcessorInterface

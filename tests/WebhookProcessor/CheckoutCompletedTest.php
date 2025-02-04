@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\WebhookProcessor;
+namespace Nexi\Checkout\Tests\WebhookProcessor;
 
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentDetails;
-use NexiNets\CheckoutApi\Model\Webhook\CheckoutCompleted as CheckoutCompletedModel;
-use NexiNets\CheckoutApi\Model\Webhook\Data\CheckoutCompletedData;
-use NexiNets\CheckoutApi\Model\Webhook\EventNameEnum;
-use NexiNets\Fetcher\CachablePaymentFetcherInterface;
-use NexiNets\WebhookProcessor\Processor\CheckoutCompleted;
+use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
+use Nexi\Checkout\WebhookProcessor\Processor\CheckoutCompleted;
+use NexiCheckout\Model\Result\RetrievePayment\Payment;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentDetails;
+use NexiCheckout\Model\Webhook\CheckoutCompleted as CheckoutCompletedModel;
+use NexiCheckout\Model\Webhook\Data\CheckoutCompletedData;
+use NexiCheckout\Model\Webhook\EventNameEnum;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;

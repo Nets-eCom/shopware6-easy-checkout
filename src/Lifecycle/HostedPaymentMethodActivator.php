@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Lifecycle;
+namespace Nexi\Checkout\Lifecycle;
 
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Handler\HostedPayment;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Handler\HostedPayment;
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;

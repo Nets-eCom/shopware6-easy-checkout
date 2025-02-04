@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Administration\Exception;
+namespace Nexi\Checkout\Administration\Exception;
 
 use Shopware\Core\Framework\HttpException;
 use Symfony\Component\HttpFoundation\Response;
 
 final class OrderActionHttpException extends HttpException
 {
-    private const NEXI_NETS__CHARGE_FAILED = 'NEXI_NETS__NETS_CHARGE_FAILED';
+    private const NEXI_CHECKOUT__CHARGE_FAILED = 'NEXI_CHECKOUT__CHARGE_FAILED';
 
-    private const NEXI_NETS__REFUND_FAILED = 'NEXI_NETS__NETS_REFUND_FAILED';
+    private const NEXI_CHECKOUT__REFUND_FAILED = 'NEXI_CHECKOUT__REFUND_FAILED';
 
-    private const NEXI_NETS__REFUND_AMOUNT_EXCEEDED = 'NEXI_NETS__REFUND_AMOUNT_EXCEEDED';
+    private const NEXI_CHECKOUT__REFUND_AMOUNT_EXCEEDED = 'NEXI_CHECKOUT__REFUND_AMOUNT_EXCEEDED';
 
-    private const NEXI_NETS__CANCEL_FAILED = 'NEXI_NETS__NETS_CANCEL_FAILED';
+    private const NEXI_CHECKOUT__CANCEL_FAILED = 'NEXI_CHECKOUT__CANCEL_FAILED';
 
     private static string $chargeFailedMessage = 'Charge failed for a given payment ID: {{ paymentId }}';
 
@@ -29,7 +29,7 @@ final class OrderActionHttpException extends HttpException
     {
         return new self(
             Response::HTTP_BAD_REQUEST,
-            self::NEXI_NETS__REFUND_AMOUNT_EXCEEDED,
+            self::NEXI_CHECKOUT__REFUND_AMOUNT_EXCEEDED,
             self::$refundAmountExceededMessage,
             [
                 'chargeId' => $chargeId,
@@ -41,7 +41,7 @@ final class OrderActionHttpException extends HttpException
     {
         return new self(
             Response::HTTP_BAD_REQUEST,
-            self::NEXI_NETS__REFUND_FAILED,
+            self::NEXI_CHECKOUT__REFUND_FAILED,
             self::$refundFailedMessage,
             [
                 'chargeId' => $chargeId,
@@ -53,7 +53,7 @@ final class OrderActionHttpException extends HttpException
     {
         return new self(
             Response::HTTP_BAD_REQUEST,
-            self::NEXI_NETS__CHARGE_FAILED,
+            self::NEXI_CHECKOUT__CHARGE_FAILED,
             self::$chargeFailedMessage,
             [
                 'paymentId' => $paymentId,
@@ -65,7 +65,7 @@ final class OrderActionHttpException extends HttpException
     {
         return new self(
             Response::HTTP_BAD_REQUEST,
-            self::NEXI_NETS__CANCEL_FAILED,
+            self::NEXI_CHECKOUT__CANCEL_FAILED,
             self::$cancelFailedMessage,
             [
                 'paymentId' => $paymentId,

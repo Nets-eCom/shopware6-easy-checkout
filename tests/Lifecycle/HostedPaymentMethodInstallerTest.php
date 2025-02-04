@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\Lifecycle;
+namespace Nexi\Checkout\Tests\Lifecycle;
 
-use NexiNets\Handler\HostedPayment;
-use NexiNets\Lifecycle\HostedPaymentMethodInstaller;
+use Nexi\Checkout\Handler\HostedPayment;
+use Nexi\Checkout\Lifecycle\HostedPaymentMethodInstaller;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
@@ -61,9 +61,9 @@ final class HostedPaymentMethodInstallerTest extends TestCase
                     [
                         'id' => '1234',
                         'handlerIdentifier' => HostedPayment::class,
-                        'name' => 'NexiNets Hosted Checkout',
-                        'description' => 'NexiNets Hosted Checkout',
-                        'technicalName' => 'nexi_nets_hosted_checkout',
+                        'name' => 'Nexi Checkout Hosted',
+                        'description' => 'Nexi Checkout Hosted',
+                        'technicalName' => 'nexi_checkout_hosted',
                         'pluginId' => '',
                     ],
                 ],

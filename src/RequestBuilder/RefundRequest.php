@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\RequestBuilder;
+namespace Nexi\Checkout\RequestBuilder;
 
-use NexiNets\Administration\Model\ChargeItem;
-use NexiNets\CheckoutApi\Model\Request\FullRefundCharge;
-use NexiNets\CheckoutApi\Model\Request\Item;
-use NexiNets\CheckoutApi\Model\Request\PartialRefundCharge;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Charge;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Administration\Model\ChargeItem;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use NexiCheckout\Model\Request\FullRefundCharge;
+use NexiCheckout\Model\Request\Item;
+use NexiCheckout\Model\Request\PartialRefundCharge;
+use NexiCheckout\Model\Result\RetrievePayment\Charge;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 
 class RefundRequest
@@ -35,7 +35,7 @@ class RefundRequest
 
         foreach ($chargeData['items'] as $chargeItem) {
             $orderItem = $this->findOrderItemByReference(
-                $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_ORDER),
+                $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_ORDER),
                 $chargeItem->getReference()
             );
 

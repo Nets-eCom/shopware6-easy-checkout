@@ -5,11 +5,11 @@
             "error-refund-max-amount": "Maximalbetrag überschritten. Bitte anpassen und erneut versuchen."
         }
     },
-    "nexi-charge-action": {
+    "nexi-checkout-charge-action": {
         "title": "Gesamten Betrag abbuchen",
-        "description": "Buchungsanfrage an Nexi abschicken"
+        "description": "Buchungsanfrage an Nexi Checkout abschicken"
     },
-    "nexi-payment-component": {
+    "nexi-checkout-payment-component": {
         "api": {
             "errors": {
                 "NEXI__CHARGE_FAILED": "Bitte überprüfe die Details und versuche es erneut. Alternativ kannst du die Logs mit dieser Zahlungs-ID überprüfen: {paymentId}.",
@@ -21,14 +21,14 @@
         "payment-details": {
             "title": "Zahlung",
             "status-label": "Zahlungsstatus",
-            "history-link": "Zahlungsverlauf Nexi anzeigen",
+            "history-link": "Zahlungsverlauf Nexi Checkout anzeigen",
             "payment-via": "Zahlung über",
-            "payment-id": "Zahlungs-ID Nexi",
+            "payment-id": "Zahlungs-ID Nexi Checkout",
             "order-amount": "Bestellbetrag",
             "time-order": "Bestellzeit",
             "charged-amount": "Belasteter Betrag",
             "refunded-amount": "Erstatteter Betrag",
-            "charged-help-text": "Der Belastungsbetrag ist das, was deinem Nexi-Konto bereits gutgeschrieben wurde.",
+            "charged-help-text": "Der Belastungsbetrag ist das, was deinem Nexi Checkout-Konto bereits gutgeschrieben wurde.",
             "status": {
                 "new": "Neu",
                 "reserved": "Reserviert",
@@ -43,7 +43,7 @@
         },
         "charge": {
             "button-title": "Belasten",
-            "title": "Zahlung belasten (Nexi-Bezahl-Plugin)",
+            "title": "Zahlung belasten (Nexi Checkout-Bezahl-Plugin)",
             "info": "Du bist dabei, die Bestellung {orderNumber} zu belasten. Das heißt, die Zahlung wird eingezogen und verarbeitet.",
             "items-list": "Artikel zur Belastung auswählen",
             "max-charge-info": "Der max. belastbare Betrag ist:"
@@ -51,7 +51,7 @@
         "refund": {
             "button-title": "Erstatten",
             "input-label": "Rückerstattungsbetrag",
-            "title": "Rückerstattung (Nexi-Bezahl-Plugin)",
+            "title": "Rückerstattung (Nexi Checkout-Bezahl-Plugin)",
             "info": "Du bist dabei, eine Rückerstattung für die Bestellung {orderNumber} zu veranlassen.",
             "items-list": "Artikel zur Erstattung auswählen",
             "max-refund-info": "Der max. erstattbare Betrag ist:"
@@ -60,7 +60,7 @@
             "button-title": "Zahlung stornieren",
             "button-action-title": "Stornieren",
             "confirmation": "Du bist dabei, die Zahlung mit einem Betrag von {currency}{amount} zu stornieren.",
-            "title": "Cancel (Nexi Bezahl-Plugin)"
+            "title": "Cancel (Nexi Checkout Bezahl-Plugin)"
         },
         "itemsTable": {
             "qty": "Anz.",

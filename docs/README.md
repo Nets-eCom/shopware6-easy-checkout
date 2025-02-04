@@ -35,10 +35,13 @@ Depending on your country or region, the list may vary. If you are uncertain abo
 How to install the Checkout module for Shopware 6:
 
 1. Connect with an SSH client and navigate to the root directory of your Shopware 6 installation.
-2. Install the required package by running the command: `composer require netseu/checkout`
-3. Install the plugin by running the command: `bin/console plugin:install netseu/checkout`
-4. Activate the plugin by running the command: `bin/console plugin:activate netseu/checkout`
-5. Clear the cache by running the command: `bin/console cache:clear`
+2. Clone the repository by running the command: git clone git@github.com:Nets-eCom/shopware6-easy-checkout.git --branch 2.0.0-beta --single-branch custom/plugins/NexiCheckout
+
+After cloning run those commands: 
+1. `bin/console plugin:refresh`
+2. `bin/console plugin:install NexiCheckout`
+3. `bin/console plugin:activate NexiCheckout`
+4. `bin/build-js.sh`
 
 The module is now installed and ready to be configured for your Checkout account.
 

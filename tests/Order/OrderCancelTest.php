@@ -2,18 +2,20 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Tests\Order;
+namespace Nexi\Checkout\Tests\Order;
 
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Request\Cancel;
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Fetcher\PaymentFetcherInterface;
-use NexiNets\Order\OrderCancel;
-use NexiNets\RequestBuilder\CancelRequest;
-use NexiNets\RequestBuilder\Helper\FormatHelper;
-use NexiNets\Tests\CheckoutApi\Fixture\RetrievePaymentResultFixture;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Fetcher\PaymentFetcherInterface;
+use Nexi\Checkout\Order\Exception\OrderCancelException;
+use Nexi\Checkout\Order\OrderCancel;
+use Nexi\Checkout\RequestBuilder\CancelRequest;
+use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Tests\Fixture\RetrievePaymentResultFixture;
+use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\Cancel;
+use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -27,6 +29,10 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class OrderCancelTest extends TestCase
 {
+    /**
+     * @throws OrderCancelException
+     * @throws Exception
+     */
     public function testItCanCancelOrderPayment(): void
     {
         $api = $this->createMock(PaymentApi::class);
@@ -90,7 +96,7 @@ final class OrderCancelTest extends TestCase
             new CalculatedPrice(100, 100, new CalculatedTaxCollection(), new TaxRuleCollection([]), 1)
         );
         $transaction->setCustomFields([
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
         ]);
 
         $order = new OrderEntity();

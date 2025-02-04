@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace NexiNets\Order;
+namespace Nexi\Checkout\Order;
 
-use NexiNets\Administration\Model\ChargeData;
-use NexiNets\CheckoutApi\Api\Exception\PaymentApiException;
-use NexiNets\CheckoutApi\Api\PaymentApi;
-use NexiNets\CheckoutApi\Factory\PaymentApiFactory;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\Payment;
-use NexiNets\CheckoutApi\Model\Result\RetrievePayment\PaymentStatusEnum;
-use NexiNets\Configuration\ConfigurationProvider;
-use NexiNets\Core\Content\NetsCheckout\Event\ChargeSend;
-use NexiNets\Dictionary\OrderTransactionDictionary;
-use NexiNets\Fetcher\PaymentFetcherInterface;
-use NexiNets\Order\Exception\OrderChargeException;
-use NexiNets\RequestBuilder\ChargeRequest;
+use Nexi\Checkout\Administration\Model\ChargeData;
+use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Core\Content\NexiCheckout\Event\ChargeSend;
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Fetcher\PaymentFetcherInterface;
+use Nexi\Checkout\Order\Exception\OrderChargeException;
+use Nexi\Checkout\RequestBuilder\ChargeRequest;
+use NexiCheckout\Api\Exception\PaymentApiException;
+use NexiCheckout\Api\PaymentApi;
+use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Result\RetrievePayment\Payment;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -55,7 +55,7 @@ class OrderCharge
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
             $paymentId = $transaction->getCustomFieldsValue(
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
             );
 
             if ($paymentId === null) {
@@ -122,7 +122,7 @@ class OrderCharge
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
             $paymentId = $transaction->getCustomFieldsValue(
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_NETS_PAYMENT_ID
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
             );
 
             if ($paymentId === null) {
