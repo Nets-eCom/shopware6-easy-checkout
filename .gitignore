@@ -1,4 +1,3 @@
-.deptrac.cache
 .phpunit.result.cache
 phpstan.neon
 composer.lock

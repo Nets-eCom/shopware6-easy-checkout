@@ -31,8 +31,6 @@ stages:
             displayName: 'Run ECS'
           - script: make rector-check
             displayName: 'Run Rector'
-          - script: make deptrac-check
-            displayName: 'Run Deptrac'
           - script: make phpstan-check
             displayName: 'Run PHPStan'
           - script: make phpunit
