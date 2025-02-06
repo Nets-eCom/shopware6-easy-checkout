@@ -20,12 +20,18 @@ Nexi Nets Payment Plugin allows administrators to automate various processes wit
 
 ## Add Nexi Nets action into flow
 
-1. Click on event that you want to override in `My flows` tab.
-2. Navigate to `Flow` tab inside event settings.
-3. Add `Action (THEN)` or click on `Select action` dropdown.
-4. Navigate to `Order` section.
-5. Choose Nexi Nets action that you want to add into flow.
-6. Save the flow.
+You have two ways to create or modify a flow:
+
+- Create a new flow by clicking the "Add Flow" button.
+- Edit an existing flow by selecting an event from the "My Flows" tab.
+
+In both cases, you'll be taken to the event settings page to configure your flow.
+
+1. Navigate to `Flow` tab inside event settings.
+2. Add `Action (THEN)` or click on `Select action` dropdown.
+3. Navigate to `Order` section.
+4. Choose Nexi Nets action that you want to add into flow.
+5. Save the flow.
 
 ![Flow Builder Schema](../images/flow-builder-schema.png)
 
