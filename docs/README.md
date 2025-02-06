@@ -19,7 +19,6 @@ Depending on your country or region, the list may vary. If you are uncertain abo
 ## Shop features
 
 - A smart mix of payment methods to suit all preferences.
-- Multiple checkout languages and currencies for selling in your domestic market and abroad.
 
 ## Administration features
 
@@ -27,7 +26,6 @@ Depending on your country or region, the list may vary. If you are uncertain abo
 - Intuitive order management with synchronized payments status via webhooks.
 - Refund and capture available with new items list feature.
 - Compatibility with discounts, tax (VAT), and shipping options.
-- Compatible with multi-shop setups.
 - Automate various processes with the flow builder functionality.
 
 ## Installation
