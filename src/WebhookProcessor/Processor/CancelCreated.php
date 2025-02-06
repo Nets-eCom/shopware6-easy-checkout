@@ -2,6 +2,7 @@
 
 namespace Nexi\Checkout\WebhookProcessor\Processor;
 
+use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\WebhookProcessor\WebhookProcessorException;
 use Nexi\Checkout\WebhookProcessor\WebhookProcessorInterface;
 use NexiCheckout\Model\Webhook\EventNameEnum;
@@ -44,7 +45,12 @@ final readonly class CancelCreated implements WebhookProcessorInterface
 
         $criteria = (new Criteria())
             ->addAssociation('stateMachineState')
-            ->addFilter(new EqualsFilter('customFields.nexi_checkout_payment_id', $paymentId));
+            ->addFilter(
+                new EqualsFilter(
+                    OrderTransactionDictionary::CUSTOM_FIELDS_PREFIX . OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID,
+                    $paymentId
+                )
+            );
 
         /** @var OrderTransactionCollection $transactions */
         $transactions = $this->orderTransactionEntityRepository->search($criteria, $context)->getEntities();

@@ -1,5 +1,6 @@
 const { Mixin } = Shopware;
 import template from "./sw-order-detail-details.html.twig";
+import { CUSTOM_FIELDS_PAYMENT_ID } from '../constant/nexi-checkout-charge-action.constant';
 import "./style.scss";
 
 Shopware.Component.override("sw-order-detail-details", {
@@ -28,7 +29,7 @@ Shopware.Component.override("sw-order-detail-details", {
   },
   computed: {
     isNexiCheckoutPayment() {
-      return !!this.transaction?.customFields?.hasOwnProperty("nexi_payment_id");
+      return !!this.transaction?.customFields?.hasOwnProperty(CUSTOM_FIELDS_PAYMENT_ID);
     },
 
     // @todo use PaymentStatusEnum
@@ -114,7 +115,7 @@ Shopware.Component.override("sw-order-detail-details", {
       this.paymentDetails = await this.nexiCheckoutPaymentDetailService.getPaymentDetails(orderId)
           .catch(({response}) => {
             const errors = response.data.errors;
-            const nexiCheckoutPaymentId = this.transaction.customFields["nexi_payment_id"];
+            const nexiCheckoutPaymentId = this.transaction.customFields[CUSTOM_FIELDS_PAYMENT_ID];
             this.hasFetchError = true;
             console.error(
                 `Error while fetching Nexi payment details for paymentID: ${nexiCheckoutPaymentId}`,

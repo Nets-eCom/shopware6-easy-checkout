@@ -5,7 +5,7 @@ const { Component } = Shopware;
 Component.override('sw-flow-sequence-action', {
     methods: {
         getActionDescriptions(sequence) {
-            if(sequence.actionName === ACTION.NEXICHECKOUT_CHARGE){
+            if(sequence.actionName === ACTION.NEXI_CHECKOUT_CHARGE){
                 return this.$tc('nexicheckout-charge-action.description')
             }
 
@@ -13,7 +13,7 @@ Component.override('sw-flow-sequence-action', {
         },
 
         getActionTitle(actionName) {
-            if (actionName === ACTION.NEXICHECKOUT_CHARGE) {
+            if (actionName === ACTION.NEXI_CHECKOUT_CHARGE) {
                 return {
                     value: actionName,
                     icon: 'regular-shopping-bag-alt',
@@ -30,7 +30,7 @@ Component.override('sw-flow-sequence-action', {
                 return;
             }
 
-            const actionName = ACTION.NEXICHECKOUT_CHARGE;
+            const actionName = ACTION.NEXI_CHECKOUT_CHARGE;
 
             if (value === actionName) {
                 this.selectedAction = actionName;
