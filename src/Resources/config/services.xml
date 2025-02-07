@@ -226,7 +226,7 @@
         <!-- ### Flow Builder -->
         <service id="Nexi\Checkout\Core\Content\Flow\Dispatching\Action\ChargeAction">
             <argument type="service" id="Nexi\Checkout\Order\OrderCharge"/>
-            <tag name="flow.action" priority="600" key="action.nexicheckout.charge"/>
+            <tag name="flow.action" priority="600" key="action.nexi-checkout.charge"/>
         </service>
 
         <!-- ### Admin Controller ### -->
