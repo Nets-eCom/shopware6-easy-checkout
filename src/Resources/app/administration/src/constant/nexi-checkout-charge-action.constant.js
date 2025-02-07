@@ -1,5 +1,5 @@
 export const ACTION = Object.freeze({
-    NEXI_CHECKOUT_CHARGE: 'action.nexicheckout.charge',
+    NEXI_CHECKOUT_CHARGE: 'action.nexi-checkout.charge',
 });
 
 export const GROUP = 'order'

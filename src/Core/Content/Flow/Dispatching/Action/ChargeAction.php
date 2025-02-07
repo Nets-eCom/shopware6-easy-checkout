@@ -18,7 +18,7 @@ class ChargeAction extends FlowAction
 
     public static function getName(): string
     {
-        return 'action.nexicheckout.charge';
+        return 'action.nexi-checkout.charge';
     }
 
     public function requirements(): array
