@@ -1,0 +1,149 @@
+// Variables
+$column-gap: 2rem;
+$font-size: 14px;
+$border-color: #d1d9e0;
+$focus-outline-color: #118cff;
+$text-color-light: #c6cfd9;
+$text-color-dark: #8599ad;
+
+// Mixin for Shopware breakpoint
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == lg {
+    @media (min-width: 961px) {
+      @content;
+    }
+  }
+}
+
+// Payment details styling
+.nexi-checkout-details {
+  &__header-wrapper,
+  &__main-wrapper,
+  &__action-buttons {
+    column-gap: $column-gap;
+  }
+
+  &__header-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 2rem;
+    margin-top: 0.6rem;
+
+    @include respond-to(lg) {
+      margin-top: 0;
+    }
+  }
+
+  &__status-text {
+    font-size: $font-size;
+    margin-bottom: 0.5rem;
+  }
+
+  &__status-label {
+    width: 100%;
+  }
+
+  &__history-link {
+    align-self: center;
+    margin-top: 1rem;
+  }
+
+  &__main-wrapper {
+    padding-top: 2.5rem;
+    border-top: 1px $border-color solid;
+
+    .sw-order-detail-details__billing-address {
+      grid-column: 1;
+    }
+  }
+
+  &__action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 0.95rem;
+    border-top: 1px $border-color solid;
+
+    @include respond-to(lg) {
+      padding-top: 1.85rem;
+    }
+
+    .sw-button:focus-visible {
+      outline: 2px solid $focus-outline-color;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Modal styling
+.nexi-checkout-modal {
+  &__wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+
+    @include respond-to(lg) {
+      grid-template-columns: 5fr 3fr;
+    }
+  }
+
+  &__input {
+    margin-top: 1.6rem;
+    margin-bottom: 0.2rem;
+  }
+
+  &__checkbox {
+    margin-top: 1rem;
+
+    &.error-margin {
+      margin-top: 1.4rem;
+    }
+
+    @include respond-to(lg) {
+      margin-top: 3rem;
+      margin-left: 1rem;
+    }
+  }
+
+  &__full-amount {
+    color: $text-color-light;
+    font-size: $font-size;
+
+    span {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+
+  &__items-list {
+    margin-top: 2rem;
+    font-size: 16px;
+
+    .sw-grid__header .sw-grid-column:nth-child(odd) {
+      justify-self: end;
+    }
+  }
+
+  &__charge-id {
+    color: $text-color-dark;
+    font-size: 12px;
+  }
+
+  &__qty-select {
+    width: 80px;
+  }
+
+  &__qty-col {
+    justify-self: center;
+  }
+
+  &__end-col {
+    justify-self: end;
+  }
+
+  &__btn:focus-visible {
+    outline: 2px solid $focus-outline-color;
+    outline-offset: 2px;
+  }
+}

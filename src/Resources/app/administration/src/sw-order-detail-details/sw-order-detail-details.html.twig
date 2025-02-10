@@ -1,0 +1,310 @@
+{% block sw_order_detail_details_payment %}
+  <template v-if="!isNexiCheckoutPayment">
+    {% parent %}
+  </template>
+
+  <template v-else>
+    {% block nexi_checkout_payment_component %}
+      <sw-card :title="$tc('nexi-checkout-payment-component.payment-details.title')" :isLoading="isLoading" :key="reloadKey">
+        <div class="nexi-checkout-details__header-wrapper">
+          <div>
+            <p class="nexi-checkout-details__status-text">
+              {{ $tc('nexi-checkout-payment-component.payment-details.status-label') }}
+            </p>
+            <sw-label :variant="statusVariant" size="default" appearance="pill" class="nexi-checkout-details__status-label">
+              {{ $tc(statusTcString) }}
+            </sw-label>
+          </div>
+          <div class="nexi-checkout-details__history-link">
+            <sw-internal-link
+              :routerLink="undefined"
+              :inline="false"
+              :hideIcon="true"
+              @click="showStateHistoryModal = true"
+            >
+              {{ $tc('nexi-checkout-payment-component.payment-details.history-link') }}
+            </sw-internal-link>
+          </div>
+        </div>
+        <sw-container columns="1fr 1fr" class="nexi-checkout-details__main-wrapper">
+
+          {% block sw_order_detail_details_payment_billing_address %}
+            <sw-order-address-selection
+              class="sw-order-detail-details__billing-address"
+              type="billing"
+              :address="billingAddress"
+              :address-id="selectedBillingAddressId"
+              :disabled="!acl.can('order.editor') || undefined"
+              :label="$tc('sw-order.createBase.detailsBody.labelBillingAddress')"
+              @change-address="onChangeOrderAddress"
+            />
+          {% endblock %}
+
+          {% block sw_order_detail_details_payment_method_select %}
+            <sw-entity-single-select
+              v-model:value="transaction.paymentMethodId"
+              entity="payment_method"
+              label-property="distinguishableName"
+              disabled
+              :criteria="paymentMethodCriteria"
+              :label="$tc('sw-order.createBase.detailsFooter.labelPaymentMethod')"
+              :placeholder="$tc('sw-order.createBase.detailsFooter.placeholderPaymentMethod')"
+              show-clearable-button
+            />
+          {% endblock %}
+
+          {% block nexi_checkout_payment_component_payment_details %}
+            <template v-if="!hasFetchError">
+              <div>
+                <sw-text-field
+                  :label="$tc('nexi-checkout-payment-component.payment-details.payment-via')"
+                  :value="paymentDetails.paymentVia"
+                  disabled
+                />
+              </div>
+              <div>
+                <sw-text-field
+                  :label="$tc('nexi-checkout-payment-component.payment-details.payment-id')"
+                  :value="paymentDetails.paymentId"
+                  disabled
+                />
+              </div>
+              <div>
+                <sw-text-field
+                  :label="$tc('nexi-checkout-payment-component.payment-details.order-amount')"
+                  :value="paymentDetails.orderAmount"
+                  disabled
+                >
+                  <template v-slot:suffix>{{ order.currency.symbol }}</template>
+                </sw-text-field>
+              </div>
+              <div>
+                <sw-text-field
+                  :label="$tc('nexi-checkout-payment-component.payment-details.time-order')"
+                  :value="paymentDetails.orderTime"
+                  type="date"
+                  disabled
+                >
+                  <template v-slot:suffix><sw-icon name="regular-calendar" /></template>
+                </sw-text-field>
+              </div>
+              <div v-if="!isNewPayment">
+                <sw-text-field
+                  :label="$tc('nexi-checkout-payment-component.payment-details.charged-amount')"
+                  :value="paymentDetails.chargedAmount"
+                  disabled
+                  :helpText="$tc('nexi-checkout-payment-component.payment-details.charged-help-text')"
+                >
+                  <template v-slot:suffix>{{ order.currency.symbol }}</template>
+                </sw-text-field>
+              </div>
+              <div v-if="shouldDisplayRefundField">
+                <sw-text-field
+                  :label="$tc('nexi-checkout-payment-component.payment-details.refunded-amount')"
+                  :value="paymentDetails.refundedAmount"
+                  disabled
+                  :helpText="$tc('nexi-checkout-payment-component.payment-details.refunded-help-text')"
+                >
+                  <template v-slot:suffix>{{ order.currency.symbol }}</template>
+                </sw-text-field>
+              </div>
+            </template>
+          {% endblock %}
+        </sw-container>
+        {% block nexi_checkout_payment_component_footer %}
+          <template #footer>
+            <div class="nexi-checkout-details__action-buttons" v-if="shouldDisplayButtonsSection">
+              <div>
+                <sw-button v-if="shouldDisplayCancelBtn" :isLoading="isLoading" @click="toggleCancelModal">{{ $tc('nexi-checkout-payment-component.cancel.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayRefundBtn" :isLoading="isLoading" @click="toggleRefundModal">{{ $tc('nexi-checkout-payment-component.refund.button-title') }}</sw-button>
+                <sw-button v-if="shouldDisplayChargeBtn" :isLoading="isLoading" @click="toggleChargeModal">{{ $tc('nexi-checkout-payment-component.charge.button-title') }}</sw-button>
+              </div>
+            </div>
+          </template>
+        {% endblock %}
+        {% block nexi_checkout_charge_modal %}
+          <sw-modal
+                  v-if="isChargeModalVisible"
+                  :title="$tc('nexi-checkout-payment-component.charge.title')"
+                  @modal-close="toggleChargeModal"
+          >
+            <p>{{ $tc('nexi-checkout-payment-component.charge.info', { orderNumber: order.orderNumber }) }}</p>
+            <div class="nexi-checkout-modal__wrapper">
+              <div>
+                <sw-number-field
+                  class="nexi-checkout-modal__input"
+                  :label="$tc('nexi-checkout-payment-component.payment-details.charged-amount')"
+                  v-model:value="charge.amount"
+                  :min="0"
+                  :digits="2"
+                  numberType="float"
+                  :allowEmpty="false"
+                  :fillDigits="true"
+                  :disabled="isItemsListVisible"
+                  :error="chargeAmountError"
+                >
+                  <template v-slot:suffix>{{ order.currency.symbol }}</template>
+                </sw-number-field>
+                <p class="nexi-checkout-modal__full-amount">
+                  {{ $tc('nexi-checkout-payment-component.charge.max-charge-info') }}
+                  <span @click="onClickMaxCharge" data-testid="maxChargeBtn">{{ order.currency.symbol + paymentDetails.remainingChargeAmount }}</span>
+                </p>
+              </div>
+              <sw-checkbox-field
+                class="nexi-checkout-modal__checkbox"
+                :class="{ 'error-margin': chargeAmountError }"
+                :value="isItemsListVisible"
+                @update:value="isItemsListVisible = $event"
+                :label="$tc('nexi-checkout-payment-component.charge.items-list')"
+              >
+              </sw-checkbox-field>
+            </div>
+            <div v-if="isItemsListVisible" class="nexi-checkout-modal__items-list">
+              <sw-grid :selectable="false" :items="paymentDetails.orderItems">
+                <template #columns="{ item }">
+                  <sw-grid-column
+                    flex="minmax(50px, 1.3fr)"
+                    class="nexi-checkout-modal__end-col"
+                    :label="$tc('nexi-checkout-payment-component.itemsTable.qty')"
+                  >
+                    {{ item.quantity }}x
+                  </sw-grid-column>
+                  <sw-grid-column flex="minmax(200px, 4.3fr)" :label="$tc('nexi-checkout-payment-component.itemsTable.item')">
+                    {{ item.name }}
+                  </sw-grid-column>
+                  <sw-grid-column
+                    flex="minmax(100px, 2.1fr)"
+                    class="nexi-checkout-modal__end-col"
+                    :label="$tc('nexi-checkout-payment-component.itemsTable.subtotal')"
+                  >
+                    {{ order.currency.symbol + item.grossTotalAmount }}
+                  </sw-grid-column>
+                  <sw-grid-column
+                    flex="minmax(100px, 2.3fr)"
+                    :label="$tc('nexi-checkout-payment-component.itemsTable.chargeQty')"
+                    class="nexi-checkout-modal__qty-col"
+                  >
+                    <sw-select-field
+                      placeholder="0"
+                      class="nexi-checkout-modal__qty-select"
+                      @update:value="$quantity => updateChargeItem(item, $quantity)"
+                    >
+                      <option v-for="n in (parseInt(item.quantity) - parseInt(item.qtyCharged))" :key="n" :value="n">{{ n }}</option>
+                    </sw-select-field>
+                  </sw-grid-column>
+                </template>
+              </sw-grid>
+            </div>
+            <template #modal-footer>
+              <sw-button @click="toggleChargeModal" class="nexi-checkout-modal__btn">
+                {{ $tc('nexi-checkout-payment-component.cancel.button-action-title') }}
+              </sw-button>
+              <sw-button @click="handleCharge" class="nexi-checkout-modal__btn" :isLoading="isLoading" variant="primary" :disabled="chargeAmountError">
+                {{ $tc('nexi-checkout-payment-component.charge.button-title') }}
+              </sw-button>
+            </template>
+          </sw-modal>
+        {% endblock %}
+
+        {% block nexi_checkout_refund_modal %}
+          <sw-modal
+            v-if="isRefundModalVisible"
+            :title="$tc('nexi-checkout-payment-component.refund.title')"
+            @modal-close="toggleRefundModal"
+          >
+            <p>{{ $tc('nexi-checkout-payment-component.refund.info', { orderNumber: order.orderNumber }) }}</p>
+            <div class="nexi-checkout-modal__wrapper">
+              <div>
+                <sw-number-field
+                  class="nexi-checkout-modal__input"
+                  :label="$tc('nexi-checkout-payment-component.refund.input-label')"
+                  v-model:value="refund.amount"
+                  :min="0"
+                  :digits="2"
+                  numberType="float"
+                  :fillDigits="true"
+                  :allowEmpty="false"
+                  :disabled="isItemsListVisible"
+                  :error="refundAmountError"
+                >
+                  <template v-slot:suffix>{{ order.currency.symbol }}</template>
+                </sw-number-field>
+                <p class="nexi-checkout-modal__full-amount">
+                  {{ $tc('nexi-checkout-payment-component.refund.max-refund-info') }}
+                  <span @click="onClickMaxRefund" data-testid="maxRefundBtn">{{ order.currency.symbol + paymentDetails.remainingRefundAmount }}</span>
+                </p>
+              </div>
+              <sw-checkbox-field
+                class="nexi-checkout-modal__checkbox"
+                :class="{ 'error-margin': refundAmountError }"
+                :value="isItemsListVisible"
+                @update:value="isItemsListVisible = $event"
+                :label="$tc('nexi-checkout-payment-component.refund.items-list')"
+              >
+              </sw-checkbox-field>
+            </div>
+            <div v-if="isItemsListVisible" class="nexi-checkout-modal__items-list">
+              <sw-grid :selectable="false" :items="paymentDetails.charges">
+                <template #columns="{ item }">
+                  <sw-grid-column
+                    flex="minmax(50px, 1.3fr)"
+                    :label="$tc('nexi-checkout-payment-component.itemsTable.qty')"
+                    class="nexi-checkout-modal__end-col"
+                  >
+                    {{ item.quantity }}x
+                  </sw-grid-column>
+                  <sw-grid-column
+                    flex="minmax(220px, 4.3fr)"
+                    :label="$tc('nexi-checkout-payment-component.itemsTable.item')"
+                  >
+                    <p>{{ item.name }}<br><span class="nexi-checkout-modal__charge-id">{{ item.chargeId }}</span></p>
+                  </sw-grid-column>
+                  <sw-grid-column
+                    flex="minmax(100px, 2.1fr)"
+                    class="nexi-checkout-modal__end-col"
+                    :label="$tc('nexi-checkout-payment-component.itemsTable.subtotal')"
+                  >
+                    {{ order.currency.symbol + item.grossTotalAmount }}
+                  </sw-grid-column>
+                  <sw-grid-column
+                    flex="minmax(100px, 2.3fr)"
+                    :label="$tc('nexi-checkout-payment-component.itemsTable.refundQty')"
+                    class="nexi-checkout-modal__qty-col"
+                  >
+                    <sw-select-field
+                      placeholder="0"
+                      class="nexi-checkout-modal__qty-select"
+                      @update:value="$quantity => updateRefundItem(item, $quantity)"
+                    >
+                      <option v-for="n in (parseInt(item.quantity) - parseInt(item.qtyRefunded))" :key="n" :value="n">{{ n }}</option>
+                    </sw-select-field>
+                  </sw-grid-column>
+                </template>
+              </sw-grid>
+            </div>
+            <template #modal-footer>
+              <sw-button @click="toggleRefundModal" class="nexi-checkout-modal__btn">
+                {{ $tc('nexi-checkout-payment-component.cancel.button-action-title') }}
+              </sw-button>
+              <sw-button @click="handleRefund" class="nexi-checkout-modal__btn" :isLoading="isLoading" variant="primary" :disabled="refundAmountError">
+                {{ $tc('nexi-checkout-payment-component.refund.button-title') }}
+              </sw-button>
+            </template>
+          </sw-modal>
+        {% endblock %}
+
+        {% block nexi_checkout_cancel_modal %}
+          <sw-confirm-modal
+            v-if="isCancelModalVisible"
+            type="confirm"
+            :text="$t('nexi-checkout-payment-component.cancel.confirmation', { amount: paymentDetails.orderAmount, currency: order.currency.symbol })"
+            :title="$t('nexi-checkout-payment-component.cancel.title')"
+            @confirm="handleCancel"
+            @cancel="closeCancelModal"
+            @close="closeCancelModal">
+          </sw-confirm-modal>
+        {% endblock %}
+      </sw-card>
+    {% endblock %}
+  </template>
+{% endblock %}

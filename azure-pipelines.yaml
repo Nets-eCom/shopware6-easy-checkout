@@ -1,0 +1,37 @@
+pr:
+  - develop-new-version
+  - main-new-version
+
+parameters:
+  - name: validateOnPhpVersion
+    type: string
+    default: 8.2
+
+pool:
+  vmImage: ubuntu-20.04
+
+stages:
+  - stage: Validate
+    displayName: 'Validate Stage'
+    jobs:
+      - job: Validate_Job
+        steps:
+          - script: |
+              sudo update-alternatives --set php /usr/bin/php${{ parameters.validateOnPhpVersion }}
+              php -version
+            displayName: 'Use PHP version ${{ parameters.validateOnPhpVersion }}'
+          - script: composer install --no-interaction --prefer-dist
+            workingDirectory: $(System.DefaultWorkingDirectory)
+            displayName: 'Composer install'
+          - script: |
+              find ./src -type f -name '*.php' ! -path './src/vendor/*' -print0 \
+                | xargs -0 -n 1 php -l | (! grep -Ev '^No syntax errors detected in ')
+            displayName: 'Run PHP lint'
+          - script: make ecs-check
+            displayName: 'Run ECS'
+          - script: make rector-check
+            displayName: 'Run Rector'
+          - script: make phpstan-check
+            displayName: 'Run PHPStan'
+          - script: make phpunit
+            displayName: 'Run tests with PHPUnit'
