@@ -1,0 +1,87 @@
+{
+    "global": {
+        "error-codes": {
+            "error-charge-max-amount": "Maximalbetrag überschritten. Bitte anpassen und erneut versuchen.",
+            "error-refund-max-amount": "Maximalbetrag überschritten. Bitte anpassen und erneut versuchen."
+        }
+    },
+    "nexi-checkout-charge-action": {
+        "title": "Gesamten Betrag abbuchen",
+        "description": "Buchungsanfrage an Nexi Checkout abschicken"
+    },
+    "nexi-checkout-payment-component": {
+        "api": {
+            "errors": {
+                "NEXI_CHECKOUT__CHARGE_FAILED": "Bitte überprüfe die Details und versuche es erneut. Alternativ kannst du die Logs mit dieser Zahlungs-ID überprüfen: {paymentId}.",
+                "NEXI_CHECKOUT__REFUND_FAILED": "Bitte überprüfe die Details und versuche es erneut. Alternativ kannst du die Logs mit dieser Rückerstattungs-ID überprüfen: {paymentId}.",
+                "NEXI_CHECKOUT__REFUND_AMOUNT_EXCEEDED": "Bitte überprüfe den Betrag und versuche es erneut. Alternativ kannst du die Logs mit dieser Rückerstattungs-ID überprüfen: {paymentId}.",
+                "NEXI_CHECKOUT__CANCEL_FAILED": "Bitte überprüfe den Betrag und versuche es erneut. Alternativ kannst du die Logs mit dieser Belastungs-ID überprüfen: {paymentId}."
+            }
+        },
+        "payment-details": {
+            "title": "Zahlung",
+            "status-label": "Zahlungsstatus",
+            "history-link": "Zahlungsverlauf Nexi Checkout anzeigen",
+            "payment-via": "Zahlung über",
+            "payment-id": "Zahlungs-ID Nexi Checkout",
+            "order-amount": "Bestellbetrag",
+            "time-order": "Bestellzeit",
+            "charged-amount": "Belasteter Betrag",
+            "refunded-amount": "Erstatteter Betrag",
+            "charged-help-text": "Der Belastungsbetrag ist das, was deinem Nexi Checkout-Konto bereits gutgeschrieben wurde.",
+            "status": {
+                "new": "Neu",
+                "reserved": "Reserviert",
+                "charged": "Belastet",
+                "partially_charged": "Teilweise belastet",
+                "refunded": "Zurückerstattet",
+                "partially_refunded": "Teilweise zurückerstattet",
+                "pending_refund": "Rückerstattung ausstehend",
+                "cancelled": "Storniert",
+                "terminated": "Abgebrochen"
+            }
+        },
+        "charge": {
+            "button-title": "Belasten",
+            "title": "Zahlung belasten (Nexi Checkout-Bezahl-Plugin)",
+            "info": "Du bist dabei, die Bestellung {orderNumber} zu belasten. Das heißt, die Zahlung wird eingezogen und verarbeitet.",
+            "items-list": "Artikel zur Belastung auswählen",
+            "max-charge-info": "Der max. belastbare Betrag ist:"
+        },
+        "refund": {
+            "button-title": "Erstatten",
+            "input-label": "Rückerstattungsbetrag",
+            "title": "Rückerstattung (Nexi Checkout-Bezahl-Plugin)",
+            "info": "Du bist dabei, eine Rückerstattung für die Bestellung {orderNumber} zu veranlassen.",
+            "items-list": "Artikel zur Erstattung auswählen",
+            "max-refund-info": "Der max. erstattbare Betrag ist:"
+        },
+        "cancel": {
+            "button-title": "Zahlung stornieren",
+            "button-action-title": "Stornieren",
+            "confirmation": "Du bist dabei, die Zahlung mit einem Betrag von {currency}{amount} zu stornieren.",
+            "title": "Cancel (Nexi Checkout Bezahl-Plugin)"
+        },
+        "itemsTable": {
+            "qty": "Anz.",
+            "item": "Artikelname",
+            "subtotal": "Zwischensumme",
+            "chargeQty": "Anz. belasteter Artikel",
+            "refundQty": "Anz. erstatteter Artikel"
+        },
+        "notification": {
+            "charge-title": "Erfassung wird verarbeitet",
+            "charge-message": "Die Erfassung wurde erfolgreich eingeleitet.",
+            "refund-title": "Rückerstattung wird bearbeitet",
+            "refund-message": "Es kann 1-3 Werktage dauern, bis der Betrag auf dem Konto des Empfängers angezeigt wird.",
+            "action-error-title": "Ein Fehler ist aufgetreten.",
+            "NEXI_CHECKOUT__CHARGE_FAILED": "Belastung fehlgeschlagen",
+            "NEXI_CHECKOUT__REFUND_FAILED": "Erstattung fehlgeschlagen",
+            "NEXI_CHECKOUT__REFUND_AMOUNT_EXCEEDED": "Die Rückerstattung übersteigt die Gesamtsumme.",
+            "NEXI_CHECKOUT__CANCEL_FAILED": "Stornierung fehlgeschlagen",
+            "action-error-message": "Bitte versuche es erneut oder überprüfe die Logs für weitere Details.",
+            "fetch-error-title": "Zahlungsdetails nicht gefunden",
+            "fetch-error-message": "Bitte versuche es erneut oder überprüfe die Logs für weitere Details."
+        }
+    }
+}

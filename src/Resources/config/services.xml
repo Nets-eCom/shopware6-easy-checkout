@@ -5,6 +5,251 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
+        <service id="Nexi\Checkout\Handler\HostedPayment">
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest"/>
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <tag name="shopware.payment.method.async" />
+        </service>
 
+        <service id="Nexi\Checkout\Entity\NexiPaymentApi\NexiPaymentDefinition">
+            <tag name="shopware.entity.definition" entity="nexicheckout_payment" />
+        </service>
+
+        <service id="Nexi\Checkout\Core\Content\NexiCheckout\Event\CancelSend" />
+        <service id="Nexi\Checkout\Core\Content\NexiCheckout\Event\RefundChargeSend" />
+        <service id="Nexi\Checkout\Core\Content\NexiCheckout\Event\ChargeSend" />
+
+        <service id="Nexi\Checkout\Configuration\ConfigurationProvider">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+        </service>
+
+        <service id="Nexi\Checkout\RequestBuilder\PaymentRequest">
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilderFactory"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\NotificationBuilder"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
+        <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder">
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
+        <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\CustomerBuilder">
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\AddressBuilder"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\PhoneNumberBuilder"/>
+        </service>
+
+        <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\NotificationBuilder">
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="router"/>
+        </service>
+
+        <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\PhoneNumberBuilder"/>
+
+        <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\AddressBuilder"/>
+
+        <service id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+
+        <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilderFactory">
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\CustomerBuilder"/>
+            <argument type="service" id="router"/>
+        </service>
+
+        <service id="Nexi\Checkout\RequestBuilder\ChargeRequest">
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\ChargeRequest\ItemsBuilder"/>
+        </service>
+
+        <service id="Nexi\Checkout\RequestBuilder\ChargeRequest\ItemsBuilder">
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
+        <service id="Nexi\Checkout\RequestBuilder\RefundRequest">
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
+        <service id="Nexi\Checkout\RequestBuilder\CancelRequest">
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
+        <!-- ### SDK ### -->
+        <service id="NexiCheckout\Factory\PaymentApiFactory">
+            <argument type="service" id="NexiCheckout\Factory\HttpClientFactory"/>
+            <argument type="service" id="NexiCheckout\Factory\Provider\HttpClientConfigurationProvider"/>
+        </service>
+
+        <service id="NexiCheckout\Factory\HttpClientFactory">
+            <argument type="service" id="Psr\Http\Client\ClientInterface"/>
+            <argument type="service" id="Psr\Http\Message\RequestFactoryInterface"/>
+            <argument type="service" id="Psr\Http\Message\StreamFactoryInterface"/>
+        </service>
+
+        <service id="Nexi\Checkout\Http\HttpClientProviderConfigurator">
+            <argument type="service" id="NexiCheckout\Factory\Provider\HttpClientConfigurationProvider"/>
+            <argument>%kernel.shopware_version%</argument>
+        </service>
+
+        <service id="NexiCheckout\Factory\Provider\HttpClientConfigurationProvider">
+            <configurator service="Nexi\Checkout\Http\HttpClientProviderConfigurator" method="configure"/>
+        </service>
+
+        <service id="Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface" alias="Nexi\Checkout\Fetcher\PaymentFetcher"/>
+
+        <service id="Nexi\Checkout\Fetcher\PaymentFetcher">
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="cache.nexi_checkout.payment"/>
+        </service>
+
+        <service id="Nexi\Checkout\Order\OrderCharge">
+            <argument type="service" id="Nexi\Checkout\Fetcher\PaymentFetcher"/>
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\ChargeRequest"/>
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+        </service>
+
+        <service id="Nexi\Checkout\Order\OrderRefund">
+            <argument type="service" id="Nexi\Checkout\Fetcher\PaymentFetcher"/>
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\RefundRequest"/>
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+        </service>
+
+        <service id="Nexi\Checkout\Order\OrderCancel">
+            <argument type="service" id="Nexi\Checkout\Fetcher\PaymentFetcher"/>
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\CancelRequest"/>
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+        </service>
+
+        <!-- ### Webhooks ### -->
+        <service id="Nexi\Checkout\Storefront\Controller\WebhookController" public="true">
+            <argument type="service" id="Nexi\Checkout\Security\WebhookVoter"/>
+            <argument type="service" id="Nexi\Checkout\WebhookProcessor\WebhookProcessor"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="Nexi\Checkout\Security\WebhookVoter">
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="request_stack"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+        </service>
+
+        <service id="Nexi\Checkout\WebhookProcessor\WebhookProcessor">
+            <argument type="tagged_iterator" tag="nexicheckout.webhook_processor"/>
+        </service>
+
+        <service id="Nexi\Checkout\WebhookProcessor\Processor\ChargeCreated">
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="Nexi\Checkout\Fetcher\PaymentFetcher"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <tag name="nexicheckout.webhook_processor" />
+        </service>
+
+        <service id="Nexi\Checkout\WebhookProcessor\Processor\CheckoutCompleted">
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="Nexi\Checkout\Fetcher\PaymentFetcher"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <tag name="nexicheckout.webhook_processor" />
+        </service>
+
+        <service id="Nexi\Checkout\WebhookProcessor\Processor\RefundCompleted">
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="Nexi\Checkout\Fetcher\PaymentFetcher"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <tag name="nexicheckout.webhook_processor" />
+        </service>
+
+        <service id="Nexi\Checkout\WebhookProcessor\Processor\CancelCreated">
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <tag name="nexicheckout.webhook_processor" />
+        </service>
+
+        <!-- ### Subscribers ### -->
+        <service id="Nexi\Checkout\Subscriber\PaymentCancelSubscriber">
+            <argument type="service" id="Nexi\Checkout\Order\OrderCancel"/>
+            <argument type="service" id="order.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service id="Nexi\Checkout\Subscriber\BaseCacheCleanupSubscriber" abstract="true">
+            <argument type="service" id="Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface"/>
+        </service>
+
+        <service
+            id="Nexi\Checkout\Subscriber\CacheCleanupOnChargeSendSubscriber"
+            parent="Nexi\Checkout\Subscriber\BaseCacheCleanupSubscriber"
+        >
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service
+            id="Nexi\Checkout\Subscriber\CacheCleanupOnRefundSendSubscriber"
+            parent="Nexi\Checkout\Subscriber\BaseCacheCleanupSubscriber"
+        >
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service
+            id="Nexi\Checkout\Subscriber\CacheCleanupOnCancelSendSubscriber"
+            parent="Nexi\Checkout\Subscriber\BaseCacheCleanupSubscriber"
+        >
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service id="Nexi\Checkout\Subscriber\CacheCleanupOnWebhookProcessedSubscriber">
+            <argument type="service" id="Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <!-- ### Flow Builder -->
+        <service id="Nexi\Checkout\Core\Content\Flow\Dispatching\Action\ChargeAction">
+            <argument type="service" id="Nexi\Checkout\Order\OrderCharge"/>
+            <tag name="flow.action" priority="600" key="action.nexi-checkout.charge"/>
+        </service>
+
+        <!-- ### Admin Controller ### -->
+        <service id="Nexi\Checkout\Administration\Controller\OrderActionController" public="true">
+            <argument type="service" id="order.repository"/>
+            <argument type="service" id="Nexi\Checkout\Order\OrderCharge"/>
+            <argument type="service" id="Nexi\Checkout\Order\OrderRefund"/>
+            <argument type="service" id="Nexi\Checkout\Order\OrderCancel"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="Nexi\Checkout\Administration\Controller\PaymentDetailController" public="true">
+            <argument type="service" id="order.repository"/>
+            <argument type="service" id="Nexi\Checkout\Fetcher\PaymentFetcher"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="Nexi\Checkout\Administration\Serializer\RefundDataDenormalizer">
+            <tag name="serializer.normalizer"/>
+        </service>
     </services>
 </container>

@@ -1,0 +1,87 @@
+{
+    "global": {
+        "error-codes": {
+            "error-charge-max-amount": "Maximum amount exceeded. Please adjust and try again.",
+            "error-refund-max-amount": "Maximum amount exceeded. Please adjust and try again."
+        }
+    },
+    "nexi-checkout-charge-action": {
+        "title": "Make Full Charge",
+        "description": "Send charge request to Nexi Checkout"
+    },
+    "nexi-checkout-payment-component": {
+        "api": {
+            "errors": {
+                "NEXI_CHECKOUT__CHARGE_FAILED": "Please verify the details and try again. Alternatively, check the logs using this payment ID: {paymentId}.",
+                "NEXI_CHECKOUT__REFUND_FAILED": "Please verify the details and try again. Alternatively, check the logs using this charge ID: {chargeId}.",
+                "NEXI_CHECKOUT__REFUND_AMOUNT_EXCEEDED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {chargeId}.",
+                "NEXI_CHECKOUT__CANCEL_FAILED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {paymentId}."
+            }
+        },
+        "payment-details": {
+            "title": "Payment",
+            "status-label": "Payment status",
+            "history-link": "Show Nexi Checkout Payment history",
+            "payment-via": "Payment via",
+            "payment-id": "Nexi Checkout payment id",
+            "order-amount": "Order amount",
+            "time-order": "Time of order",
+            "charged-amount": "Charged amount",
+            "refunded-amount": "Refunded amount",
+            "charged-help-text": "Charge amount is what you've already collected to your Nexi Checkout account.",
+            "status": {
+                "new": "New",
+                "reserved": "Reserved",
+                "charged": "Charged",
+                "partially_charged": "Partially Charged",
+                "refunded": "Refunded",
+                "partially_refunded": "Partially Refunded",
+                "pending_refund": "Refund Pending",
+                "cancelled": "Cancelled",
+                "terminated": "Terminated"
+            }
+        },
+        "charge": {
+            "button-title": "Charge amount",
+            "title": "Charge (Nexi Checkout payment plugin)",
+            "info": "You're about to charge Order {orderNumber}. This means the payment will be collected and processed.",
+            "items-list": "Select items to charge",
+            "max-charge-info": "Max. chargable amount is "
+        },
+        "refund": {
+            "button-title": "Refund",
+            "input-label": "Refund Amount",
+            "title": "Refund (Nexi Checkout payment plugin)",
+            "info": "You're about to initiate Refund for Order {orderNumber}.",
+            "items-list": "Select items to refund",
+            "max-refund-info": "Max. refundable amount is:"
+        },
+        "cancel": {
+            "button-title": "Cancel payment",
+            "button-action-title": "Cancel",
+            "confirmation": "You're about to cancel payment with amount of {currency}{amount}.",
+            "title": "Cancel (Nexi Checkout payment plugin)"
+        },
+        "itemsTable": {
+            "qty": "QTY",
+            "item": "Item name",
+            "subtotal": "Subtotal",
+            "chargeQty": "Charge QTY",
+            "refundQty": "Refund QTY"
+        },
+        "notification": {
+            "charge-title": "Capture is being processed",
+            "charge-message": "You have successfully initiated a capture.",
+            "refund-title": "Refund is being processed",
+            "refund-message": "It may take 1-3 bank days for the amount show in the recipient’s account.",
+            "action-error-title": "Something went wrong",
+            "NEXI_CHECKOUT__CHARGE_FAILED": "Charge failed",
+            "NEXI_CHECKOUT__REFUND_FAILED": "Refund failed",
+            "NEXI_CHECKOUT__REFUND_AMOUNT_EXCEEDED": "Refund exceeds total amount",
+            "NEXI_CHECKOUT__CANCEL_FAILED": "Cancel failed",
+            "action-error-message": "Please try again, or check the logs for more details.",
+            "fetch-error-title": "Payment details not found",
+            "fetch-error-message": "Please try again, or check the logs for more details."
+        }
+    }
+}
