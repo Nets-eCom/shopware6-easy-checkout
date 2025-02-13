@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.6+`
-|Version | `1.5.7`
+|Version | `1.5.8`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.5.8 - Released 2025-02-13
+
+Update: Set authorize status for payment when order status is open
 
 ### Version 1.5.7 - Released 2024-11-07
 
@@ -18,28 +22,28 @@
 
 ### Version 1.5.6 - Released 2024-09-04
 
-* Fix: Add support for Custom Products extension
+fix: Add support for Custom Products extension
 
 ### Version 1.5.5 - Released 2024-08-29
 
-* Fix: prevent order transition if marked as failed
+fix: prevent order transition if marked as failed
 
 ### Version 1.5.4 - Released 2024-08-07
 
-* Fix: check amount mismatch on finalize
+fix: check amount mismatch on finalize
 
 ### Version 1.5.3 - Released 2024-05-29
 
-* Fix: invoke get payment with sales channel context
+Fix: invoke get payment with sales channel context
 
 ### Version 1.5.2 - Released 2024-05-28
 
-* Fix: pass sales channel context on update payment reference
+Fix: pass sales channel context on update payment reference
 
 ### Version 1.5.1 - Released 2024-05-20
 
-* Update: support Klarna in with embedded flow
-* Fix: add missing sales channel argument
+Update: support Klarna in with embedded flow
+Fix: add missing sales channel argument
 
 ### Version 1.5.0 - Released 2024-04-25
 
