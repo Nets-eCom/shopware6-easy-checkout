@@ -6,27 +6,31 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4.x`, `6.5.x`
-|Version | `1.4.11`
+|Version | `1.4.12`
 |Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
 
+### Version 1.4.12 - Released 2024-11-07
+
+* fix: fix order transaction marked as paid if charged amount is 0
+
 ### Version 1.4.11 - Released 2024-09-04
 
-fix: Add support for Custom Products extension
+* fix: Add support for Custom Products extension
 
 ### Version 1.4.10 - Released 2024-08-29
 
-fix: prevent order transition if marked as failed
+* fix: prevent order transition if marked as failed
 
 ### Version 1.4.9 - Released 2024-08-21
 
-fix: use exception class instead of helper
+* fix: use exception class instead of helper
 
 ### Version 1.4.8 - Released 2024-08-07
 
-fix: check amount mismatch on finalize
+* fix: check amount mismatch on finalize
 
 ### Version 1.4.7 - Released 2024-05-29
 
