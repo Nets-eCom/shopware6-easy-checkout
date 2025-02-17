@@ -6,11 +6,15 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4.x`, `6.5.x`
-|Version | `1.4.12`
+|Version | `1.4.13`
 |Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.4.13 - Released 2025-02-14
+
+* Update: Set authorize status for payment when order status is open
 
 ### Version 1.4.12 - Released 2024-11-07
 
