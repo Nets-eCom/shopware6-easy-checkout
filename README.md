@@ -24,7 +24,6 @@ Enhance your Shopware store with the Nexi Checkout, a comprehensive solution for
 - Quick setup and flexible configuration
 - Intuitive order management with synchronized payment status via webhooks
 - Refund and capture capabilities with item-level control
-- Compatibility with discounts, tax (VAT), and shipping options
 - Flow Builder integration for automated payment processes
 
 ## Customer Service
