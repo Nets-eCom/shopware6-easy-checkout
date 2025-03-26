@@ -158,8 +158,8 @@ class APIController extends StorefrontController
             }
 
             if ($chargedAmount > 0 && $refundedAmount == 0) {
-                if ($orderStateTechnicalName === OrderTransactionStates::STATE_OPEN
-                    || $orderStateTechnicalName === OrderTransactionStates::STATE_AUTHORIZED
+                if ($transactionStateTechnicalName === OrderTransactionStates::STATE_OPEN
+                    || $transactionStateTechnicalName === OrderTransactionStates::STATE_IN_PROGRESS
                 ) {
                     $this->transHandler->authorize($transactionId, $context);
                 } elseif ($reservedAmount == $chargedAmount) {
