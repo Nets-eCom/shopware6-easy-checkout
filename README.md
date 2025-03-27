@@ -37,12 +37,12 @@ Nexi provides support for both test and live accounts. For assistance, visit our
 ### Documentation
 For complete documentation, visit our [GitHub docs](https://github.com/Nets-eCom/shopware6-easy-checkout/tree/main-2.0.0/docs).
 
-### Integration Options
+### Setup & Testing
 
-- [Direct Web Integration](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/web-integration/)
 - [Webshop Plugin](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/use-a-webshop-plugin/)
-- [Mobile SDK](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/integrate-mobile-sdks/)
-- [Checkout Paylink / One Page Shop](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-paylink-and-one-page-shop-solution/)
+- [Create account](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/create-a-checkout-portal-account/)
+- [Test environment](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/test-environment/)
+- [Test card processing](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/test-card-processing/)
 
 ### API
 
