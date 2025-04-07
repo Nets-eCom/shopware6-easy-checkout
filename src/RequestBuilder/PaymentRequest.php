@@ -10,7 +10,7 @@ use Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\NotificationBuilder;
 use NexiCheckout\Model\Request\Payment;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
-use NexiCheckout\Model\Request\Payment\Order;
+use NexiCheckout\Model\Request\Shared\Order;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 
 class PaymentRequest

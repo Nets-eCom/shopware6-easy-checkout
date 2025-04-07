@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Nexi\Checkout\RequestBuilder\PaymentRequest;
 
 use Nexi\Checkout\Configuration\ConfigurationProvider;
-use NexiCheckout\Model\Request\Payment\Notification;
-use NexiCheckout\Model\Request\Payment\Webhook;
+use NexiCheckout\Model\Request\Shared\Notification;
+use NexiCheckout\Model\Request\Shared\Notification\Webhook;
 use NexiCheckout\Model\Webhook\EventNameEnum;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
