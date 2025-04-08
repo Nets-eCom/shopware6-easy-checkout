@@ -237,33 +237,31 @@ class OrderRefund
         }
 
         // calculate refund per multiple charges
-        $refunds = [];
+        $availableCharges = [];
         $remaining = $refundAmount;
-        foreach ($charges as $charge) {
-            $chargeAvailableAmount = isset($alreadyRefunded[$charge->getChargeId()])
-                ? $charge->getAmount() - $alreadyRefunded[$charge->getChargeId()]
-                : $charge->getAmount();
 
-            if ($remaining === 0 || $chargeAvailableAmount === 0) {
+        foreach ($charges as $charge) {
+            if ($remaining === 0) {
                 break;
             }
 
-            $refundPerCharge = $charge->getAmount();
-            if ($chargeAvailableAmount <= $remaining) {
-                $refundPerCharge = $chargeAvailableAmount;
-                $remaining -= $chargeAvailableAmount;
-            } elseif ($chargeAvailableAmount > $remaining) {
-                $refundPerCharge = $remaining;
-                $remaining = 0;
+            $chargeId = $charge->getChargeId();
+            $availableAmount = $charge->getAmount() - ($alreadyRefunded[$chargeId] ?? 0);
+
+            if ($availableAmount <= 0) {
+                continue;
             }
 
-            $refunds[$charge->getChargeId()] = [
-                'amount' => $refundPerCharge,
+            $refundAmount = min($availableAmount, $remaining);
+            $availableCharges[$chargeId] = [
+                'amount' => $refundAmount,
                 'items' => [],
             ];
+
+            $remaining -= $refundAmount;
         }
 
-        return $refunds;
+        return $availableCharges;
     }
 
     /**
