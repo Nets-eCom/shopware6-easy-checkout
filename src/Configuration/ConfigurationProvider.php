@@ -22,8 +22,6 @@ class ConfigurationProvider
 
     public const AUTO_CHARGE = self::CONFIG_DOMAIN . 'autoCharge';
 
-    public const INTEGRATION_TYPE = self::CONFIG_DOMAIN . 'integrationType';
-
     public const TERMS_URL = self::CONFIG_DOMAIN . 'termsUrl';
 
     public const MERCHANT_TERMS_URL = self::CONFIG_DOMAIN . 'merchantTermsUrl';
@@ -60,14 +58,6 @@ class ConfigurationProvider
     {
         return $this->systemConfigService->getString(
             self::TERMS_URL,
-            $salesChannelId
-        );
-    }
-
-    public function getIntegrationType(?string $salesChannelId = null): string
-    {
-        return $this->systemConfigService->getString(
-            self::INTEGRATION_TYPE,
             $salesChannelId
         );
     }
