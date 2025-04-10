@@ -9,6 +9,7 @@ use Nexi\Checkout\Lifecycle\HostedPaymentMethodActivator;
 use Nexi\Checkout\Lifecycle\HostedPaymentMethodInstaller;
 use Nexi\Checkout\Lifecycle\UserDataRemover;
 use Nexi\Checkout\Lifecycle\UserDataRemoverInterface;
+use NexiCheckout\Factory\Provider\HttpClientConfigurationProvider;
 use Shopware\Core\Checkout\Payment\PaymentMethodDefinition;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\ActivateContext;
@@ -37,6 +38,7 @@ class NexiCheckout extends Plugin
         parent::build($container);
 
         $this->registerPackagesConfigFile($container);
+        $this->registerApiUrlParameters($container);
     }
 
     public function install(InstallContext $installContext): void
@@ -130,5 +132,16 @@ class NexiCheckout extends Plugin
         $confDir = rtrim($this->getPath(), '/') . '/Resources/config';
 
         $configLoader->load($confDir . '/{packages}/*.yaml', 'glob');
+    }
+
+    private function registerApiUrlParameters(ContainerBuilder $container): void
+    {
+        // TODO: get values from SDK
+        $container->setParameter('env(NEXI_CHECKOUT_API_LIVE_URL)', 'https://api.dibspayment.eu');
+        $container->setParameter('env(NEXI_CHECKOUT_API_TEST_URL)', 'https://test.api.dibspayment.eu');
+
+        $container
+            ->getDefinition(HttpClientConfigurationProvider::class)
+            ->setArguments(['%env(NEXI_CHECKOUT_API_LIVE_URL)%', '%env(NEXI_CHECKOUT_API_TEST_URL)%']);
     }
 }
