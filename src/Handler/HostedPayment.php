@@ -65,7 +65,7 @@ final class HostedPayment extends AbstractPaymentHandler
                 IntegrationTypeEnum::HostedPaymentPage
             );
 
-            $payment = $paymentApi->createPayment($paymentRequest);
+            $payment = $paymentApi->createHostedPayment($paymentRequest);
         } catch (PaymentApiException $paymentApiException) {
             throw PaymentException::asyncProcessInterrupted(
                 $transactionId,

@@ -14,7 +14,7 @@ use NexiCheckout\Factory\PaymentApiFactory;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment as RequestPayment;
 use NexiCheckout\Model\Request\Payment\HostedCheckout;
-use NexiCheckout\Model\Request\Payment\Order;
+use NexiCheckout\Model\Request\Shared\Order;
 use NexiCheckout\Model\Result\Payment\PaymentWithHostedCheckoutResult;
 use NexiCheckout\Model\Result\RetrievePayment\Payment;
 use NexiCheckout\Model\Result\RetrievePayment\Summary;
@@ -52,7 +52,7 @@ final class HostedPaymentTest extends TestCase
         );
 
         $paymentApi = $this->createStub(PaymentApi::class);
-        $paymentApi->method('createPayment')->willReturn($hostedPaymentResult);
+        $paymentApi->method('createHostedPayment')->willReturn($hostedPaymentResult);
 
         $paymentApiFactory = $this->createStub(PaymentApiFactory::class);
         $paymentApiFactory->method('create')->willReturn($paymentApi);
@@ -113,7 +113,7 @@ final class HostedPaymentTest extends TestCase
         $this->expectException(PaymentException::class);
 
         $paymentApi = $this->createStub(PaymentApi::class);
-        $paymentApi->method('createPayment')->willThrowException(new PaymentApiException());
+        $paymentApi->method('createHostedPayment')->willThrowException(new PaymentApiException());
 
         $paymentApiFactory = $this->createStub(PaymentApiFactory::class);
         $paymentApiFactory->method('create')->willReturn($paymentApi);

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
     <card>
@@ -91,50 +92,6 @@
             </helpText>
             <helpText lang="nb-NO">
                 Velg om du vil belaste betalinger i testmiljø eller live produksjonsmiljø
-            </helpText>
-        </input-field>
-        <input-field type="single-select">
-            <name>integrationType</name>
-            <label>Integration Type</label>
-            <label lang="de-DE">Integrationstyp</label>
-            <label lang="da-DK">Integrationstype</label>
-            <label lang="sv-SE">Integrationstyp</label>
-            <label lang="nb-NO">Integrasjonstype</label>
-            <placeholder>Select payment window checkout type</placeholder>
-            <placeholder lang="de-DE">Wählen Sie die typ für das Zahlungsfenster</placeholder>
-            <placeholder lang="da-DK">Vælg type for betalingsvinduet</placeholder>
-            <placeholder lang="sv-SE">Välj typ för betalningsfönster</placeholder>
-            <placeholder lang="nb-NO">Velg type for betalingsvindu</placeholder>
-            <defaultValue>hosted</defaultValue>
-            <options>
-                <option>
-                    <id>hosted</id>
-                    <name>Hosted</name>
-                </option>
-                <option>
-                    <id>embedded</id>
-                    <name>Embedded</name>
-                </option>
-            </options>
-            <helpText>
-                Choose whether you want the payment window to be loaded in a new page or embedded in your checkout
-                page
-            </helpText>
-            <helpText lang="de-DE">
-                Wählen Sie aus, ob das Zahlungsfenster auf einer neuen Seite geladen oder in Ihre
-                Kasse Seite eingebettet werden soll
-            </helpText>
-            <helpText lang="da-DK">
-                Vælg, om betalingsvinduet skal indlæses på en ny side eller indlejres på din tjekud
-                side
-            </helpText>
-            <helpText lang="sv-SE">
-                Välj om du vill att betalningsfönstret ska laddas på en ny sida eller inbäddas i din
-                checka ut sida
-            </helpText>
-            <helpText lang="nb-NO">
-                Velg om du vil at betalingsvinduet skal lastes inn på en ny side eller innebygd på
-                sjekk ut siden din
             </helpText>
         </input-field>
         <input-field>
