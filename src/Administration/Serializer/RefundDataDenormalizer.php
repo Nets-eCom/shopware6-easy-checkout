@@ -44,7 +44,7 @@ class RefundDataDenormalizer implements DenormalizerInterface
             ];
         }
 
-        return new RefundData($data['amount'], $chargeData);
+        return new RefundData((float) $data['amount'], $chargeData);
     }
 
     public function getSupportedTypes(?string $format): array
