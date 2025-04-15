@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Lifecycle;
 
+use Nexi\Checkout\Handler\EmbeddedPayment;
 use Nexi\Checkout\Handler\HostedPayment;
 use Nexi\Checkout\NexiCheckout;
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
@@ -15,7 +16,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Plugin\Util\PluginIdProvider;
 use Shopware\Core\Framework\Uuid\Uuid;
 
-final readonly class HostedPaymentMethodInstaller implements PaymentMethodInstallerInterface
+final readonly class PaymentMethodsInstaller implements PaymentMethodInstallerInterface
 {
     /**
      * @param EntityRepository<PaymentMethodCollection> $paymentMethodRepository
@@ -28,22 +29,37 @@ final readonly class HostedPaymentMethodInstaller implements PaymentMethodInstal
 
     public function install(Context $context): void
     {
-        $methodData = [
-            'id' => Uuid::randomHex(),
-            'handlerIdentifier' => HostedPayment::class,
-            'name' => 'Nexi Checkout Hosted',
-            'description' => 'Nexi Checkout Hosted',
-            'technicalName' => 'nexi_checkout_hosted',
-            'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NexiCheckout::class, $context),
+        $paymentMethods = [
+            [
+                'id' => $this->getMethodId($context, HostedPayment::class),
+                'handlerIdentifier' => HostedPayment::class,
+                'name' => 'Nexi Checkout Hosted',
+                'description' => 'Nexi Checkout Hosted',
+                'technicalName' => 'nexi_checkout_hosted',
+                'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NexiCheckout::class, $context),
+            ],
+            [
+                'id' => $this->getMethodId($context, EmbeddedPayment::class),
+                'handlerIdentifier' => EmbeddedPayment::class,
+                'name' => 'Nexi Checkout Embedded',
+                'description' => 'Nexi Checkout Embedded',
+                'technicalName' => 'nexi_checkout_embedded',
+                'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NexiCheckout::class, $context),
+            ],
         ];
 
-        $previousMethodId = $this->getMethodIdSearchResult($context, HostedPayment::class)->firstId();
+        $this->paymentMethodRepository->upsert($paymentMethods, $context);
+    }
+
+    private function getMethodId(Context $context, string $handlerIdentifier): string
+    {
+        $previousMethodId = $this->getMethodIdSearchResult($context, $handlerIdentifier)->firstId();
 
         if ($previousMethodId !== null) {
-            $methodData['id'] = $previousMethodId;
+            return $previousMethodId;
         }
 
-        $this->paymentMethodRepository->upsert([$methodData], $context);
+        return Uuid::randomHex();
     }
 
     private function getMethodIdSearchResult(Context $context, string $handlerIdentifier): IdSearchResult
