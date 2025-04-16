@@ -21,7 +21,7 @@ include_once __DIR__ . '/Compatibility/RouteScope.php';
 
 class NetsCheckout extends Plugin
 {
-    const PLUGIN_VERSION = '1.4.13';
+    const PLUGIN_VERSION = '1.4.14';
 
     public function install(InstallContext $context): void
     {

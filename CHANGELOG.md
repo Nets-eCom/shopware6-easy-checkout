@@ -6,11 +6,16 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.4.x`, `6.5.x`
-|Version | `1.4.13`
+|Version | `1.4.14`
 |Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.4.14 - Released 2025-04-16
+
+- Fix: Status of payment change to "Authorized" after payment
+- Fix: Remove unnecessary twig components render
 
 ### Version 1.4.13 - Released 2025-02-14
 
