@@ -6,11 +6,17 @@
 |Author | `Nets eCom`
 |Prefix | `EASY-SW6`
 |Shop Version | `6.6+`
-|Version | `1.5.8`
+|Version | `1.5.9`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 1.5.9 - Released 2025-04-16
+
+- Fix: Status of payment change to "Authorized" after payment
+- Fix: Remove unnecessary twig components render
+- Update: New README structure
 
 ### Version 1.5.8 - Released 2025-02-13
 
