@@ -7,6 +7,7 @@ namespace Nexi\Checkout\Tests\Handler;
 use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Handler\HostedPayment;
+use Nexi\Checkout\Locale\LanguageProvider;
 use Nexi\Checkout\RequestBuilder\PaymentRequest;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
@@ -21,6 +22,7 @@ use NexiCheckout\Model\Result\RetrievePayment\Summary;
 use NexiCheckout\Model\Result\RetrievePaymentResult;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
@@ -38,7 +40,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class HostedPaymentTest extends TestCase
 {
-    private const HOSTED_PAYMENT_RETURN_URL = 'https://example.com/returnUrl';
+    private const HOSTED_PAYMENT_RETURN_URL = 'https://example.com/returnUrl?pid=123';
 
     private const PAYMENT_ID = '123';
 
@@ -89,12 +91,18 @@ final class HostedPaymentTest extends TestCase
                 $context
             );
 
+        $language = 'en-GB';
+        $languageProvider = $this->createStub(LanguageProvider::class);
+        $languageProvider->method('getLanguage')->willReturn($language);
+
         $sut = new HostedPayment(
             $requestBuilder,
             $paymentApiFactory,
             $this->createStub(ConfigurationProvider::class),
             $orderTransactionRepository,
+            $languageProvider,
             $this->createStub(OrderTransactionStateHandler::class),
+            $this->createStub(LoggerInterface::class),
         );
 
         $result = $sut->pay(
@@ -105,7 +113,7 @@ final class HostedPaymentTest extends TestCase
         );
 
         $this->assertInstanceOf(RedirectResponse::class, $result);
-        $this->assertSame(self::HOSTED_PAYMENT_RETURN_URL, $result->getTargetUrl());
+        $this->assertSame(self::HOSTED_PAYMENT_RETURN_URL . '&language=' . $language, $result->getTargetUrl());
     }
 
     public function testPayThrowsPaymentException(): void
@@ -123,7 +131,9 @@ final class HostedPaymentTest extends TestCase
             $paymentApiFactory,
             $this->createStub(ConfigurationProvider::class),
             $this->createStub(EntityRepository::class),
+            $this->createStub(LanguageProvider::class),
             $this->createStub(OrderTransactionStateHandler::class),
+            $this->createStub(LoggerInterface::class),
         );
 
         $sut->pay(
@@ -175,7 +185,9 @@ final class HostedPaymentTest extends TestCase
             $paymentApiFactory,
             $this->createStub(ConfigurationProvider::class),
             $this->createOrderTransactionRepository($orderTransaction, $context),
+            $this->createStub(LanguageProvider::class),
             $orderTransactionStateHandler,
+            $this->createStub(LoggerInterface::class),
         );
 
         $sut->finalize(
@@ -213,7 +225,9 @@ final class HostedPaymentTest extends TestCase
             $paymentApiFactory,
             $this->createStub(ConfigurationProvider::class),
             $this->createStub(EntityRepository::class),
+            $this->createStub(LanguageProvider::class),
             $this->createMock(OrderTransactionStateHandler::class),
+            $this->createStub(LoggerInterface::class),
         );
 
         $sut->finalize(
