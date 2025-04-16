@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Nexi\Checkout;
 
 use Doctrine\DBAL\Connection;
-use Nexi\Checkout\Lifecycle\HostedPaymentMethodActivator;
-use Nexi\Checkout\Lifecycle\HostedPaymentMethodInstaller;
+use Nexi\Checkout\Lifecycle\PaymentMethodInstallerInterface;
+use Nexi\Checkout\Lifecycle\PaymentMethodsActivator;
+use Nexi\Checkout\Lifecycle\PaymentMethodsInstaller;
 use Nexi\Checkout\Lifecycle\UserDataRemover;
 use Nexi\Checkout\Lifecycle\UserDataRemoverInterface;
 use NexiCheckout\Factory\Provider\HttpClientConfigurationProvider;
@@ -46,7 +47,7 @@ class NexiCheckout extends Plugin
         parent::install($installContext);
 
         $this
-            ->getPaymentMethodInstalled()
+            ->getPaymentMethodInstaller()
             ->install($installContext->getContext());
     }
 
@@ -96,17 +97,17 @@ class NexiCheckout extends Plugin
     {
     }
 
-    private function getPaymentMethodInstalled(): HostedPaymentMethodInstaller
+    private function getPaymentMethodInstaller(): PaymentMethodInstallerInterface
     {
-        return new HostedPaymentMethodInstaller(
+        return new PaymentMethodsInstaller(
             $this->container->get(PluginIdProvider::class),
             $this->container->get(\sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME))
         );
     }
 
-    private function getPaymentMethodActivator(): HostedPaymentMethodActivator
+    private function getPaymentMethodActivator(): PaymentMethodsActivator
     {
-        return new HostedPaymentMethodActivator(
+        return new PaymentMethodsActivator(
             $this->container->get(\sprintf('%s.repository', PaymentMethodDefinition::ENTITY_NAME)),
             $this->container->get(SystemConfigService::class)
         );
