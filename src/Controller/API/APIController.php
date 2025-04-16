@@ -169,7 +169,9 @@ class APIController extends StorefrontController
             }
 
             if ($chargedAmount > 0 && $refundedAmount == 0) {
-                if ($reservedAmount == $chargedAmount) {
+                if ($orderStateTechnicalName === OrderTransactionStates::STATE_OPEN) {
+                    $this->transHandler->authorize($transactionId, $context);
+                } elseif ($reservedAmount == $chargedAmount) {
                     if ($transactionStateTechnicalName === OrderTransactionStates::STATE_PARTIALLY_PAID) {
                         $this->transHandler->reopen($transactionId, $context);
                         $this->transHandler->paid($transactionId, $context);
