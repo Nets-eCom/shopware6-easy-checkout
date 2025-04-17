@@ -10,7 +10,9 @@
             <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
             <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
             <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Nexi\Checkout\Locale\LanguageProvider"/>
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
             <tag name="shopware.payment.method.async" />
         </service>
 
@@ -74,6 +76,10 @@
 
         <service id="Nexi\Checkout\RequestBuilder\CancelRequest">
             <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+        </service>
+
+        <service id="Nexi\Checkout\Locale\LanguageProvider">
+            <argument type="service" id="language.repository" />
         </service>
 
         <!-- ### SDK ### -->

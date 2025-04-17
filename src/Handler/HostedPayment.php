@@ -6,12 +6,14 @@ namespace Nexi\Checkout\Handler;
 
 use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Locale\LanguageProvider;
 use Nexi\Checkout\RequestBuilder\PaymentRequest;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
 use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use NexiCheckout\Model\Result\RetrievePayment\Summary;
+use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
@@ -37,7 +39,9 @@ final class HostedPayment extends AbstractPaymentHandler
         private readonly PaymentApiFactory $paymentApiFactory,
         private readonly ConfigurationProvider $configurationProvider,
         private readonly EntityRepository $orderTransactionRepository,
-        private readonly OrderTransactionStateHandler $orderTransactionStateHandler
+        private readonly LanguageProvider $languageProvider,
+        private readonly OrderTransactionStateHandler $orderTransactionStateHandler,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -67,6 +71,11 @@ final class HostedPayment extends AbstractPaymentHandler
 
             $payment = $paymentApi->createHostedPayment($paymentRequest);
         } catch (PaymentApiException $paymentApiException) {
+            $this->logger->error('Hosted payment create error', [
+                'request' => $paymentRequest,
+                'exception' => $paymentApiException,
+            ]);
+
             throw PaymentException::asyncProcessInterrupted(
                 $transactionId,
                 $paymentApiException->getMessage(),
@@ -85,8 +94,15 @@ final class HostedPayment extends AbstractPaymentHandler
 
         $this->orderTransactionRepository->update([$data], $context);
 
-        // TODO: return url with language query parameter
-        return new RedirectResponse($payment->getHostedPaymentPageUrl());
+        $this->logger->info('Hosted payment created successfully', [
+            'paymentId' => $payment->getPaymentId(),
+        ]);
+
+        return new RedirectResponse(\sprintf(
+            '%s&language=%s',
+            $payment->getHostedPaymentPageUrl(),
+            $this->languageProvider->getLanguage($context)
+        ));
     }
 
     public function finalize(
@@ -100,11 +116,20 @@ final class HostedPayment extends AbstractPaymentHandler
             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
         );
 
+        $this->logger->info('Hosted payment finalize started', [
+            'paymentId' => $paymentId,
+        ]);
+
         $paymentApi = $this->createPaymentApi($orderTransaction->getOrder()->getSalesChannelId());
 
         try {
             $payment = $paymentApi->retrievePayment((string) $paymentId)->getPayment();
         } catch (PaymentApiException $paymentApiException) {
+            $this->logger->error('Hosted payment finalize error', [
+                'paymentId' => $paymentId,
+                'exception' => $paymentApiException,
+            ]);
+
             throw PaymentException::asyncFinalizeInterrupted(
                 $orderTransaction->getId(),
                 'Couldn\'t finalize transaction',
@@ -115,8 +140,16 @@ final class HostedPayment extends AbstractPaymentHandler
         $summary = $payment->getSummary();
 
         if (!$this->canAuthorize($summary)) {
+            $this->logger->error('Hosted payment finalize can\'t authorize', [
+                'payment' => $payment,
+            ]);
+
             throw PaymentException::asyncFinalizeInterrupted($orderTransactionId, 'Couldn\'t finalize transaction');
         }
+
+        $this->logger->info('Hosted payment finalized successfully', [
+            'paymentId' => $paymentId,
+        ]);
 
         $this->orderTransactionStateHandler->authorize($orderTransactionId, $context);
     }
