@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Nexi\Checkout\Lifecycle;
 
 use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Handler\EmbeddedPayment;
 use Nexi\Checkout\Handler\HostedPayment;
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
 use Shopware\Core\Framework\Util\Random;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
-final readonly class HostedPaymentMethodActivator implements PaymentMethodActivatorInterface, PaymentMethodDeactivatorInterface
+final readonly class PaymentMethodsActivator implements PaymentMethodActivatorInterface, PaymentMethodDeactivatorInterface
 {
     /**
      * @param EntityRepository<PaymentMethodCollection> $paymentMethodRepository
@@ -28,7 +29,7 @@ final readonly class HostedPaymentMethodActivator implements PaymentMethodActiva
 
     public function activate(Context $context): void
     {
-        if (!$this->isMethodInstalled($context, HostedPayment::class)) {
+        if (!$this->areMethodsInstalled($context, [HostedPayment::class, EmbeddedPayment::class])) {
             return;
         }
 
@@ -36,7 +37,11 @@ final readonly class HostedPaymentMethodActivator implements PaymentMethodActiva
             ->paymentMethodRepository->update(
                 [
                     [
-                        'id' => $this->getMethodIdSearchResult($context, HostedPayment::class)->firstId(),
+                        'id' => $this->getMethodIdSearchResult($context, [HostedPayment::class])->firstId(),
+                        'active' => true,
+                    ],
+                    [
+                        'id' => $this->getMethodIdSearchResult($context, [EmbeddedPayment::class])->firstId(),
                         'active' => true,
                     ],
                 ],
@@ -48,7 +53,7 @@ final readonly class HostedPaymentMethodActivator implements PaymentMethodActiva
 
     public function deactivate(Context $context): void
     {
-        if (!$this->isMethodInstalled($context, HostedPayment::class)) {
+        if (!$this->areMethodsInstalled($context, [HostedPayment::class, EmbeddedPayment::class])) {
             return;
         }
 
@@ -56,7 +61,11 @@ final readonly class HostedPaymentMethodActivator implements PaymentMethodActiva
             ->paymentMethodRepository->update(
                 [
                     [
-                        'id' => $this->getMethodIdSearchResult($context, HostedPayment::class)->firstId(),
+                        'id' => $this->getMethodIdSearchResult($context, [HostedPayment::class])->firstId(),
+                        'active' => false,
+                    ],
+                    [
+                        'id' => $this->getMethodIdSearchResult($context, [EmbeddedPayment::class])->firstId(),
                         'active' => false,
                     ],
                 ],
@@ -64,19 +73,25 @@ final readonly class HostedPaymentMethodActivator implements PaymentMethodActiva
             );
     }
 
-    private function isMethodInstalled(Context $context, string $handlerIdentifier): bool
+    /**
+     * @param string[] $handlerIdentifiers
+     */
+    private function areMethodsInstalled(Context $context, array $handlerIdentifiers): bool
     {
-        return $this->getMethodIdSearchResult($context, $handlerIdentifier)->getTotal() > 0;
+        return $this->getMethodIdSearchResult($context, $handlerIdentifiers)->getTotal() > 0;
     }
 
-    private function getMethodIdSearchResult(Context $context, string $handlerIdentifier): IdSearchResult
+    /**
+     * @param string[] $handlerIdentifiers
+     */
+    private function getMethodIdSearchResult(Context $context, array $handlerIdentifiers): IdSearchResult
     {
         return $this
             ->paymentMethodRepository
             ->searchIds(
                 (new Criteria())
                     ->addFilter(
-                        new EqualsFilter('handlerIdentifier', $handlerIdentifier)
+                        new EqualsAnyFilter('handlerIdentifier', $handlerIdentifiers),
                     ),
                 $context
             );
