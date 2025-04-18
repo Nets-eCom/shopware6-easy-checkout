@@ -16,6 +16,16 @@
             <tag name="shopware.payment.method.async" />
         </service>
 
+        <service id="Nexi\Checkout\Handler\EmbeddedPayment">
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <tag name="shopware.payment.method.prepared" />
+        </service>
+
         <service id="Nexi\Checkout\Entity\NexiPaymentApi\NexiPaymentDefinition">
             <tag name="shopware.entity.definition" entity="nexicheckout_payment" />
         </service>
@@ -192,6 +202,13 @@
         </service>
 
         <!-- ### Subscribers ### -->
+        <service id="Nexi\Checkout\Subscriber\EmbeddedCreatePaymentOnCheckoutSubscriber">
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest"/>
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <tag name="kernel.event_subscriber" />
+        </service>
+
         <service id="Nexi\Checkout\Subscriber\PaymentCancelSubscriber">
             <argument type="service" id="Nexi\Checkout\Order\OrderCancel"/>
             <argument type="service" id="order.repository"/>
