@@ -7,6 +7,7 @@
     "require": {
         "php": "~8.2.0 || ~8.3.0",
         "shopware/core": "~6.6.0",
+        "shopware/storefront": "~6.6.0",
         "giggsey/libphonenumber-for-php-lite": "^8.12",
         "nexi-checkout/php-payment-sdk": "^0.4"
     },
