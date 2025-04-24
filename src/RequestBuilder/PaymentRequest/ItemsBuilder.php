@@ -46,7 +46,36 @@ class ItemsBuilder
             );
         }
 
+        if ($order->getShippingTotal() > 0) {
+            $shippingCost = $order->getShippingCosts();
+            $shippingUnitPrice = $shippingCost->getUnitPrice();
+            $shippingQuantity = $shippingCost->getQuantity();
+            $shippingNetTotalAmount = $this->priceToInt($shippingUnitPrice * $shippingQuantity);
+            $shippingGrossTotalAmount = $this->priceToInt($shippingCost->getTotalPrice());
+
+            $nexiItems[] = new Item(
+                $order->getDeliveries()->getShippingMethods()->first()->getName(),
+                $shippingQuantity,
+                'pcs',
+                $this->priceToInt($shippingUnitPrice),
+                $shippingGrossTotalAmount,
+                $shippingNetTotalAmount,
+                substr('shipping', 0, 128),
+                $this->getShippingTaxRate($order),
+                $shippingGrossTotalAmount - $shippingNetTotalAmount
+            );
+        }
+
         return $nexiItems;
+    }
+
+    private function getShippingTaxRate(OrderEntity $order): int
+    {
+        $shippingCost = $order->getShippingCosts();
+
+        $taxRate = $shippingCost->getCalculatedTaxes()->first();
+
+        return empty($taxRate) ? 0 : (int) round($taxRate->getTaxRate() * 100);
     }
 
     private function getUnitPrice(OrderLineItemEntity $lineItem, ?string $taxStatus): int
