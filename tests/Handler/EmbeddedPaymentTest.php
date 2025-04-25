@@ -78,7 +78,7 @@ final class EmbeddedPaymentTest extends TestCase
         $this->assertEquals(self::PAYMENT_ID, $validateStruct->get('paymentId'));
     }
 
-    public function testPayCallesOrderTransactionUpdate(): void
+    public function testPayMutatesOrderTransaction(): void
     {
         $salesChannelContext = Generator::generateSalesChannelContext();
         $context = $salesChannelContext->getContext();

@@ -38,8 +38,14 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
         </service>
 
+        <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilder">
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\CustomerBuilder"/>
+            <argument type="service" id="router"/>
+        </service>
+
         <service id="Nexi\Checkout\RequestBuilder\PaymentRequest">
-            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilderFactory"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilder"/>
             <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder"/>
             <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\NotificationBuilder"/>
             <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
@@ -64,12 +70,6 @@
         <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\AddressBuilder"/>
 
         <service id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
-
-        <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilderFactory">
-            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
-            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\CustomerBuilder"/>
-            <argument type="service" id="router"/>
-        </service>
 
         <service id="Nexi\Checkout\RequestBuilder\ChargeRequest">
             <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
