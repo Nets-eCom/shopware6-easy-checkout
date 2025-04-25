@@ -48,10 +48,9 @@ class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterf
 
         try {
             $paymentId = $this->createPayment($cart, $salesChannelContext, $request);
-        } catch (ClientErrorPaymentApiException $clientErrorPaymentApiException) {
-        } catch (PaymentApiException $paymentApiException) {
+        } catch (ClientErrorPaymentApiException|PaymentApiException $exception) {
         } finally {
-            // no exception should be thrown because we want payment window to be render with error
+            // no exception should be thrown because we want payment window to be rendered with error
             $paymentId = $paymentId ?? null;
         }
 
@@ -75,7 +74,7 @@ class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterf
     ): string {
         $paymentId = $request->query->getString('paymentId');
 
-        if ($this->isExisitingPaymentValid($paymentId)) {
+        if ($this->isExistingPaymentValid($paymentId)) {
             return $paymentId;
         }
 
@@ -91,7 +90,7 @@ class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterf
         return $payment->getPaymentId();
     }
 
-    private function isExisitingPaymentValid(string $paymentId): bool
+    private function isExistingPaymentValid(string $paymentId): bool
     {
         // @TODO: implement validation logic for payment that are jumping out of iframe
         return $paymentId !== '';

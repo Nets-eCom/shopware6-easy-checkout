@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace Nexi\Checkout\RequestBuilder;
 
 use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
-use Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilderFactory;
+use Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilder;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\NotificationBuilder;
-use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Payment;
-use NexiCheckout\Model\Request\Payment\EmbeddedCheckout;
-use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use NexiCheckout\Model\Request\Shared\Order;
 use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -20,7 +17,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 class PaymentRequest
 {
     public function __construct(
-        private readonly CheckoutBuilderFactory $checkoutBuilderFactory,
+        private readonly CheckoutBuilder $checkoutBuilder,
         private readonly ItemsBuilder $itemsBuilder,
         private readonly NotificationBuilder $notificationBuilder,
         private readonly FormatHelper $formatHelper,
@@ -36,15 +33,14 @@ class PaymentRequest
 
         return new Payment(
             new Order(
-                $this->itemsBuilder->create($orderEntity),
+                $this->itemsBuilder->createFromOrder($orderEntity),
                 $orderEntity->getCurrency()->getIsoCode(),
                 $this->formatHelper->priceToInt($transaction->getAmount()->getTotalPrice()),
                 $orderEntity->getOrderNumber()
             ),
             $this
-                ->checkoutBuilderFactory
-                ->build(IntegrationTypeEnum::HostedPaymentPage)
-                ->create(
+                ->checkoutBuilder
+                ->createHosted(
                     $orderEntity,
                     $returnUrl,
                     $salesChannelId
@@ -60,18 +56,14 @@ class PaymentRequest
         SalesChannelContext $salesChannelContext,
         string $checkoutUrl
     ): Payment {
-        // @TODO: Implement
-
-        $price = $this->formatHelper->priceToInt($cart->getPrice()->getTotalPrice());
-
         return new Payment(
             order: new Order(
-                [new Item('Fake item', 1, 'pcs', $price, $price, $price, 'Fake item')],
+                $this->itemsBuilder->createFromCart($cart),
                 $salesChannelContext->getCurrency()->getIsoCode(),
-                $price,
+                $this->formatHelper->priceToInt($cart->getPrice()->getTotalPrice()),
                 $cart->getToken()
             ),
-            checkout: new EmbeddedCheckout($checkoutUrl, 'https://example.com'),
+            checkout: $this->checkoutBuilder->createEmbedded($salesChannelContext),
             notification: $this
                 ->notificationBuilder
                 ->create($salesChannelContext->getSalesChannelId()),
