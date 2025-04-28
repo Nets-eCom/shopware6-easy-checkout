@@ -11,7 +11,6 @@ use Nexi\Checkout\RequestBuilder\PaymentRequest;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
-use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use NexiCheckout\Model\Result\RetrievePayment\Summary;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
@@ -62,11 +61,10 @@ final class HostedPayment extends AbstractPaymentHandler
         $paymentApi = $this->createPaymentApi($salesChannelId);
 
         try {
-            $paymentRequest = $this->paymentRequest->build(
+            $paymentRequest = $this->paymentRequest->buildHosted(
                 $transactionEntity,
                 $salesChannelId,
-                $transaction->getReturnUrl(),
-                IntegrationTypeEnum::HostedPaymentPage
+                $transaction->getReturnUrl()
             );
 
             $payment = $paymentApi->createHostedPayment($paymentRequest);
