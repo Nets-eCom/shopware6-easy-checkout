@@ -6,12 +6,17 @@ namespace Nexi\Checkout\RequestBuilder\PaymentRequest;
 
 use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
 use NexiCheckout\Model\Request\Item;
+use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Cart\LineItem\LineItem;
+use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
 
 class ItemsBuilder
 {
+    private const ITEM_UNIT = 'pcs';
+
     public function __construct(
         private readonly FormatHelper $helper
     ) {
@@ -20,23 +25,22 @@ class ItemsBuilder
     /**
      * @return Item[]
      */
-    public function create(OrderEntity $order): array
+    public function createFromOrder(OrderEntity $order): array
     {
-        $lineItems = $order->getNestedLineItems();
-        $nexiItems = [];
+        $items = [];
 
-        foreach ($lineItems as $lineItem) {
-            $unitPrice = $this->getUnitPrice($lineItem, $order->getTaxStatus());
+        foreach ($order->getNestedLineItems() as $lineItem) {
+            $unitPrice = $this->getUnitPrice($lineItem->getPrice(), $lineItem->getQuantity(), $order->getTaxStatus());
             $taxRate = $this->getTaxRate($lineItem);
             $grossTotalAmount = $this->priceToInt($lineItem->getPrice()->getTotalPrice());
             $netTotalAmount = $unitPrice * $lineItem->getQuantity();
             $reference = $this->getReference($lineItem);
             $taxAmount = $this->getTaxAmount($grossTotalAmount, $netTotalAmount);
 
-            $nexiItems[] = new Item(
+            $items[] = new Item(
                 $this->sanitize($lineItem->getLabel()),
                 $lineItem->getQuantity(),
-                'pcs',
+                self::ITEM_UNIT,
                 $unitPrice,
                 $grossTotalAmount,
                 $netTotalAmount,
@@ -78,11 +82,27 @@ class ItemsBuilder
         return empty($taxRate) ? 0 : (int) round($taxRate->getTaxRate() * 100);
     }
 
-    private function getUnitPrice(OrderLineItemEntity $lineItem, ?string $taxStatus): int
+    /**
+     * @return list<Item>
+     */
+    public function createFromCart(Cart $cart): array
     {
-        $calculatedPrice = $lineItem->getPrice();
+        $items = [];
+
+        foreach ($cart->getLineItems() as $lineItem) {
+            $items[] = $this->createFromLineItem(
+                $lineItem,
+                $this->getUnitPrice($lineItem->getPrice(), $lineItem->getQuantity(), $cart->getPrice()->getTaxStatus())
+            );
+        }
+
+        return $items;
+    }
+
+    private function getUnitPrice(CalculatedPrice $calculatedPrice, int $quantity, ?string $taxStatus): int
+    {
         $unitPrice = $this->priceToInt($calculatedPrice->getUnitPrice());
-        $taxAmount = $this->priceToInt($calculatedPrice->getCalculatedTaxes()->getAmount() / $lineItem->getQuantity());
+        $taxAmount = $this->priceToInt($calculatedPrice->getCalculatedTaxes()->getAmount() / $quantity);
 
         return $taxStatus === CartPrice::TAX_STATE_GROSS ? $unitPrice - $taxAmount : $unitPrice;
     }
@@ -114,5 +134,31 @@ class ItemsBuilder
     private function sanitize(string $label): string
     {
         return $this->helper->sanitizeString($label);
+    }
+
+    private function createFromLineItem(
+        LineItem $lineItem,
+        int $unitPrice
+    ): Item {
+        $calculatedTax = $lineItem->getPrice()->getCalculatedTaxes()->first();
+        $reference = $lineItem->getPayload()['productNumber'] ?? $lineItem->getReferencedId() ?? $lineItem->getId();
+        $taxRate = $calculatedTax ? (int) round($calculatedTax->getTaxRate() * 100) : 0;
+
+
+        $grossTotalAmount = $this->priceToInt($lineItem->getPrice()->getTotalPrice());
+        $netTotalAmount = $unitPrice * $lineItem->getQuantity();
+        $taxAmount = $this->getTaxAmount($grossTotalAmount, $netTotalAmount);
+
+        return new Item(
+            $this->sanitize($lineItem->getLabel()),
+            $lineItem->getQuantity(),
+            self::ITEM_UNIT,
+            $unitPrice,
+            $grossTotalAmount,
+            $netTotalAmount,
+            substr($reference, 0, 128),
+            $taxRate,
+            $taxAmount
+        );
     }
 }
