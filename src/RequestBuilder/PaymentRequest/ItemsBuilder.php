@@ -30,56 +30,22 @@ class ItemsBuilder
         $items = [];
 
         foreach ($order->getNestedLineItems() as $lineItem) {
-            $unitPrice = $this->getUnitPrice($lineItem->getPrice(), $lineItem->getQuantity(), $order->getTaxStatus());
-            $taxRate = $this->getTaxRate($lineItem);
-            $grossTotalAmount = $this->priceToInt($lineItem->getPrice()->getTotalPrice());
-            $netTotalAmount = $unitPrice * $lineItem->getQuantity();
-            $reference = $this->getReference($lineItem);
-            $taxAmount = $this->getTaxAmount($grossTotalAmount, $netTotalAmount);
-
-            $items[] = new Item(
-                $this->sanitize($lineItem->getLabel()),
-                $lineItem->getQuantity(),
-                self::ITEM_UNIT,
-                $unitPrice,
-                $grossTotalAmount,
-                $netTotalAmount,
-                substr($reference, 0, 128),
-                $taxRate,
-                $taxAmount
+            $items[] = $this->createFromOrderLineItem(
+                $lineItem,
+                $order->getTaxStatus()
             );
         }
 
         if ($order->getShippingTotal() > 0) {
-            $shippingCost = $order->getShippingCosts();
-            $shippingUnitPrice = $shippingCost->getUnitPrice();
-            $shippingQuantity = $shippingCost->getQuantity();
-            $shippingNetTotalAmount = $this->priceToInt($shippingUnitPrice * $shippingQuantity);
-            $shippingGrossTotalAmount = $this->priceToInt($shippingCost->getTotalPrice());
-
-            $nexiItems[] = new Item(
+            $items[] = $this->createShippingItem(
                 $order->getDeliveries()->getShippingMethods()->first()->getName(),
-                $shippingQuantity,
-                'pcs',
-                $this->priceToInt($shippingUnitPrice),
-                $shippingGrossTotalAmount,
-                $shippingNetTotalAmount,
-                substr('shipping', 0, 128),
-                $this->getShippingTaxRate($order),
-                $shippingGrossTotalAmount - $shippingNetTotalAmount
+                $order->getShippingCosts(),
+                $order->getShippingTotal(),
+                $order->getTaxStatus()
             );
         }
 
-        return $nexiItems;
-    }
-
-    private function getShippingTaxRate(OrderEntity $order): int
-    {
-        $shippingCost = $order->getShippingCosts();
-
-        $taxRate = $shippingCost->getCalculatedTaxes()->first();
-
-        return empty($taxRate) ? 0 : (int) round($taxRate->getTaxRate() * 100);
+        return $items;
     }
 
     /**
@@ -90,9 +56,18 @@ class ItemsBuilder
         $items = [];
 
         foreach ($cart->getLineItems() as $lineItem) {
-            $items[] = $this->createFromLineItem(
+            $items[] = $this->createFromCartLineItem(
                 $lineItem,
-                $this->getUnitPrice($lineItem->getPrice(), $lineItem->getQuantity(), $cart->getPrice()->getTaxStatus())
+                $cart->getPrice()->getTaxStatus()
+            );
+        }
+
+        if ($cart->getShippingCosts()->getTotalPrice() > 0) {
+            $items[] = $this->createShippingItem(
+                $cart->getDeliveries()->first()->getShippingMethod()->getName(),
+                $cart->getShippingCosts(),
+                $cart->getShippingCosts()->getTotalPrice(),
+                $cart->getPrice()->getTaxStatus()
             );
         }
 
@@ -107,9 +82,9 @@ class ItemsBuilder
         return $taxStatus === CartPrice::TAX_STATE_GROSS ? $unitPrice - $taxAmount : $unitPrice;
     }
 
-    private function getTaxRate(OrderLineItemEntity $lineItem): int
+    private function getTaxRate(CalculatedPrice $calculatedPrice): int
     {
-        $taxRate = $lineItem->getPrice()->getCalculatedTaxes()->first();
+        $taxRate = $calculatedPrice->getCalculatedTaxes()->first();
 
         return empty($taxRate) ? 0 : (int) round($taxRate->getTaxRate() * 100);
     }
@@ -136,10 +111,35 @@ class ItemsBuilder
         return $this->helper->sanitizeString($label);
     }
 
-    private function createFromLineItem(
-        LineItem $lineItem,
-        int $unitPrice
+    private function createFromOrderLineItem(
+        OrderLineItemEntity $lineItem,
+        ?string $taxStatus
     ): Item {
+        $unitPrice = $this->getUnitPrice($lineItem->getPrice(), $lineItem->getQuantity(), $taxStatus);
+        $taxRate = $this->getTaxRate($lineItem->getPrice());
+        $grossTotalAmount = $this->priceToInt($lineItem->getPrice()->getTotalPrice());
+        $netTotalAmount = $unitPrice * $lineItem->getQuantity();
+        $reference = $this->getReference($lineItem);
+        $taxAmount = $this->getTaxAmount($grossTotalAmount, $netTotalAmount);
+
+        return new Item(
+            $this->sanitize($lineItem->getLabel()),
+            $lineItem->getQuantity(),
+            self::ITEM_UNIT,
+            $unitPrice,
+            $grossTotalAmount,
+            $netTotalAmount,
+            substr($reference, 0, 128),
+            $taxRate,
+            $taxAmount
+        );
+    }
+
+    private function createFromCartLineItem(
+        LineItem $lineItem,
+        string $taxStatus
+    ): Item {
+        $unitPrice = $this->getUnitPrice($lineItem->getPrice(), $lineItem->getQuantity(), $taxStatus);
         $calculatedTax = $lineItem->getPrice()->getCalculatedTaxes()->first();
         $reference = $lineItem->getPayload()['productNumber'] ?? $lineItem->getReferencedId() ?? $lineItem->getId();
         $taxRate = $calculatedTax ? (int) round($calculatedTax->getTaxRate() * 100) : 0;
@@ -159,6 +159,30 @@ class ItemsBuilder
             substr($reference, 0, 128),
             $taxRate,
             $taxAmount
+        );
+    }
+
+    private function createShippingItem(
+        string $name,
+        CalculatedPrice $shippingCost,
+        float $shippingTotal,
+        ?string $taxStatus
+    ): Item {
+        $shippingQuantity = $shippingCost->getQuantity();
+        $shippingUnitPrice = $this->getUnitPrice($shippingCost, $shippingQuantity, $taxStatus);
+        $shippingGrossTotalAmount = $this->priceToInt($shippingTotal);
+        $shippingNetTotalAmount = $shippingUnitPrice * $shippingQuantity;
+
+        return new Item(
+            $name,
+            $shippingQuantity,
+            self::ITEM_UNIT,
+            $shippingUnitPrice,
+            $shippingGrossTotalAmount,
+            $shippingNetTotalAmount,
+            'shipping',
+            $this->getTaxRate($shippingCost),
+            $this->getTaxAmount($shippingGrossTotalAmount, $shippingNetTotalAmount)
         );
     }
 }
