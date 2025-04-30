@@ -14,9 +14,12 @@ use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTax;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderDelivery\OrderDeliveryCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderDelivery\OrderDeliveryEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Shopware\Core\Checkout\Shipping\ShippingMethodEntity;
 
 final class ItemsBuilderTest extends TestCase
 {
@@ -34,12 +37,18 @@ final class ItemsBuilderTest extends TestCase
             $this->createOrderItemEntity('discount1', -5.0, 1, 0),
         ]);
         $orderEntity->setLineItems($orderItems);
+        $orderDelivery = $this->createOrderDeliveryEntity('shipping1', 2.99, 1, 0.5);
+        $orderEntity->setDeliveries(new OrderDeliveryCollection([
+            $orderDelivery,
+        ]));
+        $orderEntity->setShippingCosts($orderDelivery->getShippingCosts());
+        $orderEntity->setShippingTotal(2.99);
 
         $sut = new ItemsBuilder(new FormatHelper());
 
         $result = $sut->createFromOrder($orderEntity);
 
-        $this->assertCount(3, $result);
+        $this->assertCount(4, $result);
         $this->assertContainsOnlyInstancesOf(Item::class, $result);
 
         $item0Array = $result[0]->jsonSerialize();
@@ -62,9 +71,17 @@ final class ItemsBuilderTest extends TestCase
         $this->assertEquals(-500, $item2Array['grossTotalAmount']);
         $this->assertEquals(-500, $item2Array['netTotalAmount']);
         $this->assertArrayNotHasKey('taxAmount', $item2Array);
+
+        $item3Array = $result[3]->jsonSerialize();
+        $this->assertEquals('shipping', $item3Array['reference']);
+        $this->assertEquals(1, $item3Array['quantity']);
+        $this->assertEquals(249, $item3Array['unitPrice']);
+        $this->assertEquals(299, $item3Array['grossTotalAmount']);
+        $this->assertEquals(249, $item3Array['netTotalAmount']);
+        $this->assertEquals(50, $item3Array['taxAmount']);
     }
 
-    public function testItCreatesFromOrderTaxNet(): void
+    public function testItCreatesFromOrderTaxNetAndNoShippingCost(): void
     {
         $orderEntity = new OrderEntity();
         $orderEntity->setId('1234');
@@ -74,6 +91,7 @@ final class ItemsBuilderTest extends TestCase
             $this->createOrderItemEntity('item1', 10.0, 2, 2.0, false),
         ]);
         $orderEntity->setLineItems($orderItems);
+        $orderEntity->setShippingTotal(0);
 
         $sut = new ItemsBuilder(new FormatHelper());
 
@@ -161,5 +179,35 @@ final class ItemsBuilderTest extends TestCase
         $lineItem->setPrice($calculatedPrice);
 
         return $lineItem;
+    }
+
+    private function createOrderDeliveryEntity(
+        string $identifier,
+        float $price,
+        int $quantity,
+        float $tax,
+        bool $taxIncl = true
+    ): OrderDeliveryEntity {
+        $orderDelivery = new OrderDeliveryEntity();
+        $orderDelivery->setId($identifier);
+
+        $shippingMethod = new ShippingMethodEntity();
+        $shippingMethod->setId($identifier);
+        $shippingMethod->setName('shipping_' . $identifier);
+
+        $orderDelivery->setShippingMethod($shippingMethod);
+
+        $calculatedPrice = new CalculatedPrice(
+            $price / $quantity,
+            $taxIncl ? $price : $price + $tax,
+            new CalculatedTaxCollection(
+                [new CalculatedTax($tax, $tax / ($price - $tax), $price - $tax)]
+            ),
+            new TaxRuleCollection(),
+            $quantity
+        );
+        $orderDelivery->setShippingCosts($calculatedPrice);
+
+        return $orderDelivery;
     }
 }
