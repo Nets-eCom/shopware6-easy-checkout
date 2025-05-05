@@ -71,7 +71,7 @@ final class HostedPaymentTest extends TestCase
 
         $paymentRequest = $this->createPaymentRequest();
         $requestBuilder = $this->createStub(PaymentRequest::class);
-        $requestBuilder->method('build')->willReturn($paymentRequest);
+        $requestBuilder->method('buildHosted')->willReturn($paymentRequest);
 
         $orderTransactionRepository = $this->createOrderTransactionRepository($orderTransactionEntity, $context);
         $orderTransactionRepository
