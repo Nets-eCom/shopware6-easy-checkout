@@ -11,7 +11,6 @@ use Nexi\Checkout\RequestBuilder\PaymentRequest;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
-use NexiCheckout\Model\Request\Payment\IntegrationTypeEnum;
 use NexiCheckout\Model\Result\RetrievePayment\Summary;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
@@ -26,6 +25,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Struct\Struct;
+use Shopware\Core\System\StateMachine\Exception\IllegalTransitionException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -62,11 +62,10 @@ final class HostedPayment extends AbstractPaymentHandler
         $paymentApi = $this->createPaymentApi($salesChannelId);
 
         try {
-            $paymentRequest = $this->paymentRequest->build(
+            $paymentRequest = $this->paymentRequest->buildHosted(
                 $transactionEntity,
                 $salesChannelId,
-                $transaction->getReturnUrl(),
-                IntegrationTypeEnum::HostedPaymentPage
+                $transaction->getReturnUrl()
             );
 
             $payment = $paymentApi->createHostedPayment($paymentRequest);
@@ -147,11 +146,19 @@ final class HostedPayment extends AbstractPaymentHandler
             throw PaymentException::asyncFinalizeInterrupted($orderTransactionId, 'Couldn\'t finalize transaction');
         }
 
+        try {
+            $this->orderTransactionStateHandler->authorize($orderTransactionId, $context);
+        } catch (IllegalTransitionException $illegalTransitionException) {
+            $this->logger->error('Hosted payment finalize illegal transition', [
+                'transactionState' => $this->fetchStateTechnicalName($orderTransactionId, $context),
+                'paymentId' => $paymentId,
+                'exception' => $illegalTransitionException,
+            ]);
+        }
+
         $this->logger->info('Hosted payment finalized successfully', [
             'paymentId' => $paymentId,
         ]);
-
-        $this->orderTransactionStateHandler->authorize($orderTransactionId, $context);
     }
 
     public function refund(
@@ -167,6 +174,7 @@ final class HostedPayment extends AbstractPaymentHandler
             ->addAssociation('order')
             ->addAssociation('order.currency')
             ->addAssociation('order.lineItems')
+            ->addAssociation('order.deliveries.shippingMethod')
             ->addAssociation('order.deliveries.shippingOrderAddress.country')
             ->addAssociation('order.billingAddress.country');
 
@@ -190,6 +198,21 @@ final class HostedPayment extends AbstractPaymentHandler
 
     private function canAuthorize(Summary $summary): bool
     {
-        return $summary->getReservedAmount() > 0;
+        return $summary->getReservedAmount() > 0 || $summary->getChargedAmount() > 0;
+    }
+
+    private function fetchStateTechnicalName(string $orderTransactionId, Context $context): string
+    {
+        $criteria = (new Criteria([$orderTransactionId]))
+                ->addAssociation('stateMachineState');
+
+        /** @var OrderTransactionEntity|null $orderTransaction */
+        $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->first();
+
+        if ($orderTransaction === null) {
+            throw PaymentException::invalidTransaction($orderTransactionId);
+        }
+
+        return $orderTransaction->getStateMachineState()->getTechnicalName();
     }
 }
