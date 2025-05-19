@@ -12,7 +12,7 @@ use Shopware\Core\System\Language\LanguageEntity;
 
 class LanguageProvider
 {
-    private const DEFALUT_LANGUAGE = 'en-GB';
+    private const DEFAULT_LANGUAGE = 'en-GB';
 
     /**
      * @param EntityRepository<LanguageCollection> $languageRepository
@@ -31,7 +31,7 @@ class LanguageProvider
         $language = $this->languageRepository->search($criteria, $context)->first();
 
         if ($language === null || $language->getLocale() === null) {
-            return self::DEFALUT_LANGUAGE;
+            return self::DEFAULT_LANGUAGE;
         }
 
         // make sure that all de-.. codes will go to de-DE etc.
@@ -47,13 +47,12 @@ class LanguageProvider
             'it' => 'it-IT',
             'lv' => 'lv-LV',
             'lt' => 'lt-LT',
-            'nb' => 'nb-NO',
-            'nn' => 'nb-NO',
+            'nb', 'nn' => 'nb-NO',
             'pl' => 'pl-PL',
             'es' => 'es-ES',
             'sk' => 'sk-SK',
             'sv' => 'sv-SE',
-            default => self::DEFALUT_LANGUAGE,
+            default => self::DEFAULT_LANGUAGE,
         };
     }
 }

@@ -18,6 +18,10 @@ use Shopware\Core\Framework\Uuid\Uuid;
 
 final readonly class PaymentMethodsInstaller implements PaymentMethodInstallerInterface
 {
+    public const NEXI_CHECKOUT_HOSTED_TECHNICAL_NAME = 'nexi_checkout_hosted';
+
+    public const NEXI_CHECKOUT_EMBEDDED_TECHNICAL_NAME = 'nexi_checkout_embedded';
+
     /**
      * @param EntityRepository<PaymentMethodCollection> $paymentMethodRepository
      */
@@ -35,7 +39,7 @@ final readonly class PaymentMethodsInstaller implements PaymentMethodInstallerIn
                 'handlerIdentifier' => HostedPayment::class,
                 'name' => 'Nexi Checkout Hosted',
                 'description' => 'Nexi Checkout Hosted',
-                'technicalName' => 'nexi_checkout_hosted',
+                'technicalName' => self::NEXI_CHECKOUT_HOSTED_TECHNICAL_NAME,
                 'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NexiCheckout::class, $context),
             ],
             [
@@ -43,7 +47,7 @@ final readonly class PaymentMethodsInstaller implements PaymentMethodInstallerIn
                 'handlerIdentifier' => EmbeddedPayment::class,
                 'name' => 'Nexi Checkout Embedded',
                 'description' => 'Nexi Checkout Embedded',
-                'technicalName' => 'nexi_checkout_embedded',
+                'technicalName' => self::NEXI_CHECKOUT_EMBEDDED_TECHNICAL_NAME,
                 'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NexiCheckout::class, $context),
             ],
         ];

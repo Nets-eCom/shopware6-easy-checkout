@@ -6,8 +6,8 @@ namespace Nexi\Checkout\RequestBuilder;
 
 use Nexi\Checkout\Administration\Model\ChargeData;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Helper\FormatHelper;
 use Nexi\Checkout\RequestBuilder\ChargeRequest\ItemsBuilder;
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
 use NexiCheckout\Model\Request\FullCharge;
 use NexiCheckout\Model\Request\PartialCharge;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;

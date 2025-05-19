@@ -14,6 +14,8 @@ use Symfony\Component\Routing\RouterInterface;
 class NotificationBuilder
 {
     private const WEBHOOK_NAMES = [
+        EventNameEnum::PAYMENT_CHECKOUT_COMPLETED,
+        EventNameEnum::PAYMENT_RESERVATION_CREATED_V2,
         EventNameEnum::PAYMENT_CHARGE_CREATED,
         EventNameEnum::PAYMENT_REFUND_COMPLETED,
         EventNameEnum::PAYMENT_CANCEL_CREATED,
@@ -39,10 +41,11 @@ class NotificationBuilder
     {
         $webhooks = [];
         $authorizationString = $this->configurationProvider->getWebhookAuthorizationHeader($salesChannelId);
+        $webhookUrl = $this->createWebhookUrl();
         foreach (self::WEBHOOK_NAMES as $eventName) {
             $webhooks[] = new Webhook(
                 $eventName->value,
-                $this->createWebhookUrl(),
+                $webhookUrl,
                 $authorizationString
             );
         }

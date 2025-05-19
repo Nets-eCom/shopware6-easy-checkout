@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Nexi\Checkout\RequestBuilder\ChargeRequest;
 
 use Nexi\Checkout\Administration\Model\ChargeData;
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Helper\FormatHelper;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\Shared\Order;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;

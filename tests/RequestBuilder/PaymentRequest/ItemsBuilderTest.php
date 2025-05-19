@@ -2,7 +2,7 @@
 
 namespace Nexi\Checkout\Tests\RequestBuilder\PaymentRequest;
 
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Helper\FormatHelper;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder;
 use NexiCheckout\Model\Request\Item;
 use PHPUnit\Framework\TestCase;
@@ -79,6 +79,41 @@ final class ItemsBuilderTest extends TestCase
         $this->assertEquals(299, $item3Array['grossTotalAmount']);
         $this->assertEquals(249, $item3Array['netTotalAmount']);
         $this->assertEquals(50, $item3Array['taxAmount']);
+    }
+
+    public function testItAllowNullShippingMethodName(): void
+    {
+        $orderEntity = new OrderEntity();
+        $orderEntity->setId('1234');
+        $orderEntity->setTaxStatus(CartPrice::TAX_STATE_GROSS);
+
+        $orderItems = new OrderLineItemCollection([
+            $this->createOrderItemEntity('item1', 10.0, 1, 2),
+        ]);
+        $orderEntity->setLineItems($orderItems);
+        $orderDelivery = $this->createOrderDeliveryEntity('shipping1', 2.99, 1, 0.5);
+        $orderDelivery->getShippingMethod()->setName(null);
+        $orderEntity->setDeliveries(new OrderDeliveryCollection([
+            $orderDelivery,
+        ]));
+        $orderEntity->setShippingCosts($orderDelivery->getShippingCosts());
+        $orderEntity->setShippingTotal(2.99);
+
+        $sut = new ItemsBuilder(new FormatHelper());
+
+        $result = $sut->createFromOrder($orderEntity);
+
+        $this->assertCount(2, $result);
+        $this->assertContainsOnlyInstancesOf(Item::class, $result);
+
+        $shippingArray = $result[1]->jsonSerialize();
+        $this->assertEquals('Shipping', $shippingArray['name']);
+        $this->assertEquals('shipping', $shippingArray['reference']);
+        $this->assertEquals(1, $shippingArray['quantity']);
+        $this->assertEquals(249, $shippingArray['unitPrice']);
+        $this->assertEquals(299, $shippingArray['grossTotalAmount']);
+        $this->assertEquals(249, $shippingArray['netTotalAmount']);
+        $this->assertEquals(50, $shippingArray['taxAmount']);
     }
 
     public function testItCreatesFromOrderTaxNetAndNoShippingCost(): void

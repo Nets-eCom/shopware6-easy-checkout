@@ -9,8 +9,8 @@ use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Core\Content\NexiCheckout\Event\RefundChargeSend;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Fetcher\PaymentFetcherInterface;
+use Nexi\Checkout\Helper\FormatHelper;
 use Nexi\Checkout\Order\OrderRefund;
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
 use Nexi\Checkout\RequestBuilder\RefundRequest;
 use Nexi\Checkout\Tests\Fixture\RetrievePaymentResultFixture;
 use NexiCheckout\Api\PaymentApi;
@@ -70,6 +70,7 @@ final class OrderRefundTest extends TestCase
             $this->createRefundChargeRequestBuilder(),
             $this->createMock(EntityRepository::class),
             $eventDispatcher,
+            new FormatHelper(),
             $this->createMock(LoggerInterface::class)
         );
 
@@ -118,6 +119,7 @@ final class OrderRefundTest extends TestCase
             $this->createRefundChargeRequestBuilder(),
             $this->createMock(EntityRepository::class),
             $eventDispatcher,
+            new FormatHelper(),
             $this->createMock(LoggerInterface::class)
         );
 
@@ -146,6 +148,7 @@ final class OrderRefundTest extends TestCase
             $this->createRefundChargeRequestBuilder(),
             $this->createMock(EntityRepository::class),
             $this->createStub(EventDispatcherInterface::class),
+            new FormatHelper(),
             $this->createMock(LoggerInterface::class)
         );
 
@@ -174,6 +177,7 @@ final class OrderRefundTest extends TestCase
             $this->createRefundChargeRequestBuilder(),
             $this->createMock(EntityRepository::class),
             $this->createStub(EventDispatcherInterface::class),
+            new FormatHelper(),
             $this->createMock(LoggerInterface::class)
         );
 
@@ -230,6 +234,7 @@ final class OrderRefundTest extends TestCase
             $this->createRefundChargeRequestBuilder(),
             $this->createMock(EntityRepository::class),
             $eventDispatcher,
+            new FormatHelper(),
             $this->createMock(LoggerInterface::class)
         );
 

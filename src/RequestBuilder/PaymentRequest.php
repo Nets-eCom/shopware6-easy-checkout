@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\RequestBuilder;
 
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Helper\FormatHelper;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilder;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\NotificationBuilder;
@@ -53,8 +53,7 @@ class PaymentRequest
 
     public function buildEmbedded(
         Cart $cart,
-        SalesChannelContext $salesChannelContext,
-        string $checkoutUrl
+        SalesChannelContext $salesChannelContext
     ): Payment {
         return new Payment(
             order: new Order(

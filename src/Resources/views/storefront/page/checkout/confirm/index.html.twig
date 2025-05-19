@@ -1,0 +1,37 @@
+{% sw_extends '@Storefront/storefront/page/checkout/confirm/index.html.twig' %}
+
+{% set details = page.extensions.nexiTransactionDetails %}
+
+{% set options = {
+    checkoutKey: details.checkoutKey,
+    paymentId: details.paymentId,
+    containerId: 'nexi-checkout',
+    language: details.language,
+    handlePaymentUrl: details.handlePaymentUrl,
+    targetPath: details.targetPath,
+} %}
+
+
+{% set shouldRender =
+    context.paymentMethod.technicalName == constant('Nexi\\Checkout\\Lifecycle\\PaymentMethodsInstaller::NEXI_CHECKOUT_EMBEDDED_TECHNICAL_NAME')
+    and page.order is null
+%}
+
+{% block page_checkout_confirm_product_table %}
+    {% if shouldRender %}
+        <div class="col-sm-12 nexi-checkout-wrapper">
+            <div class="card checkout-card">
+                <div class="card-body">
+                    <div class="card-title">
+                        {{ context.paymentMethod.name }}
+                    </div>
+                    <div id="nexi-checkout"></div>
+                </div>
+            </div>
+        </div>
+        <script src='{{ details.checkoutJsUrl }}' defer></script>
+        <template data-embedded-plugin data-embedded-plugin-options='{{ options|json_encode }}'></template>
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

@@ -19,7 +19,7 @@
         <service id="Nexi\Checkout\Handler\EmbeddedPayment">
             <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
             <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
-            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+            <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
             <argument type="service" id="order_transaction.repository"/>
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <argument type="service" id="monolog.logger.nexicheckout_channel"/>
@@ -48,11 +48,11 @@
             <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilder"/>
             <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder"/>
             <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\NotificationBuilder"/>
-            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+            <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
         </service>
 
         <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder">
-            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+            <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
         </service>
 
         <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\CustomerBuilder">
@@ -69,23 +69,23 @@
 
         <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\AddressBuilder"/>
 
-        <service id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+        <service id="Nexi\Checkout\Helper\FormatHelper"/>
 
         <service id="Nexi\Checkout\RequestBuilder\ChargeRequest">
-            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+            <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
             <argument type="service" id="Nexi\Checkout\RequestBuilder\ChargeRequest\ItemsBuilder"/>
         </service>
 
         <service id="Nexi\Checkout\RequestBuilder\ChargeRequest\ItemsBuilder">
-            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+            <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
         </service>
 
         <service id="Nexi\Checkout\RequestBuilder\RefundRequest">
-            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+            <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
         </service>
 
         <service id="Nexi\Checkout\RequestBuilder\CancelRequest">
-            <argument type="service" id="Nexi\Checkout\RequestBuilder\Helper\FormatHelper"/>
+            <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
         </service>
 
         <service id="Nexi\Checkout\Locale\LanguageProvider">
@@ -137,6 +137,7 @@
             <argument type="service" id="Nexi\Checkout\RequestBuilder\RefundRequest"/>
             <argument type="service" id="order_transaction.repository"/>
             <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
+            <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
             <argument type="service" id="monolog.logger.nexicheckout_channel"/>
         </service>
 
@@ -149,7 +150,7 @@
             <argument type="service" id="monolog.logger.nexicheckout_channel"/>
         </service>
 
-        <!-- ### Webhooks ### -->
+        <!-- ### Storefront Controller ### -->
         <service id="Nexi\Checkout\Storefront\Controller\WebhookController" public="true">
             <argument type="service" id="Nexi\Checkout\Security\WebhookVoter"/>
             <argument type="service" id="Nexi\Checkout\WebhookProcessor\WebhookProcessor"/>
@@ -160,6 +161,18 @@
             </call>
         </service>
 
+        <service id="Nexi\Checkout\Storefront\Controller\EmbeddedController" public="true">
+            <argument type="service" id="Shopware\Core\Checkout\Payment\SalesChannel\HandlePaymentMethodRoute" />
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
+            <argument type="service" id="order_transaction.repository"/>
+
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <!-- ### Webhooks ### -->
         <service id="Nexi\Checkout\Security\WebhookVoter">
             <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
             <argument type="service" id="request_stack"/>
@@ -168,6 +181,13 @@
 
         <service id="Nexi\Checkout\WebhookProcessor\WebhookProcessor">
             <argument type="tagged_iterator" tag="nexicheckout.webhook_processor"/>
+        </service>
+
+        <service id="Nexi\Checkout\WebhookProcessor\Processor\ReservationCreated">
+            <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <tag name="nexicheckout.webhook_processor" />
         </service>
 
         <service id="Nexi\Checkout\WebhookProcessor\Processor\ChargeCreated">
@@ -206,6 +226,10 @@
             <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest"/>
             <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
             <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="Nexi\Checkout\Locale\LanguageProvider"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
             <tag name="kernel.event_subscriber" />
         </service>
 

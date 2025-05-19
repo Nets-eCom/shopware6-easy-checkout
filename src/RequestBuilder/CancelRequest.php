@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\RequestBuilder;
 
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Helper\FormatHelper;
 use NexiCheckout\Model\Request\Cancel;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 
