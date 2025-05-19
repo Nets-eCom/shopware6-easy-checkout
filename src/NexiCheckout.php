@@ -10,6 +10,7 @@ use Nexi\Checkout\Lifecycle\PaymentMethodsActivator;
 use Nexi\Checkout\Lifecycle\PaymentMethodsInstaller;
 use Nexi\Checkout\Lifecycle\UserDataRemover;
 use Nexi\Checkout\Lifecycle\UserDataRemoverInterface;
+use Nexi\Checkout\Subscriber\EmbeddedCreatePaymentOnCheckoutSubscriber;
 use NexiCheckout\Factory\Provider\HttpClientConfigurationProvider;
 use Shopware\Core\Checkout\Payment\PaymentMethodDefinition;
 use Shopware\Core\Framework\Plugin;
@@ -140,9 +141,26 @@ class NexiCheckout extends Plugin
         // TODO: get values from SDK
         $container->setParameter('env(NEXI_CHECKOUT_API_LIVE_URL)', 'https://api.dibspayment.eu');
         $container->setParameter('env(NEXI_CHECKOUT_API_TEST_URL)', 'https://test.api.dibspayment.eu');
+        $container->setParameter(
+            'env(NEXI_CHECKOUT_JS_LIVE_URL)',
+            'https://checkout.dibspayment.eu/v1/checkout.js?v=1'
+        );
+        $container->setParameter(
+            'env(NEXI_CHECKOUT_JS_TEST_URL)',
+            'https://test.checkout.dibspayment.eu/v1/checkout.js?v=1'
+        );
 
         $container
             ->getDefinition(HttpClientConfigurationProvider::class)
-            ->setArguments(['%env(NEXI_CHECKOUT_API_LIVE_URL)%', '%env(NEXI_CHECKOUT_API_TEST_URL)%']);
+            ->setArguments(
+                [
+                    '%env(NEXI_CHECKOUT_API_LIVE_URL)%',
+                    '%env(NEXI_CHECKOUT_API_TEST_URL)%',
+                ]
+            );
+
+        $subscriberDefinition = $container->getDefinition(EmbeddedCreatePaymentOnCheckoutSubscriber::class);
+        $subscriberDefinition->setArgument('$liveCheckoutJsUrl', '%env(NEXI_CHECKOUT_JS_LIVE_URL)%');
+        $subscriberDefinition->setArgument('$testCheckoutJsUrl', '%env(NEXI_CHECKOUT_JS_TEST_URL)%');
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Nexi\Checkout\RequestBuilder\Helper;
+namespace Nexi\Checkout\Helper;
 
 class FormatHelper
 {
@@ -26,5 +26,10 @@ class FormatHelper
     public function priceToInt(float $price): int
     {
         return (int) round($price * 100);
+    }
+
+    public function priceToFloat(int $price): float
+    {
+        return (float) number_format($price / 100, 2, '.', '');
     }
 }

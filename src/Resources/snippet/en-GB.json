@@ -1,0 +1,7 @@
+{
+    "nexi-checkout": {
+        "exception" : {
+            "missingTransaction": "Missing transaction for a given payment."
+        }
+    }
+}

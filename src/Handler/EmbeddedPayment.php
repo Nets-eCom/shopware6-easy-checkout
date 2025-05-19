@@ -6,11 +6,12 @@ namespace Nexi\Checkout\Handler;
 
 use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Helper\FormatHelper;
+use Nexi\Checkout\Subscriber\EmbeddedCreatePaymentOnCheckoutSubscriber;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
-use NexiCheckout\Model\Result\RetrievePayment\Payment;
+use NexiCheckout\Model\Request\Shared\Order;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
@@ -91,7 +92,9 @@ final class EmbeddedPayment extends AbstractPaymentHandler
         }
 
         $cartPrice = $this->formatHelper->priceToInt($cart->getPrice()->getTotalPrice());
-        if ($cartPrice !== $payment->getOrderDetails()->getAmount()) {
+
+        // Empty cart exception is handled while creating the order
+        if ($cartPrice > 0 && $cartPrice !== $payment->getOrderDetails()->getAmount()) {
             $this->logger->error('Embedded payment validate price mismatch', [
                 'paymentId' => $paymentId,
                 'cart' => $cart,
@@ -129,23 +132,36 @@ final class EmbeddedPayment extends AbstractPaymentHandler
 
         $paymentId = $validateStruct->get('paymentId');
 
+        $session = $request->getSession();
+
+        $order = $session->get(EmbeddedCreatePaymentOnCheckoutSubscriber::SESSION_NEXI_PAYMENT_ORDER);
+
+        if (!$order instanceof Order) {
+            throw PaymentException::capturePreparedException(
+                $paymentId,
+                'missing nexi payment order'
+            );
+        }
+
         $data = [
             'id' => $transactionId,
             'customFields' => [
                 OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => $paymentId,
-                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_ORDER => [], // @TODO: add order from createPayment request
+                OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_ORDER => $order,
                 OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_REFUNDED => [],
             ],
         ];
 
         $this->orderTransactionRepository->update([$data], $context);
 
+        $session->remove(EmbeddedCreatePaymentOnCheckoutSubscriber::SESSION_NEXI_PAYMENT_ORDER);
+
         $this->orderTransactionStateHandler->process(
             $transactionId,
             $context
         );
 
-        $this->logger->info('Embedded payment created successfully', [
+        $this->logger->info('Embedded payment order created successfully', [
             'paymentId' => $paymentId,
         ]);
 

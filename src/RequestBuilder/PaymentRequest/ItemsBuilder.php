@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\RequestBuilder\PaymentRequest;
 
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Helper\FormatHelper;
 use NexiCheckout\Model\Request\Item;
 use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
@@ -38,7 +38,7 @@ class ItemsBuilder
 
         if ($order->getShippingTotal() > 0) {
             $items[] = $this->createShippingItem(
-                $order->getDeliveries()->getShippingMethods()->first()->getName(),
+                $order->getDeliveries()->getShippingMethods()->first()->getName() ?? 'Shipping',
                 $order->getShippingCosts(),
                 $order->getShippingTotal(),
                 $order->getTaxStatus()
@@ -64,7 +64,7 @@ class ItemsBuilder
 
         if ($cart->getShippingCosts()->getTotalPrice() > 0) {
             $items[] = $this->createShippingItem(
-                $cart->getDeliveries()->first()->getShippingMethod()->getName(),
+                $cart->getDeliveries()->first()->getShippingMethod()->getName() ?? 'Shipping',
                 $cart->getShippingCosts(),
                 $cart->getShippingCosts()->getTotalPrice(),
                 $cart->getPrice()->getTaxStatus()

@@ -4,8 +4,8 @@ namespace Nexi\Checkout\Tests\RequestBuilder\ChargeRequest;
 
 use Nexi\Checkout\Administration\Model\ChargeData;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
+use Nexi\Checkout\Helper\FormatHelper;
 use Nexi\Checkout\RequestBuilder\ChargeRequest\ItemsBuilder;
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
 use NexiCheckout\Model\Request\Item;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;

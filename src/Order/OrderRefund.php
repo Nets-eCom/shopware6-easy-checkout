@@ -10,6 +10,7 @@ use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Core\Content\NexiCheckout\Event\RefundChargeSend;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Fetcher\PaymentFetcherInterface;
+use Nexi\Checkout\Helper\FormatHelper;
 use Nexi\Checkout\Order\Exception\OrderChargeRefundExceeded;
 use Nexi\Checkout\Order\Exception\OrderRefundException;
 use Nexi\Checkout\RequestBuilder\RefundRequest;
@@ -42,6 +43,7 @@ class OrderRefund
         private readonly RefundRequest $refundRequest,
         private readonly EntityRepository $orderTransactionRepository,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly FormatHelper $formatHelper,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -119,8 +121,6 @@ class OrderRefund
         if (!$transactions instanceof OrderTransactionCollection) {
             throw new \LogicException('No order transactions found');
         }
-
-        $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
 
         /** @var OrderTransactionEntity $transaction */
         foreach ($transactions as $transaction) {
@@ -220,16 +220,16 @@ class OrderRefund
                 return [
                     $charge->getChargeId() => [
                         'amount' => $charge->getAmount(),
-                        'items' => array_map(fn (Item $chargeItem): ChargeItem => new ChargeItem(
+                        'items' => array_map(fn (Item $orderItem): ChargeItem => new ChargeItem(
                             $charge->getChargeId(),
-                            $chargeItem->getName(),
-                            $chargeItem->getQuantity(),
-                            $chargeItem->getUnit(),
-                            $chargeItem->getUnitPrice(),
-                            $chargeItem->getGrossTotalAmount(),
-                            $chargeItem->getNetTotalAmount(),
-                            $chargeItem->getReference(),
-                            $chargeItem->getTaxRate(),
+                            $orderItem->getName(),
+                            $orderItem->getQuantity(),
+                            $orderItem->getUnit(),
+                            $this->formatHelper->priceToFloat($orderItem->getUnitPrice()),
+                            $this->formatHelper->priceToFloat($orderItem->getGrossTotalAmount()),
+                            $this->formatHelper->priceToFloat($orderItem->getNetTotalAmount()),
+                            $orderItem->getReference(),
+                            $orderItem->getTaxRate(),
                         ), $charge->getOrderItems()),
                     ],
                 ];

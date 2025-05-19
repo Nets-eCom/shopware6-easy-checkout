@@ -6,7 +6,7 @@ namespace Nexi\Checkout\RequestBuilder;
 
 use Nexi\Checkout\Administration\Model\ChargeItem;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Helper\FormatHelper;
 use NexiCheckout\Model\Request\FullRefundCharge;
 use NexiCheckout\Model\Request\Item;
 use NexiCheckout\Model\Request\PartialRefundCharge;

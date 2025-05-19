@@ -7,9 +7,11 @@ namespace Nexi\Checkout\Tests\Handler;
 use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Handler\EmbeddedPayment;
-use Nexi\Checkout\RequestBuilder\Helper\FormatHelper;
+use Nexi\Checkout\Helper\FormatHelper;
+use Nexi\Checkout\Subscriber\EmbeddedCreatePaymentOnCheckoutSubscriber;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
+use NexiCheckout\Model\Request\Shared\Order;
 use NexiCheckout\Model\Result\RetrievePayment\OrderDetails;
 use NexiCheckout\Model\Result\RetrievePayment\Payment;
 use NexiCheckout\Model\Result\RetrievePaymentResult;
@@ -28,6 +30,8 @@ use Shopware\Core\Framework\Struct\ArrayStruct;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\Test\Generator;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 
 final class EmbeddedPaymentTest extends TestCase
 {
@@ -83,6 +87,8 @@ final class EmbeddedPaymentTest extends TestCase
         $salesChannelContext = Generator::generateSalesChannelContext();
         $context = $salesChannelContext->getContext();
 
+        $nexiOrderRequest = new Order([], '', 1);
+
         $orderTransactionRepository = $this->createMock(EntityRepository::class);
         $orderTransactionRepository
             ->expects($this->once())
@@ -93,7 +99,7 @@ final class EmbeddedPaymentTest extends TestCase
                         'id' => self::ORDER_TRANSACTION_ID,
                         'customFields' => [
                             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => self::PAYMENT_ID,
-                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_ORDER => [],
+                            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_ORDER => $nexiOrderRequest,
                             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_REFUNDED => [],
                         ],
                     ],
@@ -126,13 +132,21 @@ final class EmbeddedPaymentTest extends TestCase
             $this->createStub(LoggerInterface::class),
         );
 
+        $session = new Session(new MockArraySessionStorage());
+        $session->set(EmbeddedCreatePaymentOnCheckoutSubscriber::SESSION_NEXI_PAYMENT_ORDER, $nexiOrderRequest);
+
+        $request = new Request();
+        $request->setSession($session);
+
         $sut->pay(
-            new Request(),
+            $request,
             new PaymentTransactionStruct(self::ORDER_TRANSACTION_ID, null),
             $context,
             new ArrayStruct([
                 'paymentId' => self::PAYMENT_ID,
             ])
         );
+
+        $this->assertNotInstanceOf(Order::class, $session->get(EmbeddedCreatePaymentOnCheckoutSubscriber::SESSION_NEXI_PAYMENT_ORDER));
     }
 }
