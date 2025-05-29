@@ -25,10 +25,10 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions;
 use Shopware\Core\System\StateMachine\StateMachineRegistry;
 use Shopware\Core\System\StateMachine\Transition;
-use Shopware\Storefront\Framework\Routing\Router;
 use Swag\CustomizedProducts\Core\Checkout\CustomizedProductsCartDataCollector;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 class CheckoutService
 {
@@ -61,7 +61,7 @@ class CheckoutService
 
     private EntityRepository $netsApiRepository;
 
-    private Router $router;
+    private RouterInterface $router;
 
     public function __construct(
         EasyApiService $easyApiService,
@@ -71,7 +71,7 @@ class CheckoutService
         RequestStack $requestStack,
         StateMachineRegistry $machineRegistry,
         EntityRepository $netsApiRepository,
-        Router $router
+        RouterInterface $router
     ) {
         $this->easyApiService = $easyApiService;
         $this->configService = $configService;
