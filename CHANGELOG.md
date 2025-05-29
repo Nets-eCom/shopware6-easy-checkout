@@ -1,14 +1,13 @@
 # NETS A/S - Shopware 6 Payment Module
 ============================================
 
-|Module | Nets Easy Payment Module for Shopware 6
-|------|----------
-|Author | `Nets eCom`
-|Prefix | `EASY-SW6`
-|Shop Version | `6.4.x`, `6.5.x`
-|Version | `1.4.14`
-|Guide | https://developers.nets.eu/nets-easy/en-EU/docs/nets-easy-for-shopware/nets-easy-for-shopware-shopware-6/
-|Github | https://github.com/Nets-eCom/shopware6-easy-checkout
+| Module         | Nets Easy Payment Module for Shopware 6.4 & 6.5                                            |
+|----------------|--------------------------------------------------------------------------------------------|
+| Shop Version   | `6.4.x`, `6.5.x`                                                                           |
+| Plugin Version | `1.4.14`                                                                                   |
+| PHP Version    | `8.1 - 8.3`                                                                                |
+| Guide          | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/ |
+| Github         | https://github.com/Nets-eCom/shopware6-easy-checkout                                       |
 
 ## CHANGELOG
 
