@@ -6,7 +6,7 @@ Enhance your Shopware store with the Nets Easy Checkout, a comprehensive solutio
 
 ## Requirements
 
-- **Shopware Version:** Compatible with Shopware 6.6.x in plugin versions 1.5.x.
+Up-to-date version compatibility can be found in the [changelog](https://github.com/Nets-eCom/shopware6-easy-checkout/blob/master/CHANGELOG.md).
 
 > Note: For Shopware versions 6.4.x and 6.5.x (e.g., 6.4.1, 6.5.2), please use version 1.4.x.
 
