@@ -4,12 +4,16 @@
 | Module         | Nets Easy Payment Module for Shopware 6                                                    |
 |----------------|--------------------------------------------------------------------------------------------|
 | Shop Version   | `6.6.x`                                                                                    |
-| Plugin Version | `1.5.9`                                                                                    |
+| Plugin Version | `1.5.10`                                                                                    |
 | PHP Version    | `8.2+`                                                                                     |
 | Guide          | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/ |
 | Github         | https://github.com/Nets-eCom/shopware6-easy-checkout                                       |
 
 ## CHANGELOG
+
+### Version 1.5.10 - Released 2025-05-29
+- Fix: Use router interface type
+- Update: New changelog structure
 
 ### Version 1.5.9 - Released 2025-04-16
 
