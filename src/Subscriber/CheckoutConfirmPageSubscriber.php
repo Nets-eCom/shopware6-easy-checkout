@@ -14,11 +14,11 @@ use Nets\Checkout\Service\Easy\LanguageProvider;
 use Nets\Checkout\Storefront\Controller\EmbeddedCheckoutController;
 use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Storefront\Framework\Routing\Router;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\RouterInterface;
 
 class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 {
@@ -30,7 +30,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
 
     private LanguageProvider $languageProvider;
 
-    private Router $router;
+    private RouterInterface $router;
 
     private EasyApiService $apiService;
 
@@ -39,7 +39,7 @@ class CheckoutConfirmPageSubscriber implements EventSubscriberInterface
         CheckoutService $checkoutService,
         RequestStack    $requestStack,
         LanguageProvider $languageProvider,
-        Router $router,
+        RouterInterface $router,
         EasyApiService $apiService
     ) {
         $this->configService = $configService;
