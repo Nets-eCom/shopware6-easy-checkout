@@ -21,7 +21,7 @@
     {% endblock %}
 
     <template v-if="getTransactionId(currentOrder.transactions.first()) != null">
-        <div class="capture-controls" v-if="canCapture(orderState)">
+        <div class="capture-controls" v-if="canCapture(transactionState.technicalName)">
             <div style="font-weight: 600; margin: 20px 0 8px 5px">
                 {{ $tc('nets-checkout.api-actions-capture') }}
             </div>
@@ -32,7 +32,7 @@
             </sw-button-process>
         </div>
 
-        <div class="refund-controls" v-if="canRefund(orderState)">
+        <div class="refund-controls" v-if="canRefund(transactionState.technicalName)">
             <div style="font-weight: 600; margin: 20px 0 8px 5px">
                 {{ $tc('nets-checkout.api-actions-refund') }}
             </div>

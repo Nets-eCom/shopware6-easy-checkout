@@ -22,10 +22,19 @@ Shopware.Component.override('sw-order-user-card', {
             amountAvailableForRefunding: 0,
             captureButtonLoading: false,
             refundButtonLoading: false,
-            orderState: null,
+            transactionState: null,
             refundPendingStatus:false,
 			paymentMethod : null
         };
+    },
+
+    watch: {
+        transactionState(newState) {
+            const transaction = this.currentOrder.transactions.first()
+            if (transaction.stateMachineState.technicalName !== newState.technicalName) {
+                transaction.stateMachineState = newState
+            }
+        }
     },
 
     beforeMount(){
