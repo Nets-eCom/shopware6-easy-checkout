@@ -104,7 +104,7 @@ class APIController extends StorefrontController
             return $this->json([
                 'amountAvailableForCapturing' => 0,
                 'amountAvailableForRefunding' => 0,
-                'orderState' => $transactionStateTechnicalName,
+                'transactionState' => $transaction->getStateMachineState(),
                 'refundPendingStatus' => false,
                 'paymentMethod' => $paymentMethod,
                 'refunded' => $refundedAmount,
@@ -112,11 +112,11 @@ class APIController extends StorefrontController
         }
 
         if ($orderStateTechnicalName === OrderStates::STATE_CANCELLED) {
-            if ($transactionStateTechnicalName !== OrderStates::STATE_CANCELLED) {
+            if ($transactionStateTechnicalName !== OrderTransactionStates::STATE_CANCELLED) {
                 $this->transHandler->cancel($transactionId, $context);
             }
 
-            if ($transactionStateTechnicalName === OrderStates::STATE_CANCELLED) {
+            if ($transactionStateTechnicalName === OrderTransactionStates::STATE_CANCELLED) {
                 if (empty($cancelledAmount)) {
                     $cancelBody = [
                         'amount' => $reservedAmount,
@@ -273,10 +273,13 @@ class APIController extends StorefrontController
                 }
             }
 
+            // get fresh OrderTransactionEntity because transHandler changed it state
+            $reloadedTransaction = $this->orderDataReader->getOrderTransactionEntityByOrderId($context, $orderId);
+
             return new JsonResponse([
                 'amountAvailableForCapturing' => $amountAvailableForCapturing,
                 'amountAvailableForRefunding' => ($chargedAmount - $refundedAmount) / 100,
-                'orderState'                  => $transactionStateTechnicalName,
+                'transactionState'            => $reloadedTransaction->getStateMachineState(),
                 'refundPendingStatus'         => $refundPendingStatus,
                 'paymentMethod'               => $paymentMethod,
                 'refunded'                    => $refundedAmount,

@@ -50,7 +50,6 @@ class NetsCheckoutApiPaymentService extends ApiService {
         {
           params: { transaction },
         },
-
         {
           headers: this.getBasicHeaders(),
         },
