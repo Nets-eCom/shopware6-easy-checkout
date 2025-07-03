@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Nets\Checkout\Service\DataReader;
 
-use Shopware\Core\Checkout\Order\OrderException;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
+use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -40,5 +41,19 @@ class OrderDataReader
             ->addAssociation('transactions.stateMachineState');
 
         return $this->orderRepository->search($criteria, $context)->first();
+    }
+
+    public function getOrderTransactionEntityByOrderId(Context $context, string $orderId): OrderTransactionEntity
+    {
+        $criteria = new Criteria([
+            $orderId,
+        ]);
+        $criteria->addAssociation('transactions.paymentMethod')
+            ->addAssociation('transactions.stateMachineState');
+
+        /** @var OrderEntity */
+        $orderEntity = $this->orderRepository->search($criteria, $context)->first();
+
+        return $orderEntity->getTransactions()->first();
     }
 }

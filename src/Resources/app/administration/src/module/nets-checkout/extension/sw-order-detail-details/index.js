@@ -22,10 +22,18 @@ Shopware.Component.override('sw-order-detail-details', {
             amountAvailableForRefunding: 0,
             captureButtonLoading: false,
             refundButtonLoading: false,
-            orderState: null,
+            transactionState: null,
             refundPendingStatus:false,
-			paymentMethod : null
+            paymentMethod: null
         };
+    },
+
+    watch: {
+        transactionState(newState) {
+            if (this.transaction.stateMachineState.technicalName !== newState.technicalName) {
+                this.transaction.stateMachineState = newState
+            }
+        }
     },
 
     beforeMount(){
