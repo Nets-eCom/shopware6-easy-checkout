@@ -42,7 +42,7 @@ Mixin.register("nets-checkout-order", {
             me.amountAvailableForCapturing = response.amountAvailableForCapturing;
             me.amountAvailableForRefunding = response.amountAvailableForRefunding;
             me.isLoading = false;
-            me.orderState = response.orderState;
+            me.transactionState = response.transactionState;
             me.refundPendingStatus = response.refundPendingStatus;
             me.paymentMethod = response.paymentMethod;
           })
@@ -79,7 +79,6 @@ Mixin.register("nets-checkout-order", {
           });
           me.isLoading = false;
           this.getSummaryAmounts(order);
-          window.location.reload(true);
         })
         .catch((errorResponse) => {
           this.createNotificationError({
@@ -104,7 +103,6 @@ Mixin.register("nets-checkout-order", {
           });
           me.isLoading = false;
           this.getSummaryAmounts(order);
-          window.location.reload(true);
         })
         .catch((errorResponse) => {
           this.createNotificationError({
