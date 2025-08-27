@@ -60,19 +60,7 @@ $text-color-dark: #8599ad;
   &__action-buttons {
     display: flex;
     justify-content: flex-end;
-    align-items: center;
-    flex-wrap: wrap;
-    padding-top: 0.95rem;
-    border-top: 1px $border-color solid;
-
-    @include respond-to(lg) {
-      padding-top: 1.85rem;
-    }
-
-    .sw-button:focus-visible {
-      outline: 2px solid $focus-outline-color;
-      outline-offset: 2px;
-    }
+    width: 100%
   }
 }
 

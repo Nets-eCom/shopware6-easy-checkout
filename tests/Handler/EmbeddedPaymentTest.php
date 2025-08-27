@@ -8,6 +8,7 @@ use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Handler\EmbeddedPayment;
 use Nexi\Checkout\Helper\FormatHelper;
+use Nexi\Checkout\Order\OrderReferenceUpdate;
 use Nexi\Checkout\Subscriber\EmbeddedCreatePaymentOnCheckoutSubscriber;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
@@ -25,7 +26,10 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEnti
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\Struct\ArrayStruct;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\Test\Generator;
@@ -66,6 +70,7 @@ final class EmbeddedPaymentTest extends TestCase
             new FormatHelper(),
             $this->createStub(EntityRepository::class),
             $this->createStub(OrderTransactionStateHandler::class),
+            $this->createStub(OrderReferenceUpdate::class),
             $this->createStub(LoggerInterface::class),
         );
 
@@ -123,12 +128,33 @@ final class EmbeddedPaymentTest extends TestCase
             'nexi_checkout_payment_id' => self::PAYMENT_ID,
         ]);
 
+        $orderTransactionRepository
+            ->expects($this->once())
+            ->method('search')
+            ->willReturn(
+                new EntitySearchResult(
+                    OrderTransactionEntity::class,
+                    1,
+                    new EntityCollection([$orderTransaction]),
+                    null,
+                    new Criteria([self::ORDER_TRANSACTION_ID]),
+                    $context
+                )
+            );
+
+        $orderReferenceUpdate = $this->createMock(OrderReferenceUpdate::class);
+        $orderReferenceUpdate
+            ->expects($this->once())
+            ->method('updateReferenceForTransaction')
+            ->with($orderTransaction);
+
         $sut = new EmbeddedPayment(
             $this->createStub(PaymentApiFactory::class),
             $this->createStub(ConfigurationProvider::class),
             new FormatHelper(),
             $orderTransactionRepository,
             $orderTransactionStateHandler,
+            $orderReferenceUpdate,
             $this->createStub(LoggerInterface::class),
         );
 

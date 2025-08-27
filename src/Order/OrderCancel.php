@@ -71,7 +71,7 @@ class OrderCancel
             try {
                 $paymentApi->cancel(
                     $paymentId,
-                    $this->requestBuilder->build($transaction)
+                    $payload
                 );
             } catch (PaymentApiException $e) {
                 $this->logger->error('Cancel request failed', [

@@ -7,6 +7,8 @@ namespace Nexi\Checkout\Handler;
 use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Helper\FormatHelper;
+use Nexi\Checkout\Order\Exception\OrderReferenceUpdateException;
+use Nexi\Checkout\Order\OrderReferenceUpdate;
 use Nexi\Checkout\Subscriber\EmbeddedCreatePaymentOnCheckoutSubscriber;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
@@ -15,6 +17,7 @@ use NexiCheckout\Model\Request\Shared\Order;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\PaymentHandlerType;
@@ -22,6 +25,7 @@ use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\PaymentException;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Struct\ArrayStruct;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
@@ -39,6 +43,7 @@ final class EmbeddedPayment extends AbstractPaymentHandler
         private readonly FormatHelper $formatHelper,
         private readonly EntityRepository $orderTransactionRepository,
         private readonly OrderTransactionStateHandler $orderTransactionStateHandler,
+        private readonly OrderReferenceUpdate $orderReferenceUpdate,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -165,6 +170,16 @@ final class EmbeddedPayment extends AbstractPaymentHandler
             'paymentId' => $paymentId,
         ]);
 
+        $transactionEntity = $this->fetchOrderTransaction($transactionId, $context);
+
+        try {
+            $this->orderReferenceUpdate->updateReferenceForTransaction($transactionEntity);
+        } catch (OrderReferenceUpdateException $orderReferenceUpdateException) {
+            $this->logger->info('Update reference information failed', [
+                'paymentId' => $paymentId,
+            ]);
+        }
+
         return null;
     }
 
@@ -174,5 +189,21 @@ final class EmbeddedPayment extends AbstractPaymentHandler
             $this->configurationProvider->getSecretKey($salesChannelId),
             $this->configurationProvider->isLiveMode($salesChannelId),
         );
+    }
+
+    private function fetchOrderTransaction(
+        string $transactionId,
+        Context $context
+    ): ?OrderTransactionEntity {
+        return $this->orderTransactionRepository
+            ->search(
+                (new Criteria([$transactionId]))
+                    ->addAssociations(
+                        [
+                            'order',
+                        ]
+                    ),
+                $context
+            )->first();
     }
 }

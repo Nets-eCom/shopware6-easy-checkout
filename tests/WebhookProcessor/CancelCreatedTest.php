@@ -26,7 +26,7 @@ final class CancelCreatedTest extends TestCase
     {
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects($this->atLeast(2))->method('info')->with($this->isType('string'));
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler
@@ -56,7 +56,7 @@ final class CancelCreatedTest extends TestCase
         $logger->expects($this->atLeast(2))->method('info')->with($this->isType('string'));
 
         $webhook = $this->createCancelCreatedWebhookEvent($this->createCancelCreatedData('123'));
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler
@@ -99,7 +99,7 @@ final class CancelCreatedTest extends TestCase
             $this->createMock(LoggerInterface::class)
         );
 
-        $sut->process($cancelCreatedModel, Generator::createSalesChannelContext());
+        $sut->process($cancelCreatedModel, Generator::generateSalesChannelContext());
     }
 
     public function testItSupportsCancelCreatedWebhook(): void

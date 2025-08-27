@@ -14,6 +14,8 @@ use Symfony\Component\Routing\RouterInterface;
 
 final readonly class CheckoutBuilder
 {
+    public const CANCEL_PARAMETER_NAME = 'cancel';
+
     public function __construct(
         private ConfigurationProvider $configurationProvider,
         private CustomerBuilder $customerBuilder,
@@ -28,7 +30,7 @@ final readonly class CheckoutBuilder
     ): HostedCheckout {
         return new HostedCheckout(
             $returnUrl,
-            $this->createCancelUrl(),
+            $this->createCancelUrl($returnUrl),
             $this->configurationProvider->getTermsUrl($salesChannelId),
             $this->configurationProvider->getMerchantTermsUrl($salesChannelId),
             $this->customerBuilder->createFromOrder($order),
@@ -51,9 +53,9 @@ final readonly class CheckoutBuilder
         );
     }
 
-    private function createCancelUrl(): string
+    private function createCancelUrl(string $returnUrl): string
     {
-        return $this->router->generate('frontend.account.order.page', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        return \sprintf('%s&%s=1', $returnUrl, self::CANCEL_PARAMETER_NAME);
     }
 
     private function createCheckoutUrl(): string

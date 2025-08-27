@@ -12,6 +12,7 @@
         <input-field type="password">
             <name>liveSecretKey</name>
             <label>Live secret key</label>
+            <required>true</required>
             <placeholder>00000000000000000000000000000000</placeholder>
             <helpText>All keys can be found in : Nexi Easy Administration > Company > Integration</helpText>
             <helpText lang="de-DE">
@@ -29,16 +30,19 @@
         </input-field>
         <input-field type="password">
             <name>liveCheckoutKey</name>
+            <required>true</required>
             <label>Live checkout key</label>
             <placeholder>00000000000000000000000000000000</placeholder>
         </input-field>
         <input-field type="password">
             <name>testSecretKey</name>
+            <required>true</required>
             <label>Test secret key</label>
             <placeholder>00000000000000000000000000000000</placeholder>
         </input-field>
         <input-field type="password">
             <name>testCheckoutKey</name>
+            <required>true</required>
             <label>Test checkout key</label>
             <placeholder>00000000000000000000000000000000</placeholder>
         </input-field>
@@ -94,8 +98,9 @@
                 Velg om du vil belaste betalinger i testmiljø eller live produksjonsmiljø
             </helpText>
         </input-field>
-        <input-field>
+        <input-field type="url">
             <name>termsUrl</name>
+            <required>true</required>
             <label>Terms Url</label>
             <label lang="de-DE">Geschäftsbedingungen URL</label>
             <label lang="da-DK">Handelsbetingelser URL</label>
@@ -113,7 +118,7 @@
             <helpText lang="nb-NO">Vennligst sett inn den fullstendige URL på vilkårssiden</helpText>
             <defaultValue>https://yoursite.com/terms</defaultValue>
         </input-field>
-        <input-field>
+        <input-field type="url">
             <name>merchantTermsUrl</name>
             <label>Merchant Terms Url</label>
             <label lang="de-DE">Geschäftsbedingungen URL</label>

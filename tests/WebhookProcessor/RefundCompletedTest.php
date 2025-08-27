@@ -34,7 +34,7 @@ final class RefundCompletedTest extends TestCase
         $paymentFetcher = $this->createPaymentFetcher(
             $this->createPayment(true)
         );
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler
@@ -70,7 +70,7 @@ final class RefundCompletedTest extends TestCase
         $webhook = $this->createRefundCompletedWebhookEvent('foo');
         $payment = $this->createPayment(false);
         $paymentFetcher = $this->createPaymentFetcher($payment);
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler
@@ -115,7 +115,7 @@ final class RefundCompletedTest extends TestCase
             $this->createMock(LoggerInterface::class)
         );
 
-        $sut->process($refundCompletedModel, Generator::createSalesChannelContext());
+        $sut->process($refundCompletedModel, Generator::generateSalesChannelContext());
     }
 
     public function testItSupportsRefundCompletedWebhook(): void
@@ -142,7 +142,7 @@ final class RefundCompletedTest extends TestCase
         $paymentFetcher = $this->createPaymentFetcher(
             $this->createPayment(true)
         );
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler

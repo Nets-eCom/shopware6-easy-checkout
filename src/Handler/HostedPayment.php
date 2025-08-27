@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Handler;
 
+use Nexi\Checkout\Administration\Exception\WrongConfigurationException;
 use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Locale\LanguageProvider;
 use Nexi\Checkout\RequestBuilder\PaymentRequest;
+use Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilder;
 use NexiCheckout\Api\Exception\PaymentApiException;
+use NexiCheckout\Api\Exception\UnauthorizedApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
-use NexiCheckout\Model\Result\RetrievePayment\Summary;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -26,8 +29,10 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\StateMachine\Exception\IllegalTransitionException;
+use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 
 final class HostedPayment extends AbstractPaymentHandler
 {
@@ -59,7 +64,23 @@ final class HostedPayment extends AbstractPaymentHandler
         $transactionId = $transaction->getOrderTransactionId();
         $transactionEntity = $this->fetchOrderTransaction($transactionId, $context);
         $salesChannelId = $transactionEntity->getOrder()->getSalesChannelId();
-        $paymentApi = $this->createPaymentApi($salesChannelId);
+        try {
+            $paymentApi = $this->createPaymentApi($salesChannelId);
+        } catch (WrongConfigurationException $wrongConfigurationException) {
+            $this->logger->error('Hosted payment error - wrong configuration', [
+                'transactionId' => $transactionId,
+                'exception' => $wrongConfigurationException,
+            ]);
+            if ($request->hasSession() && $request->getSession() instanceof FlashBagAwareSessionInterface) {
+                $request->getSession()->getFlashBag()->add(StorefrontController::DANGER, 'Wrong payment configuration - contact with shop administrator!');
+            }
+
+            throw PaymentException::asyncProcessInterrupted(
+                $transactionId,
+                $wrongConfigurationException->getMessage(),
+                $wrongConfigurationException
+            );
+        }
 
         try {
             $paymentRequest = $this->paymentRequest->buildHosted(
@@ -69,6 +90,17 @@ final class HostedPayment extends AbstractPaymentHandler
             );
 
             $payment = $paymentApi->createHostedPayment($paymentRequest);
+        } catch (UnauthorizedApiException $unauthorizedApiException) {
+            $this->logger->error('Hosted payment create unauthorized error', [
+                'request' => $paymentRequest,
+                'exception' => $unauthorizedApiException,
+            ]);
+
+            throw PaymentException::asyncProcessInterrupted(
+                $transactionId,
+                $unauthorizedApiException->getMessage(),
+                $unauthorizedApiException
+            );
         } catch (PaymentApiException $paymentApiException) {
             $this->logger->error('Hosted payment create error', [
                 'request' => $paymentRequest,
@@ -115,11 +147,34 @@ final class HostedPayment extends AbstractPaymentHandler
             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
         );
 
+        if ($request->query->getBoolean(CheckoutBuilder::CANCEL_PARAMETER_NAME)) {
+            $this->logger->info('Hosted payment canceled by customer', [
+                'paymentId' => $paymentId,
+            ]);
+
+            throw PaymentException::customerCanceled(
+                $transaction->getOrderTransactionId(),
+                'Customer was redirected to cancel url from Nexi payment'
+            );
+        }
+
         $this->logger->info('Hosted payment finalize started', [
             'paymentId' => $paymentId,
         ]);
 
-        $paymentApi = $this->createPaymentApi($orderTransaction->getOrder()->getSalesChannelId());
+        try {
+            $paymentApi = $this->createPaymentApi($orderTransaction->getOrder()->getSalesChannelId());
+        } catch (WrongConfigurationException $wrongConfigurationException) {
+            $this->logger->error('Wrong plugin configuration', [
+                'paymentId' => $paymentId,
+                'exception' => $wrongConfigurationException,
+            ]);
+            throw PaymentException::asyncFinalizeInterrupted(
+                $orderTransaction->getId(),
+                'Couldn\'t finalize transaction',
+                $wrongConfigurationException
+            );
+        }
 
         try {
             $payment = $paymentApi->retrievePayment((string) $paymentId)->getPayment();
@@ -136,9 +191,7 @@ final class HostedPayment extends AbstractPaymentHandler
             );
         }
 
-        $summary = $payment->getSummary();
-
-        if (!$this->canAuthorize($summary)) {
+        if (!$this->canAuthorize($payment->getStatus())) {
             $this->logger->error('Hosted payment finalize can\'t authorize', [
                 'payment' => $payment,
             ]);
@@ -188,17 +241,25 @@ final class HostedPayment extends AbstractPaymentHandler
         return $orderTransaction;
     }
 
+    /**
+     * @throws WrongConfigurationException
+     */
     private function createPaymentApi(string $salesChannelId): PaymentApi
     {
+        $secretKey = $this->configurationProvider->getSecretKey($salesChannelId);
+        if ($secretKey === '') {
+            throw new WrongConfigurationException(\sprintf('SecretKey is missing for channelId %s', $salesChannelId));
+        }
+
         return $this->paymentApiFactory->create(
-            $this->configurationProvider->getSecretKey($salesChannelId),
+            $secretKey,
             $this->configurationProvider->isLiveMode($salesChannelId),
         );
     }
 
-    private function canAuthorize(Summary $summary): bool
+    private function canAuthorize(PaymentStatusEnum $paymentStatus): bool
     {
-        return $summary->getReservedAmount() > 0 || $summary->getChargedAmount() > 0;
+        return $paymentStatus === PaymentStatusEnum::RESERVED || $paymentStatus === PaymentStatusEnum::CHARGED;
     }
 
     private function fetchStateTechnicalName(string $orderTransactionId, Context $context): string

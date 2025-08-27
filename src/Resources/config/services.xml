@@ -13,7 +13,8 @@
             <argument type="service" id="Nexi\Checkout\Locale\LanguageProvider"/>
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <argument type="service" id="monolog.logger.nexicheckout_channel"/>
-            <tag name="shopware.payment.method.async" />
+            <tag name="shopware.payment.method"/> <!-- for Shopware 6.7 and above -->
+            <tag name="shopware.payment.method.async" /> <!-- for Shopware 6.6 -->
         </service>
 
         <service id="Nexi\Checkout\Handler\EmbeddedPayment">
@@ -22,8 +23,10 @@
             <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
             <argument type="service" id="order_transaction.repository"/>
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="Nexi\Checkout\Order\OrderReferenceUpdate"/>
             <argument type="service" id="monolog.logger.nexicheckout_channel"/>
-            <tag name="shopware.payment.method.prepared" />
+            <tag name="shopware.payment.method"/> <!-- for Shopware 6.7 and above -->
+            <tag name="shopware.payment.method.prepared" /> <!-- for Shopware 6.6 -->
         </service>
 
         <service id="Nexi\Checkout\Entity\NexiPaymentApi\NexiPaymentDefinition">
@@ -88,6 +91,8 @@
             <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
         </service>
 
+        <service id="Nexi\Checkout\RequestBuilder\ReferenceInformationRequest"/>
+
         <service id="Nexi\Checkout\Locale\LanguageProvider">
             <argument type="service" id="language.repository" />
         </service>
@@ -147,6 +152,14 @@
             <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
             <argument type="service" id="Nexi\Checkout\RequestBuilder\CancelRequest"/>
             <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+        </service>
+
+        <service id="Nexi\Checkout\Order\OrderReferenceUpdate">
+            <argument type="service" id="Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface"/>
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\ReferenceInformationRequest"/>
             <argument type="service" id="monolog.logger.nexicheckout_channel"/>
         </service>
 

@@ -4,12 +4,17 @@
     "type": "shopware-platform-plugin",
     "version": "2.0.0-beta5",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Nexi|Nets"
+        }
+    ],
     "require": {
-        "php": "~8.2.0 || ~8.3.0",
-        "shopware/core": "~6.6.0",
-        "shopware/storefront": "~6.6.0",
+        "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+        "shopware/core": "~6.6.0 || ~6.7.0",
+        "shopware/storefront": "~6.6.0 || ~6.7.0",
         "giggsey/libphonenumber-for-php-lite": "^8.12",
-        "nexi-checkout/php-payment-sdk": "^0.5"
+        "nexi-checkout/php-payment-sdk": "^0.8"
     },
     "extra": {
         "shopware-plugin-class": "Nexi\\Checkout\\NexiCheckout",
