@@ -4,7 +4,7 @@
 |Module | Nets Easy Payment Module for Shopware 6
 |------|----------
 |Author | `Nets eCom`
-|Shop Version | `6.6+`
+|Shop Version | `6.6+ 6.7+`
 |Version | `2.0.0`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
