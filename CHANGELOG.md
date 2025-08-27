@@ -13,7 +13,7 @@
 
 ### Version 2.0.0 - Released 2025-08-27
 
-- **Split payment flows**: Embedded and Hosted are now offered as two distinct payment options.
+- **Separate payment flow** - embedded & hosted are now offered as two distinct payment methods
 - **Webhook support**: Full integration for real-time payment status updates.
 - **Charge handling**: Added support for order charge, including workflow integration (e.g., charge action within a workflow).
 - **Shopware 6.7 compatibility**: Ensures smooth operation with the latest Shopware version.
