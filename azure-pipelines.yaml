@@ -1,14 +1,35 @@
 pr:
-  - develop-new-version
-  - main-new-version
+  - develop
+  - main
+
+trigger:
+  - main
+  - develop
 
 parameters:
   - name: validateOnPhpVersion
     type: string
-    default: 8.2
+    default: 8.4
+  - name: ShouldBuildReleasePackage
+    type: boolean
+    default: false
+  - name: ShouldDeployApplication
+    type: boolean
+    default: false
 
 pool:
   vmImage: ubuntu-24.04
+
+resources:
+  repositories:
+    - repository: Infra
+      type: git
+      name: ECOM-EASY-PLUGINS/connect
+      ref: refs/heads/main
+
+variables:
+  extensionName: NexiCheckout
+  publishDir: ./bin
 
 stages:
   - stage: Validate
@@ -35,3 +56,62 @@ stages:
             displayName: 'Run PHPStan'
           - script: make phpunit
             displayName: 'Run tests with PHPUnit'
+  - stage: Build_Release_Package
+    displayName: Build_Release_Package
+    condition: |
+      and(
+        succeeded(),
+        or(
+          in(variables['Build.SourceBranch'], 'refs/heads/main'),
+          and(${{ parameters.ShouldBuildReleasePackage }}, eq(variables['Build.Reason'], 'Manual'))
+        )
+      )
+    jobs:
+      - job: Build_Release_Package
+        steps:
+          - task: AzureKeyVault@2
+            displayName: Azure Key Vault
+            inputs:
+              azureSubscription: sc-P_MS-ECOM-EASY-PLUGINS
+              KeyVaultName: 'p-econdevops-weu-kv'
+              SecretsFilter: '*'
+              RunAsPreJob: false
+          - checkout: self
+          - script: |
+              curl -1sLf 'https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh' | sudo -E bash
+              sudo apt-get -o DPkg::Lock::Timeout=60 install shopware-cli
+              sudo apt-get -o DPkg::Lock::Timeout=60 install jq -y
+            displayName: 'Install dependencies'
+          - script: |
+              mkdir $(publishDir)
+            displayName: 'Create publish dir'
+          - task: UseNode@1
+            inputs:
+              version: '20.11'
+            displayName: 'Install Node.js 20'
+          - script: |
+              sed -i "s|\$this->registerProvisionSubscriber(\$container)|\$this->registerProvisionSubscriber(\$container, '$(shopware-provision-identifier)')|" src/NexiCheckout.php
+              sed -i "s/{{ version }}/~6.6.1/g" .shopware-extension.yml
+              shopware-cli extension zip --disable-git . --release
+              mv $(extensionName).zip $(publishDir)/$(extensionName).zip
+            displayName: 'Build extension'
+          - script: |
+              shopware-cli extension validate $(publishDir)/$(extensionName).zip
+            displayName: 'Validate extension'
+          - publish: $(publishDir)
+            artifact: $(extensionName)
+  - stage: Deploy_Development # This stage success will trigger deployment of CD-Services-Shopware6
+    displayName: Deploy_Development
+    condition: |
+      and(
+        succeeded(),
+        or(
+          in(variables['Build.SourceBranch'], 'refs/heads/develop'),
+          and(${{ parameters.ShouldDeployApplication }}, eq(variables['Build.Reason'], 'Manual'))
+        )
+      )
+    jobs:
+      - job: Trigger_Deploy_Development
+        steps:
+          - checkout: none
+          - bash: echo "CD-Services-Shopware6 runs after this completes"

@@ -32,7 +32,7 @@ final class ChargeCreatedTest extends TestCase
         $paymentFetcher = $this->createPaymentFetcher(
             $this->createPayment(true)
         );
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler
@@ -68,7 +68,7 @@ final class ChargeCreatedTest extends TestCase
         $webhook = $this->createChargeCreatedWebhookEvent($this->createChargeCreatedData('foo'));
         $payment = $this->createPayment(false);
         $paymentFetcher = $this->createPaymentFetcher($payment);
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler
@@ -99,7 +99,7 @@ final class ChargeCreatedTest extends TestCase
         $logger->expects($this->atLeast(2))->method('info')->with($this->isType('string'));
         $webhook = $this->createChargeCreatedWebhookEvent($this->createChargeCreatedData('foo'));
         $paymentFetcher = $this->createPaymentFetcher($this->createPayment(true));
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler
@@ -136,7 +136,7 @@ final class ChargeCreatedTest extends TestCase
 
         $webhook = $this->createChargeCreatedWebhookEvent($this->createChargeCreatedData('123'));
         $paymentFetcher = $this->createPaymentFetcher($this->createPayment(false));
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $sut = new ChargeCreated(
             $transactionRepository,
@@ -172,7 +172,7 @@ final class ChargeCreatedTest extends TestCase
             $this->createMock(LoggerInterface::class)
         );
 
-        $sut->process($chargeCreatedModel, Generator::createSalesChannelContext());
+        $sut->process($chargeCreatedModel, Generator::generateSalesChannelContext());
     }
 
     public function testItSupportsChargeCreatedWebhook(): void

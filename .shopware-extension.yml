@@ -1,0 +1,17 @@
+build:
+  shopwareVersionConstraint: '{{ version }}'
+  zip:
+    pack:
+      excludes:
+        paths:
+          - Makefile
+          - .gitignore
+          - .prettierrc
+          - .shopware-extension.yml
+          - azure-pipelines.yaml
+          - rector.php
+          - ecs.php
+          - composer.lock
+          - phpunit.xml.dist
+          - phpstan.neon.dist
+          - README.md

@@ -18,7 +18,7 @@ use NexiCheckout\Model\Request\Payment\HostedCheckout;
 use NexiCheckout\Model\Request\Shared\Order;
 use NexiCheckout\Model\Result\Payment\PaymentWithHostedCheckoutResult;
 use NexiCheckout\Model\Result\RetrievePayment\Payment;
-use NexiCheckout\Model\Result\RetrievePayment\Summary;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiCheckout\Model\Result\RetrievePaymentResult;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -59,7 +59,7 @@ final class HostedPaymentTest extends TestCase
         $paymentApiFactory = $this->createStub(PaymentApiFactory::class);
         $paymentApiFactory->method('create')->willReturn($paymentApi);
 
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
         $context = $salesChannelContext->getContext();
 
         $order = new OrderEntity();
@@ -95,10 +95,16 @@ final class HostedPaymentTest extends TestCase
         $languageProvider = $this->createStub(LanguageProvider::class);
         $languageProvider->method('getLanguage')->willReturn($language);
 
+        $configurationProvider = $this->createMock(ConfigurationProvider::class);
+        $configurationProvider
+            ->expects($this->once())
+            ->method('getSecretKey')
+            ->willReturn('very_secret_key');
+
         $sut = new HostedPayment(
             $requestBuilder,
             $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class),
+            $configurationProvider,
             $orderTransactionRepository,
             $languageProvider,
             $this->createStub(OrderTransactionStateHandler::class),
@@ -139,7 +145,47 @@ final class HostedPaymentTest extends TestCase
         $sut->pay(
             new Request(),
             new PaymentTransactionStruct(self::ORDER_TRANSACTION_ID, 'returnUrl'),
-            Generator::createSalesChannelContext()->getContext(),
+            Generator::generateSalesChannelContext()->getContext(),
+            null
+        );
+    }
+
+    public function testPayThrowsPaymentExceptionFromWrongConfiguration(): void
+    {
+        $this->expectException(PaymentException::class);
+
+        $salesChannelContext = Generator::generateSalesChannelContext();
+        $context = $salesChannelContext->getContext();
+
+        $order = new OrderEntity();
+        $order->setSalesChannelId($salesChannelContext->getSalesChannelId());
+
+        $orderTransactionEntity = new OrderTransactionEntity();
+        $orderTransactionEntity->setId(self::ORDER_TRANSACTION_ID);
+        $orderTransactionEntity->setOrder($order);
+
+        $orderTransactionRepository = $this->createOrderTransactionRepository($orderTransactionEntity, $context);
+
+        $configurationProvider = $this->createMock(ConfigurationProvider::class);
+        $configurationProvider
+            ->expects($this->once())
+            ->method('getSecretKey')
+            ->willReturn('');
+
+        $sut = new HostedPayment(
+            $this->createStub(PaymentRequest::class),
+            $this->createStub(PaymentApiFactory::class),
+            $configurationProvider,
+            $orderTransactionRepository,
+            $this->createStub(LanguageProvider::class),
+            $this->createStub(OrderTransactionStateHandler::class),
+            $this->createStub(LoggerInterface::class),
+        );
+
+        $sut->pay(
+            new Request(),
+            new PaymentTransactionStruct(self::ORDER_TRANSACTION_ID, 'returnUrl'),
+            $context,
             null
         );
     }
@@ -148,9 +194,7 @@ final class HostedPaymentTest extends TestCase
     {
         $payment = $this->createStub(Payment::class);
         $payment->method('getPaymentId')->willReturn(self::PAYMENT_ID);
-        $payment->method('getSummary')->willReturn(
-            new Summary(1, 0, 0, 0)
-        );
+        $payment->method('getStatus')->willReturn(PaymentStatusEnum::RESERVED);
 
         $result = $this->createStub(RetrievePaymentResult::class);
         $result->method('getPayment')->willReturn($payment);
@@ -161,8 +205,14 @@ final class HostedPaymentTest extends TestCase
         $paymentApiFactory = $this->createStub(PaymentApiFactory::class);
         $paymentApiFactory->method('create')->willReturn($paymentApi);
 
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
         $context = $salesChannelContext->getContext();
+
+        $configurationProvider = $this->createMock(ConfigurationProvider::class);
+        $configurationProvider
+            ->expects($this->once())
+            ->method('getSecretKey')
+            ->willReturn('very_secret_key');
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler
@@ -183,7 +233,7 @@ final class HostedPaymentTest extends TestCase
         $sut = new HostedPayment(
             $this->createStub(PaymentRequest::class),
             $paymentApiFactory,
-            $this->createStub(ConfigurationProvider::class),
+            $configurationProvider,
             $this->createOrderTransactionRepository($orderTransaction, $context),
             $this->createStub(LanguageProvider::class),
             $orderTransactionStateHandler,
@@ -209,7 +259,7 @@ final class HostedPaymentTest extends TestCase
 
         $payment = $this->createStub(Payment::class);
         $payment->method('getPaymentId')->willReturn(self::PAYMENT_ID);
-        $payment->method('getSummary')->willReturn(new Summary(0, 0, 0, 0));
+        $payment->method('getStatus')->willReturn(PaymentStatusEnum::NEW);
 
         $result = $this->createStub(RetrievePaymentResult::class);
         $result->method('getPayment')->willReturn($payment);
@@ -233,7 +283,44 @@ final class HostedPaymentTest extends TestCase
         $sut->finalize(
             new Request(),
             new PaymentTransactionStruct(self::ORDER_TRANSACTION_ID, 'returnUrl'),
-            Generator::createSalesChannelContext()->getContext(),
+            Generator::generateSalesChannelContext()->getContext(),
+        );
+    }
+
+    public function testFinalizeThrowsPaymentExceptionFromWrongConfiguration(): void
+    {
+        $this->expectException(PaymentException::class);
+
+        $configurationProvider = $this->createMock(ConfigurationProvider::class);
+        $configurationProvider
+            ->expects($this->once())
+            ->method('getSecretKey')
+            ->willReturn('');
+
+        $salesChannelContext = Generator::generateSalesChannelContext();
+        $context = $salesChannelContext->getContext();
+
+        $order = new OrderEntity();
+        $order->setSalesChannelId($salesChannelContext->getSalesChannelId());
+
+        $orderTransaction = new OrderTransactionEntity();
+        $orderTransaction->setOrder($order);
+        $orderTransaction->setId(self::ORDER_TRANSACTION_ID);
+
+        $sut = new HostedPayment(
+            $this->createStub(PaymentRequest::class),
+            $this->createStub(PaymentApiFactory::class),
+            $configurationProvider,
+            $this->createOrderTransactionRepository($orderTransaction, $context),
+            $this->createStub(LanguageProvider::class),
+            $this->createMock(OrderTransactionStateHandler::class),
+            $this->createStub(LoggerInterface::class),
+        );
+
+        $sut->finalize(
+            new Request(),
+            new PaymentTransactionStruct(self::ORDER_TRANSACTION_ID, 'returnUrl'),
+            $context,
         );
     }
 

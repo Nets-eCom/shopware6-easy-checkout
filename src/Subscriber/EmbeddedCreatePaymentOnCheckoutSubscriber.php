@@ -2,6 +2,7 @@
 
 namespace Nexi\Checkout\Subscriber;
 
+use Nexi\Checkout\Administration\Exception\WrongConfigurationException;
 use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Handler\EmbeddedPayment;
 use Nexi\Checkout\Locale\LanguageProvider;
@@ -10,6 +11,7 @@ use Nexi\Checkout\Struct\TransactionDetailsStruct;
 use NexiCheckout\Api\Exception\ClientErrorPaymentApiException;
 use NexiCheckout\Api\Exception\InternalErrorPaymentApiException;
 use NexiCheckout\Api\Exception\PaymentApiException;
+use NexiCheckout\Api\Exception\UnauthorizedApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
 use Psr\Log\LoggerInterface;
@@ -87,7 +89,19 @@ class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterf
         Cart $cart,
         SalesChannelContext $salesChannelContext
     ): ?string {
-        $paymentApi = $this->createPaymentApi($salesChannelContext->getSalesChannelId());
+        try {
+            $paymentApi = $this->createPaymentApi($salesChannelContext->getSalesChannelId());
+        } catch (WrongConfigurationException $wrongConfigurationException) {
+            $this->logger->error('Wrong plugin configuration', [
+                'exception' => $wrongConfigurationException,
+            ]);
+            $this->addFlash(
+                StorefrontController::DANGER,
+                'Wrong payment configuration - contact with shop administrator!'
+            );
+
+            return null;
+        }
 
         try {
             $paymentRequest = $this->paymentRequest->buildEmbedded(
@@ -122,6 +136,13 @@ class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterf
             ]);
 
             $this->addFlash(StorefrontController::DANGER, $paymentApiException->getInternalMessage());
+        } catch (UnauthorizedApiException $unauthorizedApiException) {
+            $this->logger->error('Embedded payment create unauthorized error', [
+                'request' => $paymentRequest,
+                'exception' => $unauthorizedApiException,
+            ]);
+
+            $this->addFlash(StorefrontController::DANGER, 'Wrong payment configuration - contact with shop administrator!');
         } catch (PaymentApiException $paymentApiException) {
             $this->logger->error('Embedded payment create undefined error', [
                 'request' => $paymentRequest,
@@ -136,10 +157,18 @@ class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterf
         return $paymentId;
     }
 
+    /**
+     * @throws WrongConfigurationException
+     */
     private function createPaymentApi(string $salesChannelId): PaymentApi
     {
+        $secretKey = $this->configurationProvider->getSecretKey($salesChannelId);
+        if ($secretKey === '') {
+            throw new WrongConfigurationException(\sprintf('SecretKey is missing for channelId %s', $salesChannelId));
+        }
+
         return $this->paymentApiFactory->create(
-            $this->configurationProvider->getSecretKey($salesChannelId),
+            $secretKey,
             $this->configurationProvider->isLiveMode($salesChannelId),
         );
     }

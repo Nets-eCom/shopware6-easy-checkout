@@ -75,6 +75,7 @@ final class PaymentMethodsInstallerTest extends TestCase
                         'name' => 'Nexi Checkout Hosted',
                         'description' => 'Nexi Checkout Hosted',
                         'technicalName' => 'nexi_checkout_hosted',
+                        'afterOrderEnabled' => true,
                         'pluginId' => '',
                     ],
                     [

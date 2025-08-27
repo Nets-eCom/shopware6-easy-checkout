@@ -40,6 +40,7 @@ final readonly class PaymentMethodsInstaller implements PaymentMethodInstallerIn
                 'name' => 'Nexi Checkout Hosted',
                 'description' => 'Nexi Checkout Hosted',
                 'technicalName' => self::NEXI_CHECKOUT_HOSTED_TECHNICAL_NAME,
+                'afterOrderEnabled' => true,
                 'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NexiCheckout::class, $context),
             ],
             [

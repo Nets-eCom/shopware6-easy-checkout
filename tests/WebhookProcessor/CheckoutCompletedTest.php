@@ -36,7 +36,7 @@ final class CheckoutCompletedTest extends TestCase
         $payment->method('getPaymentDetails')->willReturn($paymentDetails);
 
         $paymentFetcher = $this->createPaymentFetcher($payment);
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler
@@ -72,7 +72,7 @@ final class CheckoutCompletedTest extends TestCase
         $payment->method('getPaymentDetails')->willReturn($paymentDetails);
 
         $paymentFetcher = $this->createPaymentFetcher($payment);
-        $salesChannelContext = Generator::createSalesChannelContext();
+        $salesChannelContext = Generator::generateSalesChannelContext();
 
         $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
         $orderTransactionStateHandler

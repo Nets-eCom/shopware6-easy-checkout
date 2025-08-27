@@ -11,7 +11,11 @@ use Nexi\Checkout\Lifecycle\PaymentMethodsInstaller;
 use Nexi\Checkout\Lifecycle\UserDataRemover;
 use Nexi\Checkout\Lifecycle\UserDataRemoverInterface;
 use Nexi\Checkout\Subscriber\EmbeddedCreatePaymentOnCheckoutSubscriber;
+use Nexi\Checkout\Subscriber\SendProvisionReportOnOrderPlacedSubscriber;
 use NexiCheckout\Factory\Provider\HttpClientConfigurationProvider;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Shopware\Core\Checkout\Payment\PaymentMethodDefinition;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\ActivateContext;
@@ -25,9 +29,11 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\DirectoryLoader;
 use Symfony\Component\DependencyInjection\Loader\GlobFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 
 class NexiCheckout extends Plugin
 {
@@ -41,6 +47,7 @@ class NexiCheckout extends Plugin
 
         $this->registerPackagesConfigFile($container);
         $this->registerApiUrlParameters($container);
+        $this->registerProvisionSubscriber($container);
     }
 
     public function install(InstallContext $installContext): void
@@ -162,5 +169,36 @@ class NexiCheckout extends Plugin
         $subscriberDefinition = $container->getDefinition(EmbeddedCreatePaymentOnCheckoutSubscriber::class);
         $subscriberDefinition->setArgument('$liveCheckoutJsUrl', '%env(NEXI_CHECKOUT_JS_LIVE_URL)%');
         $subscriberDefinition->setArgument('$testCheckoutJsUrl', '%env(NEXI_CHECKOUT_JS_TEST_URL)%');
+    }
+
+    private function registerProvisionSubscriber(ContainerBuilder $container, string $identifier = ''): void
+    {
+        if ($identifier === '') {
+            return;
+        }
+
+        $definition = (new Definition(
+            SendProvisionReportOnOrderPlacedSubscriber::class,
+            [
+                new Reference(ClientInterface::class),
+                new Reference(RequestFactoryInterface::class),
+                new Reference(StreamFactoryInterface::class),
+                new Reference('monolog.logger.nexicheckout_channel'),
+                '%instance_id%',
+                '%kernel.shopware_version%',
+                $identifier,
+            ]
+        ))
+            ->setPublic(false)
+            ->setTags(
+                [
+                    'kernel.event_subscriber' => [],
+                ]
+            );
+
+        $container->setDefinition(
+            SendProvisionReportOnOrderPlacedSubscriber::class,
+            $definition
+        );
     }
 }

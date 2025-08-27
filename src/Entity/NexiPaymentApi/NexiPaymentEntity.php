@@ -15,8 +15,6 @@ class NexiPaymentEntity extends Entity
 
     protected ?string $charge_id = null;
 
-    protected $createdAt;
-
     public function getOrderId(): ?string
     {
         return $this->order_id;
@@ -35,15 +33,5 @@ class NexiPaymentEntity extends Entity
     public function setChargeId(?string $chargeId): void
     {
         $this->charge_id = $chargeId;
-    }
-
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(?\DateTimeInterface $createdAt): void
-    {
-        $this->createdAt = $createdAt;
     }
 }

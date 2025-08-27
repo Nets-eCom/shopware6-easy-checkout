@@ -5,7 +5,7 @@ const { Component } = Shopware;
 Component.override('sw-flow-sequence-action', {
     methods: {
         getActionDescriptions(sequence) {
-            if(sequence.actionName === ACTION.NEXI_CHECKOUT_CHARGE){
+            if (sequence.actionName === ACTION.NEXI_CHECKOUT_CHARGE) {
                 return this.$tc('nexi-checkout-charge-action.description')
             }
 
