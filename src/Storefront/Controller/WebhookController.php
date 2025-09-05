@@ -17,9 +17,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/nexicheckout', name: 'nexicheckout_', defaults: [
-    '_routeScope' => ['storefront'],
-])]
+#[
+    Route(
+        '/nexicheckout',
+        name: 'payment.nexicheckout.', // Route name has to start with "payment." to be recognized as Storefront payment route
+        defaults: [
+            '_routeScope' => ['storefront'],
+        ]
+    )
+]
 class WebhookController extends AbstractController
 {
     public function __construct(
@@ -30,7 +36,7 @@ class WebhookController extends AbstractController
     ) {
     }
 
-    #[Route(path: '/webhook', name: 'payment.nexicheckout.webhook', methods: ['POST'])]
+    #[Route(path: '/webhook', name: 'webhook', methods: ['POST'])]
     public function webhook(Request $request, SalesChannelContext $salesChannelContext): Response
     {
         $this->webhookVoter->denyAccessUnlessGranted(WebhookVoter::HEADER_MATCH, $salesChannelContext);

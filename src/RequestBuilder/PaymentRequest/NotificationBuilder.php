@@ -55,6 +55,6 @@ class NotificationBuilder
 
     private function createWebhookUrl(): string
     {
-        return $this->router->generate('nexicheckout_payment.nexicheckout.webhook', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        return $this->router->generate('payment.nexicheckout.webhook', [], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 }
