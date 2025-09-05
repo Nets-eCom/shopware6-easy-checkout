@@ -60,6 +60,6 @@ final readonly class CheckoutBuilder
 
     private function createCheckoutUrl(): string
     {
-        return $this->router->generate('nexicheckout_payment.nexicheckout.embedded.confirm', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        return $this->router->generate('payment.nexicheckout.embedded.confirm', [], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 }

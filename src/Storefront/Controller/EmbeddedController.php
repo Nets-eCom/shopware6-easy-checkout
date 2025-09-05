@@ -29,7 +29,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[
     Route(
         '/nexicheckout/embedded',
-        name: 'nexicheckout_',
+        name: 'payment.nexicheckout.embedded.', // Route name has to start with "payment." to be recognized as Storefront payment route
         defaults: [
             '_routeScope' => ['storefront'],
         ]
@@ -50,7 +50,7 @@ class EmbeddedController extends StorefrontController
 
     #[Route(
         '/handle-payment',
-        name: 'payment.nexicheckout.embedded.handle-payment',
+        name: 'handle-payment',
         defaults: [
             'XmlHttpRequest' => true,
             'csrf_protected' => false,
@@ -97,7 +97,7 @@ class EmbeddedController extends StorefrontController
 
     #[Route(
         '/checkout-confirm',
-        name: 'payment.nexicheckout.embedded.confirm',
+        name: 'confirm',
         options: [
             'seo' => false,
         ],

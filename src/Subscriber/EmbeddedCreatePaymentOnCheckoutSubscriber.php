@@ -185,7 +185,7 @@ class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterf
                 ? $this->liveCheckoutJsUrl
                 : $this->testCheckoutJsUrl,
             $this->languageProvider->getLanguage($context),
-            $this->router->generate('nexicheckout_payment.nexicheckout.embedded.handle-payment'),
+            $this->router->generate('payment.nexicheckout.embedded.handle-payment'),
         );
     }
 
