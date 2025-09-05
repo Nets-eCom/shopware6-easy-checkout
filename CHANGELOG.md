@@ -1,15 +1,18 @@
 # NETS A/S - Shopware 6 Payment Module
-============================================
 
 |Module | Nets Easy Payment Module for Shopware 6
 |------|----------
 |Author | `Nets eCom`
 |Shop Version | `6.6+ 6.7+`
-|Version | `2.0.0`
+|Version | `2.0.1`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 2.0.1 - Released 2025-09-05
+
+- fix: rename routes names to match supported prefixes
 
 ### Version 2.0.0 - Released 2025-08-27
 
