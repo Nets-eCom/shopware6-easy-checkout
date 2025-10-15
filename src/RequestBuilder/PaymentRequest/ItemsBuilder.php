@@ -23,25 +23,28 @@ class ItemsBuilder
     }
 
     /**
-     * @return Item[]
+     * @return list<Item>
      */
     public function createFromOrder(OrderEntity $order): array
     {
         $items = [];
 
+        $taxStatus = $order->getTaxStatus() ?? $order->getPrice()->getTaxStatus();
+
         foreach ($order->getNestedLineItems() as $lineItem) {
             $items[] = $this->createFromOrderLineItem(
                 $lineItem,
-                $order->getTaxStatus()
+                $taxStatus
             );
         }
 
-        if ($order->getShippingTotal() > 0) {
+        $shippingCosts = $order->getShippingCosts();
+
+        if ($shippingCosts->getTotalPrice() > 0) {
             $items[] = $this->createShippingItem(
                 $order->getDeliveries()->getShippingMethods()->first()->getName() ?? 'Shipping',
-                $order->getShippingCosts(),
-                $order->getShippingTotal(),
-                $order->getTaxStatus()
+                $shippingCosts,
+                $taxStatus
             );
         }
 
@@ -55,72 +58,46 @@ class ItemsBuilder
     {
         $items = [];
 
+        $taxStatus = $cart->getPrice()->getTaxStatus();
+
         foreach ($cart->getLineItems() as $lineItem) {
             $items[] = $this->createFromCartLineItem(
                 $lineItem,
-                $cart->getPrice()->getTaxStatus()
+                $taxStatus
             );
         }
 
-        if ($cart->getShippingCosts()->getTotalPrice() > 0) {
+        $shippingCosts = $cart->getShippingCosts();
+        if ($shippingCosts->getTotalPrice() > 0) {
             $items[] = $this->createShippingItem(
                 $cart->getDeliveries()->first()->getShippingMethod()->getName() ?? 'Shipping',
-                $cart->getShippingCosts(),
-                $cart->getShippingCosts()->getTotalPrice(),
-                $cart->getPrice()->getTaxStatus()
+                $shippingCosts,
+                $taxStatus
             );
         }
 
         return $items;
     }
 
-    private function getUnitPrice(CalculatedPrice $calculatedPrice, int $quantity, ?string $taxStatus): int
-    {
-        $unitPrice = $this->priceToInt($calculatedPrice->getUnitPrice());
-        $taxAmount = $this->priceToInt($calculatedPrice->getCalculatedTaxes()->getAmount() / $quantity);
-
-        return $taxStatus === CartPrice::TAX_STATE_GROSS ? $unitPrice - $taxAmount : $unitPrice;
-    }
-
-    private function getTaxRate(CalculatedPrice $calculatedPrice): int
-    {
-        $taxRate = $calculatedPrice->getCalculatedTaxes()->first();
-
-        return empty($taxRate) ? 0 : (int) round($taxRate->getTaxRate() * 100);
-    }
-
-    private function getTaxAmount(int $grossTotalAmount, int $netTotalAmount): ?int
-    {
-        $taxAmount = $grossTotalAmount - $netTotalAmount;
-
-        return $taxAmount > 0 ? $taxAmount : null;
-    }
-
-    private function getReference(OrderLineItemEntity $lineItem): string
-    {
-        return $lineItem->getPayload()['productNumber'] ?? $lineItem->getProductId() ?? $lineItem->getId();
-    }
-
-    private function priceToInt(float $price): int
-    {
-        return $this->helper->priceToInt($price);
-    }
-
-    private function sanitize(string $label): string
-    {
-        return $this->helper->sanitizeString($label);
-    }
-
     private function createFromOrderLineItem(
         OrderLineItemEntity $lineItem,
-        ?string $taxStatus
+        string $taxStatus
     ): Item {
-        $unitPrice = $this->getUnitPrice($lineItem->getPrice(), $lineItem->getQuantity(), $taxStatus);
-        $taxRate = $this->getTaxRate($lineItem->getPrice());
-        $grossTotalAmount = $this->priceToInt($lineItem->getPrice()->getTotalPrice());
-        $netTotalAmount = $unitPrice * $lineItem->getQuantity();
-        $reference = $this->getReference($lineItem);
-        $taxAmount = $this->getTaxAmount($grossTotalAmount, $netTotalAmount);
+        $itemPrice = $lineItem->getPrice();
+        $unitPrice = $this->getUnitPrice($itemPrice, $lineItem->getQuantity(), $taxStatus);
+        $calculatedTaxes = $itemPrice->getCalculatedTaxes();
+        $taxAmount = $calculatedTaxes->getAmount();
+        $grossTotalAmount = $this->priceToInt(
+            $taxStatus !== CartPrice::TAX_STATE_GROSS
+                ? $itemPrice->getTotalPrice() + $taxAmount
+                : $itemPrice->getTotalPrice()
+        );
+        $netTotalAmount = $this->priceToInt(
+            $taxStatus !== CartPrice::TAX_STATE_GROSS
+                ? $itemPrice->getTotalPrice()
+                : $itemPrice->getTotalPrice() - $taxAmount
+        );
+        $reference = $lineItem->getPayload()['productNumber'] ?? $lineItem->getProductId() ?? $lineItem->getId();
 
         return new Item(
             $this->sanitize($lineItem->getLabel()),
@@ -130,8 +107,8 @@ class ItemsBuilder
             $grossTotalAmount,
             $netTotalAmount,
             substr($reference, 0, 128),
-            $taxRate,
-            $taxAmount
+            $this->getTaxRate($itemPrice),
+            $this->priceToInt($taxAmount)
         );
     }
 
@@ -139,39 +116,54 @@ class ItemsBuilder
         LineItem $lineItem,
         string $taxStatus
     ): Item {
-        $unitPrice = $this->getUnitPrice($lineItem->getPrice(), $lineItem->getQuantity(), $taxStatus);
-        $calculatedTax = $lineItem->getPrice()->getCalculatedTaxes()->first();
+        $itemPrice = $lineItem->getPrice();
+        $itemTotalPrice = $itemPrice->getTotalPrice();
+        $calculatedTaxAmount = $itemPrice->getCalculatedTaxes()->getAmount();
+        $quantity = $lineItem->getQuantity();
+        $unitPrice = $this->getUnitPrice($itemPrice, $quantity, $taxStatus);
         $reference = $lineItem->getPayload()['productNumber'] ?? $lineItem->getReferencedId() ?? $lineItem->getId();
-        $taxRate = $calculatedTax ? (int) round($calculatedTax->getTaxRate() * 100) : 0;
 
-
-        $grossTotalAmount = $this->priceToInt($lineItem->getPrice()->getTotalPrice());
-        $netTotalAmount = $unitPrice * $lineItem->getQuantity();
-        $taxAmount = $this->getTaxAmount($grossTotalAmount, $netTotalAmount);
+        $grossTotalAmount = $this->priceToInt(
+            $taxStatus !== CartPrice::TAX_STATE_GROSS
+                ? $itemTotalPrice + $calculatedTaxAmount
+                : $itemTotalPrice
+        );
+        $netTotalAmount = $this->priceToInt(
+            $taxStatus !== CartPrice::TAX_STATE_GROSS
+                ? $itemTotalPrice
+                : $itemTotalPrice - $calculatedTaxAmount
+        );
 
         return new Item(
             $this->sanitize($lineItem->getLabel()),
-            $lineItem->getQuantity(),
+            $quantity,
             self::ITEM_UNIT,
             $unitPrice,
             $grossTotalAmount,
             $netTotalAmount,
             substr($reference, 0, 128),
-            $taxRate,
-            $taxAmount
+            $this->getTaxRate($itemPrice),
+            $this->priceToInt($calculatedTaxAmount)
         );
     }
 
     private function createShippingItem(
         string $name,
         CalculatedPrice $shippingCost,
-        float $shippingTotal,
-        ?string $taxStatus
+        string $taxStatus
     ): Item {
+        $shippingTotal = $this->priceToInt($shippingCost->getTotalPrice());
         $shippingQuantity = $shippingCost->getQuantity();
         $shippingUnitPrice = $this->getUnitPrice($shippingCost, $shippingQuantity, $taxStatus);
-        $shippingGrossTotalAmount = $this->priceToInt($shippingTotal);
-        $shippingNetTotalAmount = $shippingUnitPrice * $shippingQuantity;
+        $taxAmount = $this->priceToInt($shippingCost->getCalculatedTaxes()->getAmount());
+
+        $shippingGrossTotalAmount = $taxStatus !== CartPrice::TAX_STATE_GROSS
+            ? $shippingTotal + $taxAmount
+            : $shippingTotal;
+
+        $shippingNetTotalAmount = $taxStatus !== CartPrice::TAX_STATE_GROSS
+            ? $shippingGrossTotalAmount
+            : $shippingGrossTotalAmount - $taxAmount;
 
         return new Item(
             $name,
@@ -182,7 +174,43 @@ class ItemsBuilder
             $shippingNetTotalAmount,
             'shipping',
             $this->getTaxRate($shippingCost),
-            $this->getTaxAmount($shippingGrossTotalAmount, $shippingNetTotalAmount)
+            $taxAmount
         );
+    }
+
+    private function getUnitPrice(CalculatedPrice $calculatedPrice, int $qty, string $taxStatus): int
+    {
+        $unitPrice = $this->priceToInt($calculatedPrice->getUnitPrice());
+
+        if ($taxStatus !== CartPrice::TAX_STATE_GROSS) {
+            return $unitPrice;
+        }
+
+        $taxGross = $this->priceToInt($calculatedPrice->getCalculatedTaxes()->getAmount());
+
+        if ($taxGross === 0) {
+            return $unitPrice;
+        }
+
+        $taxPerUnit = $taxGross / $qty;
+
+        return $unitPrice - $taxPerUnit;
+    }
+
+    private function getTaxRate(CalculatedPrice $calculatedPrice): int
+    {
+        $taxRate = $calculatedPrice->getCalculatedTaxes()->first();
+
+        return empty($taxRate) ? 0 : (int) round($taxRate->getTaxRate() * 100);
+    }
+
+    private function priceToInt(float $price): int
+    {
+        return $this->helper->priceToInt($price);
+    }
+
+    private function sanitize(string $label): string
+    {
+        return $this->helper->sanitizeString($label);
     }
 }

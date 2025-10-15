@@ -231,7 +231,6 @@
                       class="nexi-checkout-modal__qty-select"
                       @update:modelValue="quantity => updateChargeItem(item, quantity)"
                       :options="getChargeQtyOptions(item)"
-                      required
                     />
                   </sw-grid-column>
                 </template>
@@ -334,7 +333,6 @@
                       @update:modelValue="quantity => updateRefundItem(item, quantity)"
                       :options="getRefundQtyOptions(item)"
                       size="small"
-                      required
                     />
                   </sw-grid-column>
                 </template>

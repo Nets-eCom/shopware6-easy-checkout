@@ -18,6 +18,12 @@
                 "NEXI_CHECKOUT__CANCEL_FAILED": "Bitte überprüfe den Betrag und versuche es erneut. Alternativ kannst du die Logs mit dieser Belastungs-ID überprüfen: {paymentId}."
             }
         },
+        "validation": {
+            "errors": {
+                "charge_amount": "Der Ladebetrag sollte größer oder gleich 0,1 sein",
+                "refund_amount": "Der Rückerstattungsbetrag sollte größer oder gleich 0,1 sein"
+            }
+        },
         "payment-details": {
             "title": "Zahlung",
             "status-label": "Zahlungsstatus",
@@ -67,7 +73,8 @@
             "item": "Artikelname",
             "subtotal": "Zwischensumme",
             "chargeQty": "Anz. belasteter Artikel",
-            "refundQty": "Anz. erstatteter Artikel"
+            "refundQty": "Anz. erstatteter Artikel",
+            "0-items": "0"
         },
         "notification": {
             "charge-title": "Erfassung wird verarbeitet",

@@ -1,6 +1,6 @@
 pr:
-  - develop
   - main
+  - develop
 
 trigger:
   - main
@@ -56,6 +56,24 @@ stages:
             displayName: 'Run PHPStan'
           - script: make phpunit
             displayName: 'Run tests with PHPUnit'
+  - stage: Translation_Change
+    displayName: 'Add Translation Change Tag If Needed'
+    condition: |
+      and(
+        succeeded(),
+        eq(variables['Build.Reason'], 'PullRequest')
+      )
+    jobs:
+      - job: Add_Translation_Change_Tag
+        steps:
+          - checkout: self
+            fetchDepth: 0
+          - script: |
+              git diff --name-only origin/develop...HEAD
+              if git diff --name-only origin/develop...HEAD | grep -Eq 'src/Resources/(app/administration/src/snippet/en-GB.json|snippet/en-GB.json)'; then
+                echo "##vso[build.addbuildtag]TranslationChanged"
+              fi
+            displayName: 'Check changed files'
   - stage: Build_Release_Package
     displayName: Build_Release_Package
     condition: |

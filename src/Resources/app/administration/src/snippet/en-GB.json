@@ -18,6 +18,12 @@
                 "NEXI_CHECKOUT__CANCEL_FAILED": "Please verify the amount and try again. Alternatively, check the logs using this charge ID: {paymentId}."
             }
         },
+        "validation": {
+            "errors": {
+                "charge_amount": "Charge amount should be greater than or equal to 0.1",
+                "refund_amount": "Refund amount should be greater than or equal to 0.1"
+            }
+        },
         "payment-details": {
             "title": "Payment",
             "status-label": "Payment status",
@@ -67,7 +73,8 @@
             "item": "Item name",
             "subtotal": "Subtotal",
             "chargeQty": "Charge QTY",
-            "refundQty": "Refund QTY"
+            "refundQty": "Refund QTY",
+            "0-items": "0"
         },
         "notification": {
             "charge-title": "Capture is being processed",

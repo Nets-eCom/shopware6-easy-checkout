@@ -21,7 +21,19 @@
         "label": {
             "de-DE": "Nexi Checkout",
             "en-GB": "Nexi Checkout"
-        }
+        },
+		"description" : {
+			"de-DE" : "Nets Payment Plugin. Unser Nexi Checkout-Plugin ist die perfekte Möglichkeit für Sie, eine Checkout-Lösung für Ihr Geschäft und Ihre Verbraucher zu ermöglichen.",
+			"en-GB" : "Our Nexi Checkout plugin is the perfect way for you to enable a checkout solution for your store and consumers. Nexi Checkout supports most of the popular payment methods."
+		},
+		"manufacturerLink": {
+			"de-DE": "https://developer.nexigroup.com/nexi-checkout/en-EU/docs/shopware/checkout-for-shopware-67-shopware-67/",
+			"en-GB": "https://developer.nexigroup.com/nexi-checkout/en-EU/docs/shopware/checkout-for-shopware-67-shopware-67/"
+		},
+		"supportLink": {
+			"de-DE": "https://developer.nexigroup.com/nexi-checkout/en-EU/support/",
+			"en-GB": "https://developer.nexigroup.com/nexi-checkout/en-EU/support/"
+		}
     },
     "autoload": {
         "psr-4": {

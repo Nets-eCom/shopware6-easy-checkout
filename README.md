@@ -9,7 +9,7 @@ Enhance your Shopware store with the Nexi Checkout, a comprehensive solution for
 
 - **Shopware Version**: Compatible with Shopware **6.6.x and above**.
 
-> **Note:** For Shopware versions **6.4.x** and **6.5.x**  (e.g., 6.4.1, 6.5.2), please use the [Nexi Nets Checkout Module](https://github.com/Nets-eCom/shopware6-easy-checkout).
+> **Note:** For Shopware versions **6.4.x** and **6.5.x**  (e.g., 6.4.1, 6.5.2), please use the [Nexi Nets Checkout Module](https://github.com/Nets-eCom/shopware6-easy-checkout/tree/6.5.x).
 
 ---
 

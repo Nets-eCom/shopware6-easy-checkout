@@ -126,6 +126,12 @@
             <argument type="service" id="cache.nexi_checkout.payment"/>
         </service>
 
+        <service id="Nexi\Checkout\Fetcher\LoggablePaymentFetcher" decorates="Nexi\Checkout\Fetcher\PaymentFetcher">
+            <argument type="service" id=".inner"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <argument type="service" id="serializer"/>
+        </service>
+
         <service id="Nexi\Checkout\Order\OrderCharge">
             <argument type="service" id="Nexi\Checkout\Fetcher\PaymentFetcher"/>
             <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
