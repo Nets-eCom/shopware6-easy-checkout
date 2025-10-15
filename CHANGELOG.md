@@ -4,11 +4,17 @@
 |------|----------
 |Author | `Nets eCom`
 |Shop Version | `6.6+ 6.7+`
-|Version | `2.0.1`
+|Version | `2.0.2`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 2.0.2 - Released 2025-10-15
+
+- fix: use tax status flag when calculating gross total
+- feat: add loggable fetcher
+- fix: add zero items option for charge and refund
 
 ### Version 2.0.1 - Released 2025-09-05
 
