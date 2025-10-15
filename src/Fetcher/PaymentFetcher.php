@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Nexi\Checkout\Fetcher;
 
@@ -10,12 +12,12 @@ use NexiCheckout\Model\Result\RetrievePayment\Payment;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 
-class PaymentFetcher implements PaymentFetcherInterface, CachablePaymentFetcherInterface
+readonly class PaymentFetcher implements PaymentFetcherInterface, CachablePaymentFetcherInterface
 {
     public function __construct(
-        private readonly PaymentApiFactory $paymentApiFactory,
-        private readonly ConfigurationProvider $configurationProvider,
-        private readonly CacheItemPoolInterface $cache
+        private PaymentApiFactory $paymentApiFactory,
+        private ConfigurationProvider $configurationProvider,
+        private CacheItemPoolInterface $cache
     ) {
     }
 

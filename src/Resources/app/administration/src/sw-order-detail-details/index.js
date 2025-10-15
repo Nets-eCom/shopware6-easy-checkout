@@ -143,7 +143,7 @@ Shopware.Component.override('sw-order-detail-details', {
                 })
                 .catch(({ response }) => {
                     this.handleErrors(response.data);
-                }).finally(() => this.isloading = false)
+                }).finally(() => this.isLoading = false)
         },
 
         async handleRefund() {
@@ -194,10 +194,22 @@ Shopware.Component.override('sw-order-detail-details', {
 
             const error = errors[0];
 
+            // data validation error
+            if (error.code === '0') {
+                error.detail.split('\n').forEach((message) =>
+                    this.createNotificationError({
+                        title: this.$t(`nexi-checkout-payment-component.notification.action-error-title`),
+                        message: this.$t(message),
+                    })
+                );
+
+                return;
+            }
+
             this.createNotificationError({
                 title: this.$t(`nexi-checkout-payment-component.notification.${error.code}`),
                 message: this.$t(`nexi-checkout-payment-component.api.errors.${error.code}`, error.meta.parameters),
-            })
+            });
         },
 
         updateRefundItem({ chargeId, reference, grossTotalAmount, quantity, ...rest }, quantityToRefund) {
@@ -208,6 +220,11 @@ Shopware.Component.override('sw-order-detail-details', {
             }
 
             const index = this.refund[chargeId].items.findIndex(existing => existing.reference === reference);
+
+            // dont add item with value 0
+            if (quantityToRefund === 0 && index === -1) {
+                return;
+            }
 
             if (index === -1) {
                 this.refund[chargeId].items.push({ reference, quantity: quantityToRefund, amount, ...rest });
@@ -263,6 +280,11 @@ Shopware.Component.override('sw-order-detail-details', {
             const index = this.charge.items.findIndex(existing => existing.reference === reference);
             const amount = (grossTotalAmount / quantity) * quantityToCharge;
 
+            // dont add item with value 0
+            if (quantityToCharge === 0 && index === -1) {
+                return;
+            }
+
             if (index === -1) {
                 this.charge.items.push({ reference, quantity: quantityToCharge, amount });
                 this.calculateChargeAmount();
@@ -307,6 +329,11 @@ Shopware.Component.override('sw-order-detail-details', {
 
         getChargeQtyOptions(item) {
             const maxQty = Number(item.quantity) - Number(item.qtyCharged);
+
+            if (maxQty == 0) {
+                return [{label: this.$t('nexi-checkout-payment-component.itemsTable.0-items'), value: 0}];
+            }
+
             return Array.from({ length: maxQty }, (_, i) => ({
                 label: String(i + 1),
                 value: i + 1
@@ -318,6 +345,11 @@ Shopware.Component.override('sw-order-detail-details', {
          */
         getRefundQtyOptions(item) {
             const maxQty = Number(item.quantity) - Number(item.qtyRefunded);
+
+            if (maxQty == 0) {
+                return [{label: this.$t('nexi-checkout-payment-component.itemsTable.0-items'), value: 0}];
+            }
+
             return Array.from({ length: maxQty }, (_, i) => ({
                 label: String(i + 1),
                 value: i + 1

@@ -120,6 +120,14 @@ $text-color-dark: #8599ad;
 
   &__qty-select {
     width: 80px;
+
+    .mt-select-selection-list {
+      flex-wrap: nowrap;
+
+      &__input {
+        min-width: 20px;
+      }
+    }
   }
 
   &__qty-col {

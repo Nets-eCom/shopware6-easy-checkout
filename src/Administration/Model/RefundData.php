@@ -15,7 +15,7 @@ class RefundData
      * @param array<string, array{amount: float, items: array<ChargeItem>}> $charges
      */
     public function __construct(
-        #[Assert\GreaterThanOrEqual(0.01)]
+        #[Assert\GreaterThanOrEqual(value: 0.01, message: 'nexi-checkout-payment-component.validation.errors.refund_amount')]
         private readonly float $amount,
         #[Assert\Valid]
         private readonly array $charges = [],

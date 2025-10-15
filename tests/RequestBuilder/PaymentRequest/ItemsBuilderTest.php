@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Nexi\Checkout\Tests\RequestBuilder\PaymentRequest;
 
 use Nexi\Checkout\Helper\FormatHelper;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder;
-use NexiCheckout\Model\Request\Item;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\StubInternal;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
@@ -25,224 +28,280 @@ final class ItemsBuilderTest extends TestCase
 {
     private const CART_TOKEN = 'token';
 
-    public function testItCreateFromOrder(): void
+    /**
+     * @param list<OrderLineItemEntity> $orderItems
+     * @param list<array<string, int|string>> $expected
+     */
+    #[DataProvider('orderProvider')]
+    public function testCreateFromOrder(string $taxStatus, array $orderItems, ?OrderDeliveryEntity $delivery, array $expected): void
     {
-        $orderEntity = new OrderEntity();
-        $orderEntity->setId('1234');
-        $orderEntity->setTaxStatus(CartPrice::TAX_STATE_GROSS);
-
-        $orderItems = new OrderLineItemCollection([
-            $this->createOrderItemEntity('item1', 10.0, 1, 2),
-            $this->createOrderItemEntity('item2', 19.98, 2, 3.98),
-            $this->createOrderItemEntity('discount1', -5.0, 1, 0),
-        ]);
-        $orderEntity->setLineItems($orderItems);
-        $orderDelivery = $this->createOrderDeliveryEntity('shipping1', 2.99, 1, 0.5);
-        $orderEntity->setDeliveries(new OrderDeliveryCollection([
-            $orderDelivery,
-        ]));
-        $orderEntity->setShippingCosts($orderDelivery->getShippingCosts());
-        $orderEntity->setShippingTotal(2.99);
-
         $sut = new ItemsBuilder(new FormatHelper());
 
-        $result = $sut->createFromOrder($orderEntity);
+        $order = new OrderEntity();
+        $order->setId('order-' . $this->dataName());
+        $order->setTaxStatus($taxStatus);
+        $order->setLineItems(new OrderLineItemCollection($orderItems));
 
-        $this->assertCount(4, $result);
-        $this->assertContainsOnlyInstancesOf(Item::class, $result);
+        if ($delivery instanceof OrderDeliveryEntity) {
+            $order->setDeliveries(new OrderDeliveryCollection([$delivery]));
+            $order->setShippingCosts($delivery->getShippingCosts());
+        }
 
-        $item0Array = $result[0]->jsonSerialize();
-        $this->assertEquals(1, $item0Array['quantity']);
-        $this->assertEquals(800, $item0Array['unitPrice']);
-        $this->assertEquals(1000, $item0Array['grossTotalAmount']);
-        $this->assertEquals(800, $item0Array['netTotalAmount']);
-        $this->assertEquals(200, $item0Array['taxAmount']);
+        $result = $sut->createFromOrder($order);
 
-        $item1Array = $result[1]->jsonSerialize();
-        $this->assertEquals(2, $item1Array['quantity']);
-        $this->assertEquals(800, $item1Array['unitPrice']);
-        $this->assertEquals(1998, $item1Array['grossTotalAmount']);
-        $this->assertEquals(1600, $item1Array['netTotalAmount']);
-        $this->assertEquals(398, $item1Array['taxAmount']);
+        $this->assertCount(\count($expected), $result);
 
-        $item2Array = $result[2]->jsonSerialize();
-        $this->assertEquals(1, $item2Array['quantity']);
-        $this->assertEquals(-500, $item2Array['unitPrice']);
-        $this->assertEquals(-500, $item2Array['grossTotalAmount']);
-        $this->assertEquals(-500, $item2Array['netTotalAmount']);
-        $this->assertArrayNotHasKey('taxAmount', $item2Array);
-
-        $item3Array = $result[3]->jsonSerialize();
-        $this->assertEquals('shipping', $item3Array['reference']);
-        $this->assertEquals(1, $item3Array['quantity']);
-        $this->assertEquals(249, $item3Array['unitPrice']);
-        $this->assertEquals(299, $item3Array['grossTotalAmount']);
-        $this->assertEquals(249, $item3Array['netTotalAmount']);
-        $this->assertEquals(50, $item3Array['taxAmount']);
+        foreach ($expected as $index => $assertion) {
+            $this->assertItems($result[$index]->jsonSerialize(), $assertion);
+        }
     }
 
-    public function testItAllowNullShippingMethodName(): void
+    /**
+     * @param list<array{string, float, int, float}> $lineItems
+     * @param list<array<string, int|string>> $expected
+     */
+    #[DataProvider('cartProvider')]
+    public function testCreateFromCart(string $taxStatus, array $lineItems, array $expected): void
     {
-        $orderEntity = new OrderEntity();
-        $orderEntity->setId('1234');
-        $orderEntity->setTaxStatus(CartPrice::TAX_STATE_GROSS);
-
-        $orderItems = new OrderLineItemCollection([
-            $this->createOrderItemEntity('item1', 10.0, 1, 2),
-        ]);
-        $orderEntity->setLineItems($orderItems);
-        $orderDelivery = $this->createOrderDeliveryEntity('shipping1', 2.99, 1, 0.5);
-        $orderDelivery->getShippingMethod()->setName(null);
-        $orderEntity->setDeliveries(new OrderDeliveryCollection([
-            $orderDelivery,
-        ]));
-        $orderEntity->setShippingCosts($orderDelivery->getShippingCosts());
-        $orderEntity->setShippingTotal(2.99);
-
         $sut = new ItemsBuilder(new FormatHelper());
 
-        $result = $sut->createFromOrder($orderEntity);
-
-        $this->assertCount(2, $result);
-        $this->assertContainsOnlyInstancesOf(Item::class, $result);
-
-        $shippingArray = $result[1]->jsonSerialize();
-        $this->assertEquals('Shipping', $shippingArray['name']);
-        $this->assertEquals('shipping', $shippingArray['reference']);
-        $this->assertEquals(1, $shippingArray['quantity']);
-        $this->assertEquals(249, $shippingArray['unitPrice']);
-        $this->assertEquals(299, $shippingArray['grossTotalAmount']);
-        $this->assertEquals(249, $shippingArray['netTotalAmount']);
-        $this->assertEquals(50, $shippingArray['taxAmount']);
-    }
-
-    public function testItCreatesFromOrderTaxNetAndNoShippingCost(): void
-    {
-        $orderEntity = new OrderEntity();
-        $orderEntity->setId('1234');
-        $orderEntity->setTaxStatus(CartPrice::TAX_STATE_NET);
-
-        $orderItems = new OrderLineItemCollection([
-            $this->createOrderItemEntity('item1', 10.0, 2, 2.0, false),
-        ]);
-        $orderEntity->setLineItems($orderItems);
-        $orderEntity->setShippingTotal(0);
-
-        $sut = new ItemsBuilder(new FormatHelper());
-
-        $result = $sut->createFromOrder($orderEntity);
-
-        $this->assertCount(1, $result);
-        $this->assertContainsOnlyInstancesOf(Item::class, $result);
-
-        $item0Array = $result[0]->jsonSerialize();
-        $this->assertEquals(2, $item0Array['quantity']);
-        $this->assertEquals(500, $item0Array['unitPrice']);
-        $this->assertEquals(1200, $item0Array['grossTotalAmount']);
-        $this->assertEquals(1000, $item0Array['netTotalAmount']);
-        $this->assertEquals(200, $item0Array['taxAmount']);
-    }
-
-    public function testItCreatesItemsFromCart(): void
-    {
         $cart = new Cart(self::CART_TOKEN);
-        $cart->addLineItems(new LineItemCollection([
-            $this->createLineItem('foo', 10, 1, 1),
-        ]));
 
-        $sut = new ItemsBuilder(new FormatHelper());
+        $cartLineItems = [];
+        foreach ($lineItems as [$id, $price, $quantity, $tax]) {
+            $cartLineItems[] = $this->createLineItem($id, $price, $quantity, $tax);
+        }
+
+        $cart->addLineItems(new LineItemCollection($cartLineItems));
+
+        /** @var StubInternal|CartPrice $cartPrice */
+        $cartPrice = $this->createStub(CartPrice::class);
+        $cartPrice->method('getTaxStatus')->willReturn($taxStatus);
+
+        $cart->setPrice($cartPrice);
+
         $result = $sut->createFromCart($cart);
 
-        $this->assertCount(1, $result);
-        $this->assertContainsOnlyInstancesOf(Item::class, $result);
+        $this->assertCount(\count($expected), $result);
 
-        $item = $result[0];
-        $this->assertEquals(1, $item->getQuantity());
-        $this->assertEquals(900, $item->getUnitPrice());
-        $this->assertEquals(1000, $item->getGrossTotalAmount());
-        $this->assertEquals(900, $item->getNetTotalAmount());
-        $this->assertEquals(100, $item->getTaxAmount());
+        foreach ($expected as $index => $assertion) {
+            $this->assertItems($result[$index]->jsonSerialize(), $assertion);
+        }
     }
 
-    private function createOrderItemEntity(
-        string $identifier,
-        float $price,
-        int $quantity,
-        float $tax,
-        bool $taxIncl = true
-    ): OrderLineItemEntity {
-        $orderItem = new OrderLineItemEntity();
+    /**
+     * @return iterable<string, array{string, list<OrderLineItemEntity>, OrderDeliveryEntity|null, list<array<string, int|string>>}>
+     */
+    public static function orderProvider(): iterable
+    {
+        yield 'gross-with-shipping-and-discount' => [
+            CartPrice::TAX_STATE_GROSS,
+            [
+                self::createOrderItemEntity('item1', 10.0, 1, 2.0),
+                self::createOrderItemEntity('item2', 19.98, 2, 3.98),
+                self::createOrderItemEntity('discount1', -5.0, 1, 0.0),
+            ],
+            self::createOrderDeliveryEntity('shipping1', 2.99, 1, 0.5),
+            [
+                [
+                    'quantity' => 1,
+                    'unitPrice' => 800,
+                    'grossTotalAmount' => 1000,
+                    'netTotalAmount' => 800,
+                    'taxAmount' => 200,
+                ],
+                [
+                    'quantity' => 2,
+                    'unitPrice' => 800,
+                    'grossTotalAmount' => 1998,
+                    'netTotalAmount' => 1600,
+                    'taxAmount' => 398,
+                ],
+                [
+                    'quantity' => 1,
+                    'unitPrice' => -500,
+                    'grossTotalAmount' => -500,
+                    'netTotalAmount' => -500,
+                ],
+                [
+                    'quantity' => 1,
+                    'unitPrice' => 249,
+                    'grossTotalAmount' => 299,
+                    'netTotalAmount' => 249,
+                    'taxAmount' => 50,
+                    'reference' => 'shipping',
+                ],
+            ],
+        ];
+        yield 'gross-null-shipping-name' => [
+            CartPrice::TAX_STATE_GROSS,
+            [self::createOrderItemEntity('item1', 10.0, 1, 2.0)],
+            (function () {
+                $deliveryEntity = self::createOrderDeliveryEntity('shipping1', 2.99, 1, 0.5);
+                $deliveryEntity->getShippingMethod()->setName(null);
 
-        $orderItem->setId($identifier);
-        $orderItem->setLabel($identifier);
-        $orderItem->setPosition(0);
-        $orderItem->setQuantity($quantity);
-
-        $calculatedPrice = new CalculatedPrice(
-            $price / $quantity,
-            $taxIncl ? $price : $price + $tax,
-            new CalculatedTaxCollection(
-                [new CalculatedTax($tax, $tax / ($price - $tax), $price - $tax)]
-            ),
-            new TaxRuleCollection(),
-            $quantity
-        );
-        $orderItem->setPrice($calculatedPrice);
-
-        return $orderItem;
+                return $deliveryEntity;
+            })(),
+            [
+                [
+                    'quantity' => 1,
+                    'unitPrice' => 800,
+                    'grossTotalAmount' => 1000,
+                    'netTotalAmount' => 800,
+                    'taxAmount' => 200,
+                ],
+                [
+                    'quantity' => 1,
+                    'unitPrice' => 249,
+                    'grossTotalAmount' => 299,
+                    'netTotalAmount' => 249,
+                    'taxAmount' => 50,
+                    'reference' => 'shipping',
+                ],
+            ],
+        ];
+        yield 'net-no-shipping-cost' => [
+            CartPrice::TAX_STATE_NET,
+            [self::createOrderItemEntity('item1', 10.0, 2, 2.0)],
+            self::createOrderDeliveryEntity('shipping1', 0.0, 1, 0.0),
+            [
+                [
+                    'quantity' => 2,
+                    'unitPrice' => 500,
+                    'grossTotalAmount' => 1200,
+                    'netTotalAmount' => 1000,
+                    'taxAmount' => 200,
+                ],
+            ],
+        ];
     }
 
-    private function createLineItem(
-        string $identifier,
-        float $price,
-        int $quantity,
-        float $tax,
-        bool $taxIncl = true
-    ): LineItem {
-        $lineItem = new LineItem($identifier, LineItem::PRODUCT_LINE_ITEM_TYPE);
-        $lineItem->setLabel($identifier);
+    /**
+     * @return iterable<string, array{string, list<array{string, float, int, float}>, list<array<string, int|string>>}>
+     */
+    public static function cartProvider(): iterable
+    {
+        yield 'net-single-item' => [
+            CartPrice::TAX_STATE_NET,
+            [
+                ['foo', 9.0, 1, 2.0],
+            ],
+            [
+                [
+                    'quantity' => 1,
+                    'unitPrice' => 900,
+                    'grossTotalAmount' => 1100,
+                    'netTotalAmount' => 900,
+                    'taxAmount' => 200,
+                ],
+            ],
+        ];
 
-        $calculatedPrice = new CalculatedPrice(
-            $price / $quantity,
-            $taxIncl ? $price : $price + $tax,
-            new CalculatedTaxCollection(
-                [new CalculatedTax($tax, $tax / ($price - $tax), $price - $tax)]
-            ),
-            new TaxRuleCollection(),
-            $quantity
-        );
-        $lineItem->setPrice($calculatedPrice);
+        yield 'gross-single-item' => [
+            CartPrice::TAX_STATE_GROSS,
+            [
+                ['bar', 11.0, 1, 2.0],
+            ],
+            [
+                [
+                    'quantity' => 1,
+                    'unitPrice' => 900,
+                    'grossTotalAmount' => 1100,
+                    'netTotalAmount' => 900,
+                    'taxAmount' => 200,
+                ],
+            ],
+        ];
+
+        yield 'gross-multiple-items' => [
+            CartPrice::TAX_STATE_GROSS,
+            [
+                ['item1', 10.0, 2, 1.5],
+                ['item2', 5.0, 1, 1.0],
+            ],
+            [
+                [
+                    'quantity' => 2,
+                    'unitPrice' => 425,
+                    'grossTotalAmount' => 1000,
+                    'netTotalAmount' => 850,
+                    'taxAmount' => 150,
+                ],
+                [
+                    'quantity' => 1,
+                    'unitPrice' => 400,
+                    'grossTotalAmount' => 500,
+                    'netTotalAmount' => 400,
+                    'taxAmount' => 100,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param array<string,mixed> $actual
+     * @param array<string,mixed> $expected
+     */
+    private function assertItems(array $actual, array $expected): void
+    {
+        foreach ($expected as $field => $value) {
+            $this->assertArrayHasKey($field, $actual);
+            $this->assertSame($value, $actual[$field]);
+        }
+    }
+
+    private function createLineItem(string $id, float $price, int $quantity, float $tax): LineItem
+    {
+        $lineItem = new LineItem($id, LineItem::PRODUCT_LINE_ITEM_TYPE, null, $quantity);
+        $lineItem->setLabel($id);
+        $lineItem->setStackable(true);
+        $lineItem->setPrice(self::createCalculatedPrice($price, $quantity, $tax));
 
         return $lineItem;
     }
 
-    private function createOrderDeliveryEntity(
-        string $identifier,
-        float $price,
-        int $quantity,
-        float $tax,
-        bool $taxIncl = true
-    ): OrderDeliveryEntity {
-        $orderDelivery = new OrderDeliveryEntity();
-        $orderDelivery->setId($identifier);
+    private static function createOrderItemEntity(string $id, float $price, int $quantity, float $tax): OrderLineItemEntity
+    {
+        $item = new OrderLineItemEntity();
+        $item->setId($id);
+        $item->setLabel($id);
+        $item->setPosition(0);
+        $item->setQuantity($quantity);
+        $item->setPrice(self::createCalculatedPrice($price, $quantity, $tax));
 
-        $shippingMethod = new ShippingMethodEntity();
-        $shippingMethod->setId($identifier);
-        $shippingMethod->setName('shipping_' . $identifier);
+        return $item;
+    }
 
-        $orderDelivery->setShippingMethod($shippingMethod);
+    private static function createOrderDeliveryEntity(string $id, float $price, int $quantity, float $tax): OrderDeliveryEntity
+    {
+        $delivery = new OrderDeliveryEntity();
+        $delivery->setId($id);
 
-        $calculatedPrice = new CalculatedPrice(
-            $price / $quantity,
-            $taxIncl ? $price : $price + $tax,
-            new CalculatedTaxCollection(
-                [new CalculatedTax($tax, $tax / ($price - $tax), $price - $tax)]
-            ),
+        $method = new ShippingMethodEntity();
+        $method->setId($id);
+        $method->setName('shipping_' . $id);
+
+        $delivery->setShippingMethod($method);
+
+        $delivery->setShippingCosts(self::createCalculatedPrice($price, $quantity, $tax));
+
+        return $delivery;
+    }
+
+    private static function createCalculatedPrice(float $totalPrice, int $quantity, float $taxAmount): CalculatedPrice
+    {
+        $unit = $quantity > 0 ? $totalPrice / $quantity : 0.0;
+        $netPortion = $taxAmount > 0 ? $totalPrice - $taxAmount : $totalPrice;
+        $taxes = $taxAmount > 0
+            ? new CalculatedTaxCollection([new CalculatedTax($taxAmount, $taxAmount / $netPortion, $netPortion)])
+            : new CalculatedTaxCollection([]);
+
+        return new CalculatedPrice(
+            $unit,
+            $totalPrice,
+            $taxes,
             new TaxRuleCollection(),
             $quantity
         );
-        $orderDelivery->setShippingCosts($calculatedPrice);
-
-        return $orderDelivery;
     }
 }

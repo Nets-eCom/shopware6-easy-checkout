@@ -19,7 +19,7 @@ class ChargeData
      * @param array{'reference': string, 'quantity': int|string, 'amount': float|string}[] $items
      */
     public function __construct(
-        #[Assert\GreaterThanOrEqual(0.01)]
+        #[Assert\GreaterThanOrEqual(value: 0.01, message: 'nexi-checkout-payment-component.validation.errors.charge_amount')]
         private readonly float $amount,
         array $items = []
     ) {
