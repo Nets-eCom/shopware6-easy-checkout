@@ -19,6 +19,7 @@ use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class OrderReferenceUpdateTest extends TestCase
 {
@@ -45,7 +46,8 @@ final class OrderReferenceUpdateTest extends TestCase
             $this->createPaymentApiFactory($api),
             $this->createConfigurationProvider(),
             $this->createReferenceInformationRequestBuilder(),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
+            $this->createMock(EventDispatcherInterface::class)
         );
 
         $sut->updateReferenceForTransaction($this->createOrderTransactionEntity());

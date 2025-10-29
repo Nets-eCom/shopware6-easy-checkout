@@ -3,6 +3,7 @@
 namespace Nexi\Checkout\Order;
 
 use Nexi\Checkout\Configuration\ConfigurationProvider;
+use Nexi\Checkout\Core\Content\NexiCheckout\Event\UpdateReferenceSend;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
 use Nexi\Checkout\Order\Exception\OrderReferenceUpdateException;
@@ -12,6 +13,7 @@ use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class OrderReferenceUpdate
 {
@@ -21,6 +23,7 @@ class OrderReferenceUpdate
         private readonly ConfigurationProvider $configurationProvider,
         private readonly ReferenceInformationRequest $referenceInformationRequest,
         private readonly LoggerInterface $logger,
+        private readonly EventDispatcherInterface $dispatcher
     ) {
     }
 
@@ -66,6 +69,8 @@ class OrderReferenceUpdate
         $this->logger->info('Update reference information request success', [
             'paymentId' => $paymentId,
         ]);
+
+        $this->dispatcher->dispatch(new UpdateReferenceSend($order, $transaction));
     }
 
     private function createPaymentApi(string $salesChannelId): PaymentApi

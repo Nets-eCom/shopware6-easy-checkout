@@ -167,6 +167,7 @@
             <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
             <argument type="service" id="Nexi\Checkout\RequestBuilder\ReferenceInformationRequest"/>
             <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface"/>
         </service>
 
         <!-- ### Storefront Controller ### -->
@@ -279,6 +280,13 @@
 
         <service
             id="Nexi\Checkout\Subscriber\CacheCleanupOnCancelSendSubscriber"
+            parent="Nexi\Checkout\Subscriber\BaseCacheCleanupSubscriber"
+        >
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service
+            id="Nexi\Checkout\Subscriber\CacheCleanupOnUpdatedReferenceSubscriber"
             parent="Nexi\Checkout\Subscriber\BaseCacheCleanupSubscriber"
         >
             <tag name="kernel.event_subscriber"/>
