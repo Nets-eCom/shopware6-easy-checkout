@@ -4,11 +4,15 @@
 |------|----------
 |Author | `Nets eCom`
 |Shop Version | `6.6+ 6.7+`
-|Version | `2.0.2`
+|Version | `2.0.3`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 2.0.3 - Released 2025-10-29
+
+- fix: clean cache on update reference
 
 ### Version 2.0.2 - Released 2025-10-15
 
