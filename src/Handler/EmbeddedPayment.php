@@ -174,7 +174,7 @@ final class EmbeddedPayment extends AbstractPaymentHandler
 
         try {
             $this->orderReferenceUpdate->updateReferenceForTransaction($transactionEntity);
-        } catch (OrderReferenceUpdateException $orderReferenceUpdateException) {
+        } catch (OrderReferenceUpdateException) {
             $this->logger->info('Update reference information failed', [
                 'paymentId' => $paymentId,
             ]);
