@@ -192,7 +192,7 @@ class ItemsBuilder
             return $unitPrice;
         }
 
-        $taxPerUnit = $taxGross / $qty;
+        $taxPerUnit = (int) round($taxGross / $qty);
 
         return $unitPrice - $taxPerUnit;
     }

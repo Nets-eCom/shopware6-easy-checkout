@@ -174,6 +174,20 @@ final class ItemsBuilderTest extends TestCase
                 ],
             ],
         ];
+        yield 'gross-uneven-tax-per-unit' => [
+            CartPrice::TAX_STATE_GROSS,
+            [self::createOrderItemEntity('item1', 10.0, 3, 2.0)],
+            self::createOrderDeliveryEntity('shipping1', 0.0, 1, 0.0),
+            [
+                [
+                    'quantity' => 3,
+                    'unitPrice' => 266,
+                    'grossTotalAmount' => 1000,
+                    'netTotalAmount' => 800,
+                    'taxAmount' => 200,
+                ],
+            ],
+        ];
     }
 
     /**
