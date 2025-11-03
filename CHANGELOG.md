@@ -4,11 +4,15 @@
 |------|----------
 |Author | `Nets eCom`
 |Shop Version | `6.6+ 6.7+`
-|Version | `2.0.3`
+|Version | `2.0.4`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 2.0.4 - Released 2025-11-03
+
+- fix: cast & rounding on tax per-unit price
 
 ### Version 2.0.3 - Released 2025-10-29
 

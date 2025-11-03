@@ -39,7 +39,7 @@ class NexiCheckout extends Plugin
 {
     public const COMMERCE_PLATFORM_TAG = 'Shopware6';
 
-    public const PLUGIN_VERSION = '2.0.3';
+    public const PLUGIN_VERSION = '2.0.4';
 
     public function build(ContainerBuilder $container): void
     {
