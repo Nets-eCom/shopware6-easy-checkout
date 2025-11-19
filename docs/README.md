@@ -32,16 +32,29 @@ Depending on your country or region, the list may vary. If you are uncertain abo
 
 How to install the Checkout module for Shopware 6:
 
+## Using GitHub
 1. Connect with an SSH client and navigate to the root directory of your Shopware 6 installation.
-2. Clone the repository by running the command: git clone git@github.com:Nets-eCom/shopware6-easy-checkout.git --branch 2.0.0-beta --single-branch custom/plugins/NexiCheckout
+2. Clone the repository by running the command: git clone git@github.com:Nets-eCom/shopware6-easy-checkout.git --branch main --single-branch custom/plugins/NetsNexiCheckout
 
 After cloning run those commands: 
 1. `bin/console plugin:refresh`
-2. `bin/console plugin:install NexiCheckout`
-3. `bin/console plugin:activate NexiCheckout`
-4. `bin/build-js.sh`
+2. `bin/console plugin:install -a NetsNexiCheckout`
+3. `bin/build-js.sh`
 
 The module is now installed and ready to be configured for your Checkout account.
+
+### Update from v2.0.4 to v2.1.0
+
+The plugin technical name has changed to `NetsNexiCheckout`.
+The previous name `NexiCheckout` is deprecated. After updating, both names will appear in `My extensions` view, or when
+running `bin/console plugin:list`.
+
+Update steps:
+
+1. `bin/console plugin:refresh`
+2. `bin/console plugin:deactivate NexiCheckout`
+3. `bin/console plugin:install -a NetsNexiCheckout`
+4. `bin/build-js.sh`
 
 ## Configuration
 

@@ -6,7 +6,7 @@ namespace Nexi\Checkout\Lifecycle;
 
 use Nexi\Checkout\Handler\EmbeddedPayment;
 use Nexi\Checkout\Handler\HostedPayment;
-use Nexi\Checkout\NexiCheckout;
+use Nexi\Checkout\NetsNexiCheckout;
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -41,7 +41,7 @@ final readonly class PaymentMethodsInstaller implements PaymentMethodInstallerIn
                 'description' => 'Nexi Checkout Hosted',
                 'technicalName' => self::NEXI_CHECKOUT_HOSTED_TECHNICAL_NAME,
                 'afterOrderEnabled' => true,
-                'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NexiCheckout::class, $context),
+                'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NetsNexiCheckout::class, $context),
             ],
             [
                 'id' => $this->getMethodId($context, EmbeddedPayment::class),
@@ -49,7 +49,7 @@ final readonly class PaymentMethodsInstaller implements PaymentMethodInstallerIn
                 'name' => 'Nexi Checkout Embedded',
                 'description' => 'Nexi Checkout Embedded',
                 'technicalName' => self::NEXI_CHECKOUT_EMBEDDED_TECHNICAL_NAME,
-                'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NexiCheckout::class, $context),
+                'pluginId' => $this->pluginIdProvider->getPluginIdByBaseClass(NetsNexiCheckout::class, $context),
             ],
         ];
 

@@ -8,7 +8,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ConfigurationProvider
 {
-    private const CONFIG_DOMAIN = 'NexiCheckout.config.';
+    private const CONFIG_DOMAIN = 'NetsNexiCheckout.config.';
 
     public const LIVE_SECRET_KEY = self::CONFIG_DOMAIN . 'liveSecretKey';
 
