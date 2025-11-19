@@ -4,11 +4,15 @@
 |------|----------
 |Author | `Nets eCom`
 |Shop Version | `6.6+ 6.7+`
-|Version | `2.0.4`
+|Version | `2.1.0`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 2.1.0 - Released 2025-11-19
+
+- chore!: shopware-plugin-class rename 
 
 ### Version 2.0.4 - Released 2025-11-03
 
