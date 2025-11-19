@@ -17,7 +17,7 @@
         "nexi-checkout/php-payment-sdk": "^0.8"
     },
     "extra": {
-        "shopware-plugin-class": "Nexi\\Checkout\\NexiCheckout",
+        "shopware-plugin-class": "Nexi\\Checkout\\NetsNexiCheckout",
         "label": {
             "de-DE": "Nexi Checkout",
             "en-GB": "Nexi Checkout"

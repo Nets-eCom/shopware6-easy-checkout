@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Http;
 
-use Nexi\Checkout\NexiCheckout;
+use Nexi\Checkout\NetsNexiCheckout;
 use NexiCheckout\Factory\Provider\HttpClientConfigurationProvider;
 
 readonly class HttpClientProviderConfigurator
@@ -24,9 +24,9 @@ readonly class HttpClientProviderConfigurator
     {
         return \sprintf(
             '%s %s, %s, php%s',
-            NexiCheckout::COMMERCE_PLATFORM_TAG,
+            NetsNexiCheckout::COMMERCE_PLATFORM_TAG,
             $this->shopwareVersion,
-            NexiCheckout::PLUGIN_VERSION,
+            NetsNexiCheckout::PLUGIN_VERSION,
             \PHP_VERSION
         );
     }
