@@ -34,9 +34,9 @@ class Migration1762964739 extends MigrationStep
             DELETE FROM system_config WHERE configuration_key LIKE 'NetsNexiCheckout.%';
 
             UPDATE system_config
-            SET 
-                configuration_key = REPLACE(configuration_key, 'NexiCheckout.config.', 'NetsNexiCheckout.config.'), 
-                updated_at = NOW() 
+            SET
+                configuration_key = REPLACE(configuration_key, 'NexiCheckout.config.', 'NetsNexiCheckout.config.'),
+                updated_at = NOW()
             WHERE configuration_key LIKE 'NexiCheckout.config.%';
         SQL;
 

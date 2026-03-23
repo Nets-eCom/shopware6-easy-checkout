@@ -74,30 +74,9 @@
                 utført. Bare tillatt for kompatible produkter / tjenester.
             </helpText>
         </input-field>
-        <input-field type="bool">
-            <name>liveMode</name>
-            <label>Enable live mode</label>
-            <label lang="de-DE">Live-Modus aktivieren</label>
-            <label lang="da-DK">Aktiver live-tilstand</label>
-            <label lang="sv-SE">Aktivera liveläge</label>
-            <label lang="nb-NO">Aktiver live-modus</label>
-            <defaultValue>false</defaultValue>
-            <helpText>
-                Choose wether you want to charge payments in test environment or live production mode
-            </helpText>
-            <helpText lang="de-DE">
-                Wählen Sie, ob Sie Zahlungsumfeld im Test oder im Live berechnen möchten
-            </helpText>
-            <helpText lang="da-DK">
-                Vælg hvor du vil opkræve betalinger i test mode eller live-mode
-            </helpText>
-            <helpText lang="sv-SE">
-                Välj om du vill ta betalt i testmiljö eller live produktionsmiljö
-            </helpText>
-            <helpText lang="nb-NO">
-                Velg om du vil belaste betalinger i testmiljø eller live produksjonsmiljø
-            </helpText>
-        </input-field>
+        <component name="nexi-checkout-credentials-test-button">
+            <name>credentialsTestButton</name>
+        </component>
         <input-field type="url">
             <name>termsUrl</name>
             <required>true</required>

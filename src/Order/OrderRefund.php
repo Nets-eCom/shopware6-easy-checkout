@@ -306,10 +306,13 @@ class OrderRefund
         );
 
         $transaction->changeCustomFields([
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_REFUNDED => $alreadyRefunded + [
-                $chargeId => isset($alreadyRefunded[$chargeId])
-                    ? $alreadyRefunded[$chargeId] + $partialRefund->getAmount()
-                    : $partialRefund->getAmount(),
+            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_REFUNDED => [
+                ...$alreadyRefunded,
+                ...[
+                    $chargeId => isset($alreadyRefunded[$chargeId])
+                                        ? $alreadyRefunded[$chargeId] + $partialRefund->getAmount()
+                                        : $partialRefund->getAmount(),
+                ],
             ],
         ]);
 
