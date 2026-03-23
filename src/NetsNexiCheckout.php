@@ -41,6 +41,10 @@ class NetsNexiCheckout extends Plugin
 
     public const PLUGIN_VERSION = '2.1.0';
 
+    public const LIVE_URL = 'https://api.dibspayment.eu';
+
+    public const TEST_URL = 'https://test.api.dibspayment.eu';
+
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
@@ -146,8 +150,8 @@ class NetsNexiCheckout extends Plugin
     private function registerApiUrlParameters(ContainerBuilder $container): void
     {
         // TODO: get values from SDK
-        $container->setParameter('env(NEXI_CHECKOUT_API_LIVE_URL)', 'https://api.dibspayment.eu');
-        $container->setParameter('env(NEXI_CHECKOUT_API_TEST_URL)', 'https://test.api.dibspayment.eu');
+        $container->setParameter('env(NEXI_CHECKOUT_API_LIVE_URL)', self::LIVE_URL);
+        $container->setParameter('env(NEXI_CHECKOUT_API_TEST_URL)', self::TEST_URL);
         $container->setParameter(
             'env(NEXI_CHECKOUT_JS_LIVE_URL)',
             'https://checkout.dibspayment.eu/v1/checkout.js?v=1'

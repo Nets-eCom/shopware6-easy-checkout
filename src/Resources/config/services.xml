@@ -304,6 +304,16 @@
         </service>
 
         <!-- ### Admin Controller ### -->
+        <service id="Nexi\Checkout\Administration\Controller\ApiCredentialsTestController" public="true">
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="NexiCheckout\Factory\Provider\HttpClientConfigurationProvider"/>
+            <argument type="service" id="currency.repository"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
         <service id="Nexi\Checkout\Administration\Controller\OrderActionController" public="true">
             <argument type="service" id="order.repository"/>
             <argument type="service" id="Nexi\Checkout\Order\OrderCharge"/>

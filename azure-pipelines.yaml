@@ -41,7 +41,7 @@ stages:
               sudo update-alternatives --set php /usr/bin/php${{ parameters.validateOnPhpVersion }}
               php -version
             displayName: 'Use PHP version ${{ parameters.validateOnPhpVersion }}'
-          - script: composer install --no-interaction --prefer-dist
+          - script: composer install --no-interaction --prefer-dist --ignore-platform-req=ext-redis
             workingDirectory: $(System.DefaultWorkingDirectory)
             displayName: 'Composer install'
           - script: |
