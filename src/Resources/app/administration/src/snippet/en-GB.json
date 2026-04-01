@@ -12,7 +12,7 @@
     "nexi-checkout-credentials-test": {
         "title": "Test API Credentials",
         "description": "Send a test payment request to verify that the configured API credentials are accepted by the Nexi Checkout API.",
-        "button": "Test credentials",
+        "button": "Test Api connection",
         "error": "Could not reach the Nexi API. Please check your network connection and try again.",
         "liveModeLabel": "Enable live mode",
         "liveModeHelpText": "Choose whether you want to charge payments in test environment or live production mode"

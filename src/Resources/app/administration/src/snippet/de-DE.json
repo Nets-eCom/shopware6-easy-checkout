@@ -12,7 +12,7 @@
     "nexi-checkout-credentials-test": {
         "title": "API-Zugangsdaten testen",
         "description": "Sendet eine Test-Zahlungsanfrage, um zu prüfen, ob die konfigurierten API-Zugangsdaten von der Nexi Checkout API akzeptiert werden.",
-        "button": "Zugangsdaten testen",
+        "button": "Testen Sie die API-Verbindung",
         "error": "Die Nexi API konnte nicht erreicht werden. Bitte Netzwerkverbindung prüfen und erneut versuchen.",
         "liveModeLabel": "Live-Modus aktivieren",
         "liveModeHelpText": "Wählen Sie, ob Sie Zahlungsumfeld im Test oder im Live berechnen möchten"
