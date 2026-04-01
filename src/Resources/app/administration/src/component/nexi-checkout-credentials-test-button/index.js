@@ -5,79 +5,110 @@ const { Mixin } = Shopware;
 
 Shopware.Component.register('nexi-checkout-credentials-test-button', {
     template,
-
     inject: ['nexiCheckoutCredentialsTestService'],
-
     mixins: [Mixin.getByName('notification')],
-
-    created () {
-        this.fetchShowCheckoutUrlInfo()
-    },
 
     data() {
         return {
             isTestingCredentials: false,
-            showCheckoutUrlInfo:false
+            showCheckoutUrlInfo: false,
+            configParent: null
         };
     },
 
-    computed: {
-        configRoot() {
-            let parent = this.$parent;
-            while (parent && parent.$options.name !== 'sw-system-config') {
-                parent = parent.$parent;
-            }
-            return parent;
-        },
+    mounted() {
+        this.findAndInterceptSave();
+    },
 
+    computed: {
         currentSalesChannelId() {
-            return this.configRoot?.currentSalesChannelId || 'null';
+            return this.configParent?.currentSalesChannelId || 'null';
         },
 
         liveMode: {
             get() {
-                const config = this.configRoot?.actualConfigData?.[this.currentSalesChannelId];
+                const config = this.configParent?.actualConfigData?.[this.currentSalesChannelId];
                 return config ? !!config['NetsNexiCheckout.config.liveMode'] : false;
             },
             set(value) {
-                if (!this.configRoot) return;
-
-                if (!this.configRoot.actualConfigData[this.currentSalesChannelId]) {
-                    this.configRoot.actualConfigData[this.currentSalesChannelId] = {};
+                if (!this.configParent) {
+                    return;
                 }
 
-                this.configRoot.actualConfigData[this.currentSalesChannelId]['NetsNexiCheckout.config.liveMode'] = value;
+                Shopware.Utils.object.set(
+                  this.configParent.actualConfigData[this.currentSalesChannelId],
+                  'NetsNexiCheckout.config.liveMode',
+                  value
+                );
+
+                this.$forceUpdate();
             }
         }
     },
 
     methods: {
-        async fetchShowCheckoutUrlInfo() {
-            const result = await this.nexiCheckoutCredentialsTestService.showCheckoutUrlInfo();
+        findAndInterceptSave() {
+            let parent = this.$parent;
+            while (parent) {
+                if (parent.saveAll || parent.$options.name === 'sw-system-config' || parent.$options.name === 'SwSystemConfig') {
+                    this.configParent = parent;
+                    this.interceptSaveMethod(parent);
+                    return;
+                }
+                parent = parent.$parent;
+            }
+        },
 
-            this.showCheckoutUrlInfo = result.showMessage || false;
+        interceptSaveMethod(parent) {
+            if (parent._nexiIntercepted) {
+                return;
+            }
+
+            const originalSaveAll = parent.saveAll;
+
+            parent.saveAll = async (...args) => {
+                try {
+                    const result = await originalSaveAll.apply(parent, args);
+                    this.testCredentials();
+
+                    return result;
+                } catch (error) {
+                    throw error;
+                }
+            };
+
+            parent._nexiIntercepted = true;
         },
 
         async testCredentials() {
-            this.isTestingCredentials = true;
+            if (this.isTestingCredentials) return;
 
-            const config = this.configRoot?.actualConfigData?.[this.currentSalesChannelId] || {};
+            const parent = this.configParent;
+            const config = parent?.actualConfigData?.[this.currentSalesChannelId] || {};
             const isLive = !!config['NetsNexiCheckout.config.liveMode'];
 
             const credentials = {
                 liveMode: isLive,
-                salesChannelId: this.configRoot?.currentSalesChannelId || null,
+                salesChannelId: this.currentSalesChannelId,
                 secretKey: isLive
-                    ? (config['NetsNexiCheckout.config.liveSecretKey'] || '')
-                    : (config['NetsNexiCheckout.config.testSecretKey'] || '')
+                  ? (config['NetsNexiCheckout.config.liveSecretKey'] || '')
+                  : (config['NetsNexiCheckout.config.testSecretKey'] || '')
             };
+
+            this.isTestingCredentials = true;
 
             try {
                 const result = await this.nexiCheckoutCredentialsTestService.testCredentials(credentials);
                 if (result.valid) {
-                    this.createNotificationSuccess({ title: 'Success', message: result.message });
+                    this.createNotificationSuccess({
+                        title: 'Nexi Checkout API',
+                        message: result.message
+                    });
                 } else {
-                    this.createNotificationError({ title: 'Error', message: result.message });
+                    this.createNotificationError({
+                        title: 'Nexi Checkout API Error',
+                        message: result.message
+                    });
                 }
             } catch (e) {
                 this.createNotificationError({
@@ -87,6 +118,13 @@ Shopware.Component.register('nexi-checkout-credentials-test-button', {
             } finally {
                 this.isTestingCredentials = false;
             }
+        },
+
+        async fetchShowCheckoutUrlInfo() {
+            try {
+                const result = await this.nexiCheckoutCredentialsTestService.showCheckoutUrlInfo();
+                this.showCheckoutUrlInfo = result.showMessage || false;
+            } catch (e) {}
         }
     }
 });

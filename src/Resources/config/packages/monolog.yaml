@@ -3,7 +3,10 @@ monolog:
 
   handlers:
     nexiCheckoutLogHandler:
-        type: stream
+        type: rotating_file
         path: "%kernel.logs_dir%/nexi_checkout_log.log"
         level: info
+        max_files: 90
+        filename_format: "{filename}-{date}"
+        date_format: "Y-m-d"
         channels: [ "nexicheckout_channel"]

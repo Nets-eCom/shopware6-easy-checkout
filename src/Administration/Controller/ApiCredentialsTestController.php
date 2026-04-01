@@ -77,20 +77,23 @@ final class ApiCredentialsTestController extends AbstractController
         $secretKey = $request->request->getString('secretKey');
         $liveMode = $request->request->getBoolean('liveMode');
         $salesChannelId = $request->request->getString('salesChannelId');
-        $this->logger->info('API credentials check data', [
-            'secretKey' => $secretKey,
-            'salesChannelId' => $salesChannelId,
-        ]);
+
         if ($secretKey === '' && $salesChannelId !== '') {
             $secretKey = (string) $this->systemConfigService->get(
                 $liveMode ? ConfigurationProvider::LIVE_SECRET_KEY : ConfigurationProvider::TEST_SECRET_KEY
             );
             $this->logger->info('API credentials get from system config', [
-                'secretKey' => $secretKey,
+                'salesChannelId' => $salesChannelId,
+                'liveMode' => $liveMode ? 'true' : 'false',
             ]);
         }
 
         if ($secretKey === '') {
+            $this->logger->info('API credentials test failed: secret key is empty.', [
+                'salesChannelId' => $salesChannelId,
+                'liveMode' => $liveMode ? 'true' : 'false',
+            ]);
+
             return new JsonResponse([
                 'valid' => false,
                 'message' => 'Secret key is empty. Please fill in the key field and try again.',
@@ -110,6 +113,11 @@ final class ApiCredentialsTestController extends AbstractController
                 'message' => 'API credentials are valid.',
             ]);
         } catch (UnauthorizedApiException) {
+            $this->logger->error('API credentials test failed: API secretKey are invalid', [
+                'salesChannelId' => $salesChannelId,
+                'liveMode' => $liveMode ? 'true' : 'false',
+            ]);
+
             return new JsonResponse([
                 'valid' => false,
                 'message' => 'API credentials are invalid.',
