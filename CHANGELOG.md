@@ -4,11 +4,16 @@
 |------|----------
 |Author | `Nets eCom`
 |Shop Version | `6.6+ 6.7+`
-|Version | `2.1.1`
+|Version | `2.1.2`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+### Version 2.1.2 - Released 2026-04-01
+
+- style: change plugin icon
+- chore: update log file naming convention
+- feat: add test api connection on save button
 
 ### Version 2.1.1 - Released 2026-03-23
 

@@ -76,6 +76,7 @@ stages:
             displayName: 'Check changed files'
   - stage: Build_Release_Package
     displayName: Build_Release_Package
+    dependsOn: Validate
     condition: |
       and(
         succeeded(),
