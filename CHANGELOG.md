@@ -4,11 +4,15 @@
 |------|----------
 |Author | `Nets eCom`
 |Shop Version | `6.6+ 6.7+`
-|Version | `2.1.2`
+|Version | `2.1.3`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/checkout-for-shopware-shopware-6/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+### Version 2.1.3 - Released 2026-04-03
+
+- fix: change plugin icon size
+ 
 ### Version 2.1.2 - Released 2026-04-01
 
 - style: change plugin icon
