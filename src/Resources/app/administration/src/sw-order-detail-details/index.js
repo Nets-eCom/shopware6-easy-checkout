@@ -116,13 +116,8 @@ Shopware.Component.override('sw-order-detail-details', {
             this.paymentDetails = await this.nexiCheckoutPaymentDetailService.getPaymentDetails(orderId)
                 .catch(({ response }) => {
                     const errors = response.data.errors;
-                    const nexiCheckoutPaymentId = this.transaction.customFields[CUSTOM_FIELDS_PAYMENT_ID];
                     this.hasFetchError = true;
-                    console.error(
-                        `Error while fetching Nexi payment details for paymentID: ${nexiCheckoutPaymentId}`,
-                        errors,
-                    );
-                    this.handleErrors(errors);
+                    this.handleErrors({ errors });
                 })
                 .finally(() => {
                     this.isLoading = false
@@ -182,7 +177,6 @@ Shopware.Component.override('sw-order-detail-details', {
         },
 
         handleErrors({ errors }) {
-            console.error('index.js error:', errors);
             if (!errors) {
                 this.createNotificationError({
                     title: this.$t('nexi-checkout-payment-component.notification.action-error-title'),
