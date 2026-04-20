@@ -18,6 +18,7 @@ Shopware.Component.register('nexi-checkout-credentials-test-button', {
 
     mounted() {
         this.findAndInterceptSave();
+        this.fetchShowCheckoutUrlInfo();
     },
 
     computed: {
@@ -31,15 +32,15 @@ Shopware.Component.register('nexi-checkout-credentials-test-button', {
                 return config ? !!config['NetsNexiCheckout.config.liveMode'] : false;
             },
             set(value) {
-                if (!this.configParent) {
+                if (!this.configParent?.actualConfigData) {
                     return;
                 }
 
-                Shopware.Utils.object.set(
-                  this.configParent.actualConfigData[this.currentSalesChannelId],
-                  'NetsNexiCheckout.config.liveMode',
-                  value
-                );
+                if (!this.configParent.actualConfigData[this.currentSalesChannelId]) {
+                    this.configParent.actualConfigData[this.currentSalesChannelId] = {};
+                }
+
+                this.configParent.actualConfigData[this.currentSalesChannelId]['NetsNexiCheckout.config.liveMode'] = value;
 
                 this.$forceUpdate();
             }
@@ -50,10 +51,10 @@ Shopware.Component.register('nexi-checkout-credentials-test-button', {
         findAndInterceptSave() {
             let parent = this.$parent;
             while (parent) {
-                if (parent.saveAll || parent.$options.name === 'sw-system-config' || parent.$options.name === 'SwSystemConfig') {
+                if (parent.$options.name === 'sw-system-config' || parent.$options.name === 'SwSystemConfig') {
                     this.configParent = parent;
                     this.interceptSaveMethod(parent);
-                    return;
+                    break;
                 }
                 parent = parent.$parent;
             }
@@ -65,12 +66,10 @@ Shopware.Component.register('nexi-checkout-credentials-test-button', {
             }
 
             const originalSaveAll = parent.saveAll;
-
             parent.saveAll = async (...args) => {
                 try {
                     const result = await originalSaveAll.apply(parent, args);
-                    this.testCredentials();
-
+                    await this.testCredentials();
                     return result;
                 } catch (error) {
                     throw error;
@@ -81,11 +80,12 @@ Shopware.Component.register('nexi-checkout-credentials-test-button', {
         },
 
         async testCredentials() {
-            if (this.isTestingCredentials) return;
+            if (this.isTestingCredentials) {
+                return;
+            }
 
-            const parent = this.configParent;
-            const config = parent?.actualConfigData?.[this.currentSalesChannelId] || {};
-            const isLive = !!config['NetsNexiCheckout.config.liveMode'];
+            const isLive = this.liveMode;
+            const config = this.configParent?.actualConfigData?.[this.currentSalesChannelId] || {};
 
             const credentials = {
                 liveMode: isLive,
@@ -123,8 +123,10 @@ Shopware.Component.register('nexi-checkout-credentials-test-button', {
         async fetchShowCheckoutUrlInfo() {
             try {
                 const result = await this.nexiCheckoutCredentialsTestService.showCheckoutUrlInfo();
-                this.showCheckoutUrlInfo = result.showMessage || false;
-            } catch (e) {}
+                this.showCheckoutUrlInfo = result?.showMessage || false;
+            } catch (e) {
+                this.showCheckoutUrlInfo = false;
+            }
         }
     }
 });
