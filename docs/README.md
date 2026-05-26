@@ -60,7 +60,7 @@ Update steps:
 
 After installing the module, you need to do some basic configuration of the module in Shopware Admin:
 
-1. Navigate to `Extensions > My extensions > NexiNets Checkout`
+1. Navigate to `Extensions > My extensions > Nexi Checkout`
 2. Locate the Nexi Group payment plugin and press the button with three dots (...) to access the configuration.
 3. Fill out the required fields, such as integration keys (secret keys and checkout keys), and Webhook Code.
 4. (Optional) Customize the module according to your needs using the additional settings on the configuration page.
@@ -70,7 +70,13 @@ Both integration keys can be found in Checkout Portal. See the following pages f
 - [Where can I find my merchant number (merchant ID)?](https://developer.nexigroup.com/nexi-checkout/en-EU/support/where-can-i-find-my-merchant-number-merchant-id/)
 - [Access your integration keys](https://developer.nexigroup.com/nexi-checkout/en-EU/docs/access-your-integration-keys/)
 
-> Integration Type: Embedded is not a valid option yet. Please use Hosted Payment.
+## Embedded vs Hosted
+
+To configure Nexi Checkout as payment method for the Shopware 6.7 plugin, please go to the Storefront configuration page under Sales Channels:
+Go to Payment methods and using the dropdown, select either Nexi Checkout Embedded or Nexi Checkout Hosted.
+Click on Save your changes.
+
+Then go to `Settings > Payment Methods`, find Nexi Checkout Embedded or Nexi Checkout Hosted, click Edit details, change Name to Nexi Checkout, and click on Save.
 
 ## Order management
 
@@ -133,7 +139,7 @@ Below are some of the most common configuration errors, their cause, and steps t
 
 - Ensure your integration keys in the Nexi Group plugin settings are correct and do not contain additional blank spaces.
 - Temporarily deactivate third-party plugins that might affect the functionality of the plugin.
-- Check if there are any temporary technical inconsistencies: [Operational Status](https://nets.eu/Pages/operational-status.aspx)
+- Check if there are any temporary technical inconsistencies: [Operational Status](https://easy-status.developers.nets.eu/)
 
 ### Payments in live mode don't work
 
