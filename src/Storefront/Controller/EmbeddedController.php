@@ -6,14 +6,14 @@ namespace Nexi\Checkout\Storefront\Controller;
 
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Shopware\Core\Checkout\Cart\Exception\InvalidCartException;
-use Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute;
+use Shopware\Core\Checkout\Cart\SalesChannel\AbstractCartOrderRoute;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Exception\EmptyCartException;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Payment\PaymentException;
-use Shopware\Core\Checkout\Payment\SalesChannel\HandlePaymentMethodRoute;
+use Shopware\Core\Checkout\Payment\SalesChannel\AbstractHandlePaymentMethodRoute;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -41,8 +41,8 @@ class EmbeddedController extends StorefrontController
      * @param EntityRepository<OrderTransactionCollection> $transactionRepository
      */
     public function __construct(
-        private readonly HandlePaymentMethodRoute $handlePaymentMethodRoute,
-        private readonly CartOrderRoute $cartOrderRoute,
+        private readonly AbstractHandlePaymentMethodRoute $handlePaymentMethodRoute,
+        private readonly AbstractCartOrderRoute $cartOrderRoute,
         private readonly CartService $cartService,
         private readonly EntityRepository $transactionRepository
     ) {
