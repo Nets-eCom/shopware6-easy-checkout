@@ -7,6 +7,7 @@ namespace Nexi\Checkout\RequestBuilder;
 use Nexi\Checkout\Helper\FormatHelper;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilder;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder;
+use Nexi\Checkout\RequestBuilder\PaymentRequest\MethodConfigurationBuilder;
 use Nexi\Checkout\RequestBuilder\PaymentRequest\NotificationBuilder;
 use NexiCheckout\Model\Request\Payment;
 use NexiCheckout\Model\Request\Shared\Order;
@@ -21,13 +22,15 @@ class PaymentRequest
         private readonly ItemsBuilder $itemsBuilder,
         private readonly NotificationBuilder $notificationBuilder,
         private readonly FormatHelper $formatHelper,
+        private readonly MethodConfigurationBuilder $methodConfigurationBuilder,
     ) {
     }
 
     public function buildHosted(
         OrderTransactionEntity $transaction,
         string $salesChannelId,
-        string $returnUrl
+        string $returnUrl,
+        string $subselection = '',
     ): Payment {
         $orderEntity = $transaction->getOrder();
 
@@ -38,22 +41,16 @@ class PaymentRequest
                 $this->formatHelper->priceToInt($transaction->getAmount()->getTotalPrice()),
                 $orderEntity->getOrderNumber()
             ),
-            $this
-                ->checkoutBuilder
-                ->createHosted(
-                    $orderEntity,
-                    $returnUrl,
-                    $salesChannelId
-                ),
-            $this
-                ->notificationBuilder
-                ->create($salesChannelId)
+            $this->checkoutBuilder->createHosted($orderEntity, $returnUrl, $salesChannelId),
+            $this->notificationBuilder->create($salesChannelId),
+            paymentMethodsConfiguration: $this->methodConfigurationBuilder->build($subselection !== '' && $subselection !== '0' ? $subselection : null),
         );
     }
 
     public function buildEmbedded(
         Cart $cart,
-        SalesChannelContext $salesChannelContext
+        SalesChannelContext $salesChannelContext,
+        string $subselection = '',
     ): Payment {
         return new Payment(
             order: new Order(
@@ -63,10 +60,9 @@ class PaymentRequest
                 $cart->getToken()
             ),
             checkout: $this->checkoutBuilder->createEmbedded($salesChannelContext),
-            notification: $this
-                ->notificationBuilder
-                ->create($salesChannelContext->getSalesChannelId()),
+            notification: $this->notificationBuilder->create($salesChannelContext->getSalesChannelId()),
             myReference: $cart->getToken(),
+            paymentMethodsConfiguration: $this->methodConfigurationBuilder->build($subselection !== '' && $subselection !== '0' ? $subselection : null),
         );
     }
 }

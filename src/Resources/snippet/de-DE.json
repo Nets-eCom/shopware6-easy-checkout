@@ -1,7 +1,11 @@
 {
     "nexi-checkout": {
-        "exception" : {
+        "exception": {
             "missingTransaction": "Missing transaction for a given payment."
+        },
+        "split": {
+            "selectMethod": "Zahlungsmethode auswählen",
+            "loadError": "Zahlungsmethode konnte nicht geladen werden. Bitte versuchen Sie es erneut."
         }
     }
 }

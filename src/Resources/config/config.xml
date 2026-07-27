@@ -47,6 +47,15 @@
             <placeholder>00000000000000000000000000000000</placeholder>
         </input-field>
         <input-field type="bool">
+            <name>payTypeSplitting</name>
+            <label>Enable payment method splitting</label>
+            <defaultValue>false</defaultValue>
+            <helpText>Show individual payment methods (e.g. Visa, MasterCard) instead of a single grouped option.</helpText>
+        </input-field>
+        <component name="nexi-checkout-payment-methods-sortable">
+            <name>paymentMethodsConfig</name>
+        </component>
+        <input-field type="bool">
             <name>autoCharge</name>
             <label>Enable auto-charge</label>
             <label lang="de-DE">Auto-Capture aktivieren</label>

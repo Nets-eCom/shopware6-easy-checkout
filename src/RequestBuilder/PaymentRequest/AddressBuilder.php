@@ -16,7 +16,7 @@ class AddressBuilder
         return new Address(
             $address->getStreet(),
             $address->getAdditionalAddressLine1(),
-            $address->getZipcode(),
+            str_replace(' ', '', $address->getZipcode()),
             $address->getCity(),
             $address->getCountry()->getIso3(),
         );
@@ -27,7 +27,7 @@ class AddressBuilder
         return new Address(
             $address->getStreet(),
             $address->getAdditionalAddressLine1(),
-            $address->getZipcode(),
+            str_replace(' ', '', $address->getZipcode()),
             $address->getCity(),
             $address->getCountry()->getIso3(),
         );

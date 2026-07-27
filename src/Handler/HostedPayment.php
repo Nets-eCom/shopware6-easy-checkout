@@ -86,7 +86,8 @@ final class HostedPayment extends AbstractPaymentHandler
             $paymentRequest = $this->paymentRequest->buildHosted(
                 $transactionEntity,
                 $salesChannelId,
-                $transaction->getReturnUrl()
+                $transaction->getReturnUrl(),
+                $request->request->getString('subselection'),
             );
 
             $payment = $paymentApi->createHostedPayment($paymentRequest);

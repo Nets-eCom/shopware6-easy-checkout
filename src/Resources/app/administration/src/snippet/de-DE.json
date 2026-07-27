@@ -98,5 +98,11 @@
             "fetch-error-title": "Zahlungsdetails nicht gefunden",
             "fetch-error-message": "Bitte versuche es erneut oder überprüfe die Logs für weitere Details."
         }
+    },
+    "nexi-payment-methods-sortable": {
+        "enableLabel": "Zahlungsarten-Splitting aktivieren",
+        "enableHelpText": "Ermöglicht es Händlern, einzelne Zahlungsarten separat beim Checkout anzuzeigen, mit individueller Reihenfolge.",
+        "hint": "Zum Sortieren ziehen. Umschalten um eine Zahlungsart im Checkout ein- oder auszublenden.",
+        "noMethods": "Keine Zahlungsarten verfügbar. Bitte überprüfen Sie Ihre API-Zugangsdaten."
     }
 }

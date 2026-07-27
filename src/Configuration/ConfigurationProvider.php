@@ -28,6 +28,10 @@ class ConfigurationProvider
 
     public const WEBHOOK_AUTHORIZATION_HEADER = self::CONFIG_DOMAIN . 'webhookAuthorizationHeader';
 
+    public const PAY_TYPE_SPLITTING = self::CONFIG_DOMAIN . 'payTypeSplitting';
+
+    public const PAY_TYPE_OPTIONS = self::CONFIG_DOMAIN . 'payTypeOptions';
+
     public function __construct(private readonly SystemConfigService $systemConfigService)
     {
     }
@@ -78,5 +82,20 @@ class ConfigurationProvider
     public function isAutoCharge(?string $salesChannelId = null): bool
     {
         return $this->systemConfigService->getBool(self::AUTO_CHARGE, $salesChannelId);
+    }
+
+    public function isPayTypeSplitting(?string $salesChannelId = null): bool
+    {
+        return $this->systemConfigService->getBool(self::PAY_TYPE_SPLITTING, $salesChannelId);
+    }
+
+    /**
+     * @return array<int, array<string, string|bool>>
+     */
+    public function getPayTypeOptions(?string $salesChannelId = null): array
+    {
+        $raw = $this->systemConfigService->getString(self::PAY_TYPE_OPTIONS, $salesChannelId);
+
+        return json_decode($raw, true) ?? [];
     }
 }

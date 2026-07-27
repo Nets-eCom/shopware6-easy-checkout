@@ -3,3 +3,5 @@ framework:
     pools:
       cache.nexi_checkout.payment:
         adapter: cache.app
+      cache.nexi_checkout.payment_methods:
+        adapter: cache.app

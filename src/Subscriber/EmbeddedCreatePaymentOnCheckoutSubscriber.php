@@ -7,6 +7,7 @@ use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Handler\EmbeddedPayment;
 use Nexi\Checkout\Locale\LanguageProvider;
 use Nexi\Checkout\RequestBuilder\PaymentRequest;
+use Nexi\Checkout\Struct\SplitPaymentDetailsStruct;
 use Nexi\Checkout\Struct\TransactionDetailsStruct;
 use NexiCheckout\Api\Exception\ClientErrorPaymentApiException;
 use NexiCheckout\Api\Exception\InternalErrorPaymentApiException;
@@ -56,15 +57,25 @@ class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterf
     {
         $salesChannelContext = $event->getSalesChannelContext();
         $paymentMethod = $salesChannelContext->getPaymentMethod();
+        $salesChannelId = $salesChannelContext->getSalesChannelId();
 
         if ($paymentMethod->getHandlerIdentifier() !== EmbeddedPayment::class) {
+            // For embedded split, transaction details are needed even when another payment method is selected
+            if ($this->configurationProvider->isPayTypeSplitting($salesChannelId)) {
+                $splitDetails = $event->getPage()->getExtension('nexiSplitPayment');
+                if ($splitDetails instanceof SplitPaymentDetailsStruct && $splitDetails->getCreateEmbeddedPaymentUrl() !== null) {
+                    $event->getPage()->addExtension(
+                        'nexiTransactionDetails',
+                        $this->buildTransactionDetailsStruct(null, $salesChannelId, $salesChannelContext->getContext())
+                    );
+                }
+            }
+
             return;
         }
 
         $page = $event->getPage();
         $cart = $page->getCart();
-
-        $paymentId = $this->createPayment($cart, $salesChannelContext);
 
         $transaction = $cart->getTransactions()->first();
 
@@ -72,11 +83,25 @@ class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterf
             return;
         }
 
+        $salesChannelId = $salesChannelContext->getSalesChannelId();
+
+        // For split payment the user selects the method first; payment is created via AJAX on subselection
+        if ($this->configurationProvider->isPayTypeSplitting($salesChannelId)) {
+            $page->addExtension(
+                'nexiTransactionDetails',
+                $this->buildTransactionDetailsStruct(null, $salesChannelId, $salesChannelContext->getContext())
+            );
+
+            return;
+        }
+
+        $paymentId = $this->createPayment($cart, $salesChannelContext);
+
         $page->addExtension(
             'nexiTransactionDetails',
             $this->buildTransactionDetailsStruct(
                 $paymentId,
-                $salesChannelContext->getSalesChannelId(),
+                $salesChannelId,
                 $salesChannelContext->getContext(),
             )
         );
