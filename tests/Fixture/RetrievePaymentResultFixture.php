@@ -28,8 +28,8 @@ class RetrievePaymentResultFixture
                 new Checkout('https://example.com/checkout', null),
                 new \DateTimeImmutable(),
                 new Consumer(
-                    new Address(null, null, null, null, null),
-                    new Address(null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
                     new PrivatePerson(null, null, null, null, null, null),
                     new Company(null, null, null, null),
                 ),
@@ -55,8 +55,8 @@ class RetrievePaymentResultFixture
                 new Checkout('https://example.com/checkout', null),
                 new \DateTimeImmutable(),
                 new Consumer(
-                    new Address(null, null, null, null, null),
-                    new Address(null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
                     new PrivatePerson(null, null, null, null, null, null),
                     new Company(null, null, null, null),
                 ),
@@ -69,7 +69,7 @@ class RetrievePaymentResultFixture
                 ),
                 null,
                 null,
-                [new Charge('test_charge_id', 10000, new \DateTimeImmutable(), [])]
+                [new Charge('test_charge_id', 10000, new \DateTimeImmutable(), [], 0)]
             )
         );
     }
@@ -83,8 +83,8 @@ class RetrievePaymentResultFixture
                 new Checkout('https://example.com/checkout', null),
                 new \DateTimeImmutable(),
                 new Consumer(
-                    new Address(null, null, null, null, null),
-                    new Address(null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
                     new PrivatePerson(null, null, null, null, null, null),
                     new Company(null, null, null, null),
                 ),
@@ -98,9 +98,9 @@ class RetrievePaymentResultFixture
                 null,
                 null,
                 [
-                    new Charge('test_charge_1', 100, new \DateTimeImmutable(), []),
-                    new Charge('test_charge_2', 300, new \DateTimeImmutable(), []),
-                    new Charge('test_charge_3', 600, new \DateTimeImmutable(), []),
+                    new Charge('test_charge_1', 100, new \DateTimeImmutable(), [], 0),
+                    new Charge('test_charge_2', 300, new \DateTimeImmutable(), [], 0),
+                    new Charge('test_charge_3', 600, new \DateTimeImmutable(), [], 0),
                 ]
             )
         );
@@ -115,8 +115,8 @@ class RetrievePaymentResultFixture
                 new Checkout('https://example.com/checkout', null),
                 new \DateTimeImmutable(),
                 new Consumer(
-                    new Address(null, null, null, null, null),
-                    new Address(null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
                     new PrivatePerson(null, null, null, null, null, null),
                     new Company(null, null, null, null),
                 ),
@@ -129,7 +129,7 @@ class RetrievePaymentResultFixture
                 ),
                 null,
                 null,
-                [new Charge('test_charge_id', 15, new \DateTimeImmutable(), [])]
+                [new Charge('test_charge_id', 15, new \DateTimeImmutable(), [], 0)]
             )
         );
     }
@@ -143,8 +143,8 @@ class RetrievePaymentResultFixture
                 new Checkout('https://example.com/checkout', null),
                 new \DateTimeImmutable(),
                 new Consumer(
-                    new Address(null, null, null, null, null),
-                    new Address(null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
                     new PrivatePerson(null, null, null, null, null, null),
                     new Company(null, null, null, null),
                 ),
@@ -156,8 +156,8 @@ class RetrievePaymentResultFixture
                     0
                 ),
                 null,
-                [new Refund('test_refund_id', 100, RefundStateEnum::COMPLETED, new \DateTimeImmutable(), [])],
-                [new Charge('test_charge_id', 100, new \DateTimeImmutable(), [])]
+                [new Refund('test_refund_id', 100, RefundStateEnum::COMPLETED, new \DateTimeImmutable(), [], 0)],
+                [new Charge('test_charge_id', 100, new \DateTimeImmutable(), [], 0)]
             )
         );
     }
@@ -171,8 +171,8 @@ class RetrievePaymentResultFixture
                 new Checkout('https://example.com/checkout', null),
                 new \DateTimeImmutable(),
                 new Consumer(
-                    new Address(null, null, null, null, null),
-                    new Address(null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
+                    new Address(null, null, null, null, null, null),
                     new PrivatePerson(null, null, null, null, null, null),
                     new Company(null, null, null, null),
                 ),
@@ -184,8 +184,8 @@ class RetrievePaymentResultFixture
                     0
                 ),
                 null,
-                [new Refund('test_refund_id', 50, RefundStateEnum::COMPLETED, new \DateTimeImmutable(), [])],
-                [new Charge('test_charge_id', 50, new \DateTimeImmutable(), [])]
+                [new Refund('test_refund_id', 50, RefundStateEnum::COMPLETED, new \DateTimeImmutable(), [], 0)],
+                [new Charge('test_charge_id', 50, new \DateTimeImmutable(), [], 0)]
             )
         );
     }
@@ -200,7 +200,11 @@ class RetrievePaymentResultFixture
             $reservedAmount,
             $chargedAmount,
             $refundedAmount,
-            $cancelledAmount
+            $cancelledAmount,
+            0,
+            0,
+            0,
+            0
         );
     }
 }

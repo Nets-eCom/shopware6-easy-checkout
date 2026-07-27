@@ -14,7 +14,7 @@
         "shopware/core": "~6.6.0 || ~6.7.0",
         "shopware/storefront": "~6.6.0 || ~6.7.0",
         "giggsey/libphonenumber-for-php-lite": "^8.12",
-        "nexi-checkout/php-payment-sdk": "^0.8"
+        "nexi-checkout/php-payment-sdk": "^0.14"
     },
     "extra": {
         "shopware-plugin-class": "Nexi\\Checkout\\NetsNexiCheckout",

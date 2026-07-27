@@ -1,0 +1,77 @@
+.nexi-payment-methods-sortable {
+    &__list {
+        border: 1px solid #d1d9e0;
+        border-radius: 4px;
+        overflow: hidden;
+        max-width: 480px;
+    }
+
+    &__hint {
+        color: #677585;
+        font-size: 12px;
+        padding: 8px 12px;
+        margin: 0;
+        border-bottom: 1px solid #d1d9e0;
+        background: #f9fafb;
+    }
+
+    &__item {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-bottom: 1px solid #d1d9e0;
+        background: #fff;
+        cursor: grab;
+        transition: background 0.15s;
+        user-select: none;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:hover {
+            background: #f3f5f7;
+        }
+
+        &.is--disabled {
+            opacity: 0.5;
+        }
+
+        &.is--dragging {
+            background: #e8f4fd;
+            opacity: 0.7;
+        }
+    }
+
+    &__drag-handle {
+        margin-right: 12px;
+        color: #8ca0b3;
+        font-size: 16px;
+        cursor: grab;
+        flex-shrink: 0;
+    }
+
+    &__method-name {
+        flex: 1;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    &__toggle {
+        margin-bottom: 0;
+        flex-shrink: 0;
+    }
+
+    &__loading {
+        display: flex;
+        justify-content: center;
+        padding: 24px;
+    }
+
+    &__empty {
+        color: #677585;
+        padding: 16px 12px;
+        text-align: center;
+        font-size: 14px;
+    }
+}

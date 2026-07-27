@@ -98,5 +98,11 @@
             "fetch-error-title": "Payment details not found",
             "fetch-error-message": "Please try again, or check the logs for more details."
         }
+    },
+    "nexi-payment-methods-sortable": {
+        "enableLabel": "Enable payment method splitting",
+        "enableHelpText": "Allow merchants to display individual payment methods separately at checkout, with custom ordering.",
+        "hint": "Drag to reorder. Toggle to show or hide a payment method at checkout.",
+        "noMethods": "No payment methods available. Please verify your API credentials."
     }
 }

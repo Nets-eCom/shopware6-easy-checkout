@@ -1,0 +1,91 @@
+{% sw_extends '@Storefront/storefront/page/checkout/confirm/confirm-payment.html.twig' %}
+
+{% set splitDetails = page.extensions.nexiSplitPayment %}
+{% set details = page.extensions.nexiTransactionDetails %}
+{% set isOrderEdit = page.order is not null %}
+
+{% set isEmbeddedSplit = splitDetails is not null and splitDetails.createEmbeddedPaymentUrl is not null %}
+{% set isNexiHosted = context.paymentMethod.technicalName == constant('Nexi\\Checkout\\Lifecycle\\PaymentMethodsInstaller::NEXI_CHECKOUT_HOSTED_TECHNICAL_NAME') %}
+
+{% set shouldRenderEmbeddedSplit = isEmbeddedSplit and not isOrderEdit %}
+{% set shouldRenderHostedSplit = isNexiHosted and splitDetails is not null and not isEmbeddedSplit %}
+
+{% if shouldRenderEmbeddedSplit %}
+    {% set embeddedSplitOptions = {
+        checkoutKey: details.checkoutKey,
+        paymentId: null,
+        containerId: 'nexi-checkout',
+        language: details.language,
+        handlePaymentUrl: details.handlePaymentUrl,
+        targetPath: null,
+        payTypeSplitting: true,
+        createEmbeddedPaymentUrl: splitDetails.createEmbeddedPaymentUrl,
+        subselections: splitDetails.subselections,
+    } %}
+{% endif %}
+
+{% block page_checkout_change_payment_form %}
+    {{ parent() }}
+
+    {% if shouldRenderHostedSplit %}
+        <div data-nexi-hosted-split>
+            {% for method in splitDetails.subselections %}
+                <div class="payment-method">
+                    <div class="payment-form-group form-group">
+                        <div class="form-check payment-method-radio">
+                            <input
+                                class="form-check-input payment-method-input"
+                                type="radio"
+                                name="subselection"
+                                value="{{ method.value }}"
+                                id="nexi-method-{{ method.value }}"
+                            />
+                            <label class="form-check-label payment-method-label" for="nexi-method-{{ method.value }}">
+                                <div class="payment-method-description">
+                                    <strong>{{ method.label }}</strong>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if shouldRenderEmbeddedSplit %}
+        {% for method in splitDetails.subselections %}
+            <div class="payment-method nexi-split-method">
+                <div class="payment-form-group form-group">
+                    <div class="form-check payment-method-radio">
+                        <input
+                            class="form-check-input payment-method-input"
+                            type="radio"
+                            name="nexi_subselection"
+                            value="{{ method.value }}"
+                            id="nexi-method-{{ method.value }}"
+                        />
+                        <label class="form-check-label payment-method-label" for="nexi-method-{{ method.value }}">
+                            <div class="payment-method-description">
+                                <strong>{{ method.label }}</strong>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div
+                    id="nexi-checkout-{{ method.value }}"
+                    class="nexi-checkout-placeholder mt-2"
+                    style="display: none;"
+                >
+                    <div class="nexi-split-loading d-flex justify-content-center p-3" style="display: none;">
+                        <div class="loader"></div>
+                    </div>
+                    <div class="alert alert-danger" style="display: none;">
+                        {{ "nexi-checkout.split.loadError"|trans }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        <script src='{{ details.checkoutJsUrl }}' defer></script>
+        <template data-embedded-plugin data-embedded-plugin-options='{{ embeddedSplitOptions|json_encode }}'></template>
+    {% endif %}
+{% endblock %}

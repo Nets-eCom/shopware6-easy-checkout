@@ -1,0 +1,38 @@
+<div v-if="payTypeSplitting" class="nexi-payment-methods-sortable">
+    <div v-if="isLoading" class="nexi-payment-methods-sortable__loading">
+        <sw-loader />
+    </div>
+
+    <div v-else-if="sortedMethods.length === 0" class="nexi-payment-methods-sortable__empty">
+        {{ $tc('nexi-payment-methods-sortable.noMethods') }}
+    </div>
+
+    <div v-else class="nexi-payment-methods-sortable__list">
+        <p class="nexi-payment-methods-sortable__hint">{{ $tc('nexi-payment-methods-sortable.hint') }}</p>
+
+        <div
+            v-for="(method, index) in sortedMethods"
+            :key="method.name"
+            class="nexi-payment-methods-sortable__item"
+            :class="{ 'is--disabled': !method.enabled, 'is--dragging': dragSrcIndex === index }"
+            draggable="true"
+            @dragstart="onDragStart($event, index)"
+            @dragover="onDragOver($event, index)"
+            @drop="onDrop($event, index)"
+            @dragend="onDragEnd"
+        >
+            <div class="nexi-payment-methods-sortable__drag-handle">
+                &#9776;
+            </div>
+            <div class="nexi-payment-methods-sortable__method-name">
+                {{ method.name }}
+            </div>
+            <sw-switch-field
+                class="nexi-payment-methods-sortable__toggle"
+                :value="method.enabled"
+                :label="''"
+                @update:value="toggleMethod(method)"
+            />
+        </div>
+    </div>
+</div>

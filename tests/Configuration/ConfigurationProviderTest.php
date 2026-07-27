@@ -28,6 +28,52 @@ final class ConfigurationProviderTest extends TestCase
         $this->assertSame('1313', $sut->getCheckoutKey('secondary'));
     }
 
+    public function testItProvidesPayTypeSplitting(): void
+    {
+        $sut = new ConfigurationProvider(new StaticSystemConfigService([
+            ConfigurationProvider::PAY_TYPE_SPLITTING => true,
+            'channel-a' => [
+                ConfigurationProvider::PAY_TYPE_SPLITTING => false,
+            ],
+        ]));
+
+        $this->assertTrue($sut->isPayTypeSplitting());
+        $this->assertFalse($sut->isPayTypeSplitting('channel-a'));
+    }
+
+    public function testItProvidesPayTypeOptions(): void
+    {
+        $options = [
+            [
+                'name' => 'Card',
+                'paymentType' => 'CARD',
+                'enabled' => true,
+            ],
+            [
+                'name' => 'Swish',
+                'paymentType' => 'SWISH',
+                'enabled' => false,
+            ],
+        ];
+
+        $sut = new ConfigurationProvider(new StaticSystemConfigService([
+            ConfigurationProvider::PAY_TYPE_OPTIONS => json_encode($options),
+            'channel-a' => [
+                ConfigurationProvider::PAY_TYPE_OPTIONS => json_encode([]),
+            ],
+        ]));
+
+        $this->assertSame($options, $sut->getPayTypeOptions());
+        $this->assertSame([], $sut->getPayTypeOptions('channel-a'));
+    }
+
+    public function testItReturnsEmptyPayTypeOptionsWhenNotConfigured(): void
+    {
+        $sut = new ConfigurationProvider(new StaticSystemConfigService([]));
+
+        $this->assertSame([], $sut->getPayTypeOptions());
+    }
+
     private function createSystemConfigService(): StaticSystemConfigService
     {
         return new StaticSystemConfigService([

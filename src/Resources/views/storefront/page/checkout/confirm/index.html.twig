@@ -1,24 +1,36 @@
 {% sw_extends '@Storefront/storefront/page/checkout/confirm/index.html.twig' %}
 
 {% set details = page.extensions.nexiTransactionDetails %}
+{% set splitDetails = page.extensions.nexiSplitPayment %}
 
-{% set options = {
-    checkoutKey: details.checkoutKey,
-    paymentId: details.paymentId,
-    containerId: 'nexi-checkout',
-    language: details.language,
-    handlePaymentUrl: details.handlePaymentUrl,
-    targetPath: details.targetPath,
-} %}
+{% set EMBEDDED_TECHNICAL_NAME = constant('Nexi\\Checkout\\Lifecycle\\PaymentMethodsInstaller::NEXI_CHECKOUT_EMBEDDED_TECHNICAL_NAME') %}
+{% set HOSTED_TECHNICAL_NAME = constant('Nexi\\Checkout\\Lifecycle\\PaymentMethodsInstaller::NEXI_CHECKOUT_HOSTED_TECHNICAL_NAME') %}
 
+{% set isNexiEmbedded = context.paymentMethod.technicalName == EMBEDDED_TECHNICAL_NAME %}
+{% set isNexiHosted = context.paymentMethod.technicalName == HOSTED_TECHNICAL_NAME %}
+{% set isNexiSplit = splitDetails is not null %}
+{% set isOrderEdit = page.order is not null %}
 
-{% set shouldRender =
-    context.paymentMethod.technicalName == constant('Nexi\\Checkout\\Lifecycle\\PaymentMethodsInstaller::NEXI_CHECKOUT_EMBEDDED_TECHNICAL_NAME')
-    and page.order is null
-%}
+{% set isEmbeddedSplit = splitDetails is not null and splitDetails.createEmbeddedPaymentUrl is not null %}
+
+{% set shouldRenderEmbedded = isNexiEmbedded and not isOrderEdit and not isNexiSplit %}
+{% set shouldRenderEmbeddedSplit = isEmbeddedSplit and not isOrderEdit %}
+{% set shouldRenderHostedSplit = isNexiHosted and isNexiSplit and not isEmbeddedSplit %}
+
+{% if shouldRenderEmbedded %}
+    {% set embeddedOptions = {
+        checkoutKey: details.checkoutKey,
+        paymentId: details.paymentId,
+        containerId: 'nexi-checkout',
+        language: details.language,
+        handlePaymentUrl: details.handlePaymentUrl,
+        targetPath: details.targetPath,
+        payTypeSplitting: false,
+    } %}
+{% endif %}
 
 {% block page_checkout_confirm_product_table %}
-    {% if shouldRender %}
+    {% if shouldRenderEmbedded %}
         <div class="col-sm-12 nexi-checkout-wrapper">
             <div class="card checkout-card">
                 <div class="card-body">
@@ -30,7 +42,7 @@
             </div>
         </div>
         <script src='{{ details.checkoutJsUrl }}' defer></script>
-        <template data-embedded-plugin data-embedded-plugin-options='{{ options|json_encode }}'></template>
+        <template data-embedded-plugin data-embedded-plugin-options='{{ embeddedOptions|json_encode }}'></template>
     {% endif %}
 
     {{ parent() }}

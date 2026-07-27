@@ -47,11 +47,14 @@
             <argument type="service" id="router"/>
         </service>
 
+        <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\MethodConfigurationBuilder"/>
+
         <service id="Nexi\Checkout\RequestBuilder\PaymentRequest">
             <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\CheckoutBuilder"/>
             <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder"/>
             <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\NotificationBuilder"/>
             <argument type="service" id="Nexi\Checkout\Helper\FormatHelper"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest\MethodConfigurationBuilder"/>
         </service>
 
         <service id="Nexi\Checkout\RequestBuilder\PaymentRequest\ItemsBuilder">
@@ -186,6 +189,12 @@
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartOrderRoute" />
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService" />
             <argument type="service" id="order_transaction.repository"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest"/>
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextPersister"/>
+            <argument type="service" id="payment_method.repository"/>
 
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
@@ -239,6 +248,29 @@
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <argument type="service" id="monolog.logger.nexicheckout_channel"/>
             <tag name="nexicheckout.webhook_processor" />
+        </service>
+
+        <!-- ### Split Payment ### -->
+        <service id="Nexi\Checkout\PaymentMethods\PaymentMethodsFetcher">
+            <argument type="service" id="NexiCheckout\Factory\PaymentApiFactory"/>
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+        </service>
+
+        <service id="Nexi\Checkout\PaymentMethods\CachedPaymentMethodsFetcher">
+            <argument type="service" id="Nexi\Checkout\PaymentMethods\PaymentMethodsFetcher"/>
+            <argument type="service" id="cache.nexi_checkout.payment_methods"/>
+            <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+        </service>
+
+        <service id="Nexi\Checkout\PaymentMethods\PaymentMethodsFetcherInterface"
+                 alias="Nexi\Checkout\PaymentMethods\CachedPaymentMethodsFetcher"/>
+
+        <service id="Nexi\Checkout\Subscriber\SplitPaymentCheckoutSubscriber">
+            <argument type="service" id="Nexi\Checkout\Configuration\ConfigurationProvider"/>
+            <argument type="service" id="Nexi\Checkout\PaymentMethods\PaymentMethodsFetcherInterface"/>
+            <argument type="service" id="router"/>
+            <tag name="kernel.event_subscriber"/>
         </service>
 
         <!-- ### Subscribers ### -->
@@ -327,6 +359,13 @@
         <service id="Nexi\Checkout\Administration\Controller\PaymentDetailController" public="true">
             <argument type="service" id="order.repository"/>
             <argument type="service" id="Nexi\Checkout\Fetcher\PaymentFetcher"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="Nexi\Checkout\Administration\Controller\PaymentMethodsController" public="true">
+            <argument type="service" id="Nexi\Checkout\PaymentMethods\PaymentMethodsFetcher"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
