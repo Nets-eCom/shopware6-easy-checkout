@@ -370,13 +370,13 @@ Shopware.Component.override('sw-order-detail-details', {
 
         onClickMaxCharge() {
             if (!this.isItemsListVisible) {
-                this.setChargeAmount(this.paymentDetails.remainingChargeAmount);
+                this.setChargeAmount(parseFloat(this.paymentDetails.remainingChargeAmount));
             }
         },
 
         onClickMaxRefund() {
             if (!this.isItemsListVisible) {
-                this.setRefundAmount(this.paymentDetails.remainingRefundAmount);
+                this.setRefundAmount(parseFloat(this.paymentDetails.remainingRefundAmount));
             }
         },
 

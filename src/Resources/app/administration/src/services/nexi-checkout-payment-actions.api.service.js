@@ -10,7 +10,7 @@ class NexiCheckoutApiPaymentService extends ApiService {
         return this.httpClient
             .put(
                 `order/${orderId}/nexi-payment-charge`,
-                { amount: amount.toString(), items },
+                { amount: amount, items },
                 {
                     headers: this.getBasicHeaders(),
                 },
@@ -22,10 +22,7 @@ class NexiCheckoutApiPaymentService extends ApiService {
         return this.httpClient
             .put(
                 `order/${orderId}/nexi-payment-refund`,
-                {
-                    amount: amount.toString(),
-                    charges
-                },
+                { amount: amount, charges },
                 {
                     headers: this.getBasicHeaders(),
                 },

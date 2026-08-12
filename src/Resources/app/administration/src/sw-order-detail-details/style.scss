@@ -3,7 +3,6 @@ $column-gap: 2rem;
 $font-size: 14px;
 $border-color: #d1d9e0;
 $focus-outline-color: #118cff;
-$text-color-light: #c6cfd9;
 $text-color-dark: #8599ad;
 
 // Mixin for Shopware breakpoint
@@ -95,7 +94,7 @@ $text-color-dark: #8599ad;
   }
 
   &__full-amount {
-    color: $text-color-light;
+    color: #000;
     font-size: $font-size;
 
     span {
