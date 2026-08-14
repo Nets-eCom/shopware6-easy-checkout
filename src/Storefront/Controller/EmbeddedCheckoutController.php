@@ -8,7 +8,7 @@ use Shopware\Core\Checkout\Cart\SalesChannel\AbstractCartOrderRoute;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
 use Shopware\Core\Checkout\Order\Exception\EmptyCartException;
 use Shopware\Core\Checkout\Order\OrderEntity;
-use Shopware\Core\Checkout\Payment\SalesChannel\HandlePaymentMethodRoute;
+use Shopware\Core\Checkout\Payment\SalesChannel\AbstractHandlePaymentMethodRoute;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
@@ -26,13 +26,13 @@ class EmbeddedCheckoutController extends StorefrontController
 
     private AbstractCartOrderRoute $cartOrderRoute;
     private CartService $cartService;
-    private HandlePaymentMethodRoute $handlePaymentMethodRoute;
+    private AbstractHandlePaymentMethodRoute $handlePaymentMethodRoute;
     private EntityRepository $transactionRepository;
 
     public function __construct(
         AbstractCartOrderRoute $route,
         CartService $cartService,
-        HandlePaymentMethodRoute $handlePaymentMethodRoute,
+        AbstractHandlePaymentMethodRoute $handlePaymentMethodRoute,
         EntityRepository $transactionRepository
     ) {
         $this->cartOrderRoute = $route;
