@@ -30,6 +30,8 @@ resources:
 variables:
   extensionName: NetsNexiCheckout
   publishDir: ./bin
+  composerVersion: 2.8.12 # Temporarily pin Composer to 2.8.12 so Shopware 6.7.13 can be installed for validation; Composer 2.9+ blocks this version because of its security advisories.
+  githubRepo: Nets-eCom/shopware6-easy-checkout
 
 stages:
   - stage: Validate
@@ -41,6 +43,8 @@ stages:
               sudo update-alternatives --set php /usr/bin/php${{ parameters.validateOnPhpVersion }}
               php -version
             displayName: 'Use PHP version ${{ parameters.validateOnPhpVersion }}'
+          - script: sudo composer self-update $(composerVersion)
+            displayName: 'Pin Composer version $(composerVersion)'
           - script: composer install --no-interaction --prefer-dist --ignore-platform-req=ext-redis
             workingDirectory: $(System.DefaultWorkingDirectory)
             displayName: 'Composer install'
@@ -135,3 +139,48 @@ stages:
         steps:
           - checkout: none
           - bash: echo "CD-Services-Shopware6 runs after this completes"
+
+  - stage: Release
+    displayName: 'Release to GitHub'
+    dependsOn: []
+    condition: |
+      and(
+        succeeded(),
+        eq(variables['Build.SourceBranch'], 'refs/heads/main')
+      )
+    jobs:
+      - job: PushToGitHub
+        displayName: 'Tag and push to GitHub'
+        steps:
+          - checkout: self
+            persistCredentials: true
+            fetchDepth: 0
+
+          - script: |
+              VERSION=$(awk '/^### Version /{print $3; exit}' CHANGELOG.md)
+              if [ -z "$VERSION" ]; then
+                echo "##[error]Could not extract version from CHANGELOG.md"
+                exit 1
+              fi
+              echo "Detected version: $VERSION"
+              echo "##vso[task.setvariable variable=RELEASE_VERSION]$VERSION"
+            displayName: 'Extract version from CHANGELOG.md'
+
+          - script: |
+              git config user.email "azure-pipelines@noreply.com"
+              git config user.name "Azure Pipelines"
+              git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+
+              GITHUB_REMOTE="https://x-access-token:$(GITHUB_PAT)@github.com/$(githubRepo).git"
+              git remote add github "$GITHUB_REMOTE" 2>/dev/null || git remote set-url github "$GITHUB_REMOTE"
+              git push github HEAD:main --force
+
+              if git ls-remote --tags github "$RELEASE_VERSION" | grep -q "refs/tags/$RELEASE_VERSION$"; then
+                echo "Tag $RELEASE_VERSION already on GitHub, skipping"
+              else
+                git push github "$RELEASE_VERSION"
+                echo "Pushed tag $RELEASE_VERSION to GitHub"
+              fi
+            displayName: 'Push branch and tag to GitHub'
+            env:
+              GITHUB_PAT: $(GITHUB_PAT)

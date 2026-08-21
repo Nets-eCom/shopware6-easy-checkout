@@ -97,7 +97,8 @@ class ItemsBuilder
                 ? $itemPrice->getTotalPrice()
                 : $itemPrice->getTotalPrice() - $taxAmount
         );
-        $reference = $lineItem->getPayload()['productNumber'] ?? $lineItem->getProductId() ?? $lineItem->getId();
+
+        $reference = $this->getReference($lineItem);
 
         return new Item(
             $this->sanitize($lineItem->getLabel()),
@@ -121,7 +122,8 @@ class ItemsBuilder
         $calculatedTaxAmount = $itemPrice->getCalculatedTaxes()->getAmount();
         $quantity = $lineItem->getQuantity();
         $unitPrice = $this->getUnitPrice($itemPrice, $quantity, $taxStatus);
-        $reference = $lineItem->getPayload()['productNumber'] ?? $lineItem->getReferencedId() ?? $lineItem->getId();
+
+        $reference = $this->getReference($lineItem);
 
         $grossTotalAmount = $this->priceToInt(
             $taxStatus !== CartPrice::TAX_STATE_GROSS
@@ -176,6 +178,21 @@ class ItemsBuilder
             $this->getTaxRate($shippingCost),
             $taxAmount
         );
+    }
+
+    private function getReference(OrderLineItemEntity|LineItem $lineItem): string
+    {
+        $productId = $lineItem instanceof OrderLineItemEntity
+            ? $lineItem->getProductId()
+            : $lineItem->getReferencedId();
+
+        $payload = $lineItem->getPayload() ?? [];
+        $reference = empty($payload['productNumber']) ? $productId : $payload['productNumber'];
+        if (empty($reference)) {
+            $reference = $lineItem->getId();
+        }
+
+        return $reference;
     }
 
     private function getUnitPrice(CalculatedPrice $calculatedPrice, int $qty, string $taxStatus): int
