@@ -114,7 +114,6 @@ stages:
             displayName: 'Install Node.js 20'
           - script: |
               sed -i "s|\$this->registerProvisionSubscriber(\$container)|\$this->registerProvisionSubscriber(\$container, '$(shopware-provision-identifier)')|" src/NetsNexiCheckout.php
-              sed -i "s/{{ version }}/~6.6.1/g" .shopware-extension.yml
               sed -i "s/COMMERCE_PLATFORM_TAG = 'Shopware6';/COMMERCE_PLATFORM_TAG = 'Shopware6_m';/g" src/NetsNexiCheckout.php
               shopware-cli extension zip --disable-git . --release
               mv $(extensionName).zip $(publishDir)/$(extensionName).zip
