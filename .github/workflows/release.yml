@@ -40,6 +40,7 @@ jobs:
         run: |
           VERSION="${{ github.ref_name }}"
           REPO_NAME="${{ github.event.repository.name }}"
+          sed -i "s/{{ version }}/~6.6.1/g" .shopware-extension.yml
           shopware-cli extension zip --disable-git . --release
           mv NetsNexiCheckout.zip "${REPO_NAME}-${VERSION}.zip"
 
