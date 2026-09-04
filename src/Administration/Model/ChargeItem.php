@@ -19,9 +19,9 @@ readonly class ChargeItem
         private string $unit,
         #[Assert\NotBlank]
         private float $unitPrice,
-        #[Assert\GreaterThanOrEqual(0.01)]
+        #[Assert\NotEqualTo(0.0)]
         private float $grossTotalAmount,
-        #[Assert\GreaterThanOrEqual(0.01)]
+        #[Assert\NotEqualTo(0.0)]
         private float $netTotalAmount,
         #[Assert\NotBlank]
         private string $reference,

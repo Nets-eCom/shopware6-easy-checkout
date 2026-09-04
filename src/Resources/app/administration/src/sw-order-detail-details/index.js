@@ -208,24 +208,19 @@ Shopware.Component.override('sw-order-detail-details', {
 
         updateRefundItem({ chargeId, reference, grossTotalAmount, quantity, ...rest }, quantityToRefund) {
             const amount = (grossTotalAmount / quantity) * quantityToRefund;
+            const index = !this.refund[chargeId] ? -1 : this.refund[chargeId].items.findIndex(existing => existing.reference === reference);
+
+            // dont add item with value 0
+            if ((quantityToRefund === null || quantityToRefund === 0) && index === -1) {
+                return;
+            }
 
             if (!this.refund[chargeId]) {
                 this.refund[chargeId] = { amount: 0.0, items: [] };
             }
 
-            const index = this.refund[chargeId].items.findIndex(existing => existing.reference === reference);
-
-            // dont add item with value 0
-            if (quantityToRefund === 0 && index === -1) {
-                return;
-            }
-
             if (index === -1) {
                 this.refund[chargeId].items.push({ reference, quantity: quantityToRefund, amount, ...rest });
-                this.refund[chargeId].amount = this.refund[chargeId].items.reduce(
-                    (total, { amount }) => total + amount,
-                    0
-                );
                 this.calculateRefundAmount();
 
                 return;
@@ -234,7 +229,7 @@ Shopware.Component.override('sw-order-detail-details', {
             if (quantityToRefund === null || quantityToRefund === 0) {
                 this.refund[chargeId].items.splice(index, 1);
 
-                if (!this.refund[chargeId].items.length > 0) {
+                if (this.refund[chargeId].items.length === 0) {
                     delete this.refund[chargeId];
                 }
                 this.calculateRefundAmount();
@@ -243,25 +238,30 @@ Shopware.Component.override('sw-order-detail-details', {
             }
 
             this.refund[chargeId].items[index] = { reference, quantity: quantityToRefund, amount, ...rest };
-            this.refund[chargeId].amount = this.refund[chargeId].items.reduce(
-                (total, { amount }) => total + amount,
-                0
-            );
-
             this.calculateRefundAmount();
         },
 
+        calculateChargeRefundAmount(chargeId) {
+            const total = this.refund[chargeId].items.reduce(
+                (chargeTotal, { amount }) => chargeTotal + amount,
+                0.0
+            );
+            return parseFloat(total.toFixed(2));
+        },
+
         calculateRefundAmount() {
-            const total = Object.keys(this.refund)
-                .reduce((sum, key) => {
-                    const value = this.refund[key];
+            const total = Object.keys(this.refund).reduce((sum, chargeKey) => {
+                const value = this.refund[chargeKey];
 
-                    if (!(value instanceof Array)) {
-                        sum += value.amount || 0;
-                    }
-
+                if (!value || !Array.isArray(value.items)) {
                     return sum;
-                }, 0.0);
+                }
+
+                const chargeValue = this.calculateChargeRefundAmount(chargeKey);
+                this.refund[chargeKey].amount = chargeValue;
+
+                return sum + chargeValue;
+            }, 0.0);
 
             this.setRefundAmount(parseFloat(total.toFixed(2)));
         },
@@ -276,6 +276,7 @@ Shopware.Component.override('sw-order-detail-details', {
 
             // dont add item with value 0
             if (quantityToCharge === 0 && index === -1) {
+                this.calculateChargeAmount();
                 return;
             }
 

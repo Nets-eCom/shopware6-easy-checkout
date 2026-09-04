@@ -30,7 +30,6 @@ resources:
 variables:
   extensionName: NetsNexiCheckout
   publishDir: ./bin
-  composerVersion: 2.8.12 # Temporarily pin Composer to 2.8.12 so Shopware 6.7.13 can be installed for validation; Composer 2.9+ blocks this version because of its security advisories.
   githubRepo: Nets-eCom/shopware6-easy-checkout
 
 stages:
@@ -43,8 +42,6 @@ stages:
               sudo update-alternatives --set php /usr/bin/php${{ parameters.validateOnPhpVersion }}
               php -version
             displayName: 'Use PHP version ${{ parameters.validateOnPhpVersion }}'
-          - script: sudo composer self-update $(composerVersion)
-            displayName: 'Pin Composer version $(composerVersion)'
           - script: composer install --no-interaction --prefer-dist --ignore-platform-req=ext-redis
             workingDirectory: $(System.DefaultWorkingDirectory)
             displayName: 'Composer install'

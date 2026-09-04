@@ -13,7 +13,7 @@ class Item
         private readonly string $reference,
         #[Assert\Positive]
         private readonly int $quantity,
-        #[Assert\GreaterThanOrEqual(0.01)]
+        #[Assert\NotEqualTo(0.0)]
         private readonly float $amount
     ) {
     }

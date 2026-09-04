@@ -55,7 +55,7 @@ class RefundRequest
                 $netTotalAmount,
                 $orderItem !== [] ? $orderItem['reference'] : $chargeItem->getReference(),
                 $orderItem !== [] ? $orderItem['taxRate'] : $chargeItem->getTaxRate() ?? null,
-                $taxAmount > 0 ? $taxAmount : null
+                $taxAmount
             );
         }
 
