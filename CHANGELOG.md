@@ -10,6 +10,10 @@
 
 ## CHANGELOG
 
+### Version 2.2.4 - Released 2026-09-14
+
+- fix: bump nexi-checkout/php-payment-sdk to 0.16 
+
 ### Version 2.2.3 - Released 2026-09-04
 
 - fix: handling of discount items
