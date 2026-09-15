@@ -47,3 +47,16 @@ For complete documentation, visit our [GitHub docs](https://github.com/Nets-eCom
 ### API
 
 - Access the [Nexi API Reference](https://developer.nexigroup.com/nexi-checkout/en-EU/api/).
+
+### MCP payment tools
+
+The plugin provides tools to retrieve Nexi payment details by Shopware order ID, order number, or Nexi payment ID. Payments can also be charged, refunded, or cancelled using a preview and confirmation flow.
+
+Example prompts:
+
+```text
+Show payment details for order number 10000
+Charge 10 EUR for order number 10000
+Refund all available funds for payment ID <payment-id>
+Cancel the payment for order number 10000
+```

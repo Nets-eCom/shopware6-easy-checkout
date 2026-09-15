@@ -115,6 +115,7 @@
         <service id="Nexi\Checkout\Http\HttpClientProviderConfigurator">
             <argument type="service" id="NexiCheckout\Factory\Provider\HttpClientConfigurationProvider"/>
             <argument>%kernel.shopware_version%</argument>
+            <argument type="service" id="request_stack"/>
         </service>
 
         <service id="NexiCheckout\Factory\Provider\HttpClientConfigurationProvider">

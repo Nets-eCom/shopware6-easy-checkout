@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nexi\Checkout;
 
 use Doctrine\DBAL\Connection;
+use Mcp\Capability\Attribute\McpTool;
 use Nexi\Checkout\Lifecycle\PaymentMethodInstallerInterface;
 use Nexi\Checkout\Lifecycle\PaymentMethodsActivator;
 use Nexi\Checkout\Lifecycle\PaymentMethodsInstaller;
@@ -17,6 +18,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Shopware\Core\Checkout\Payment\PaymentMethodDefinition;
+use Shopware\Core\Framework\Mcp\Tool\McpToolResponse;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\ActivateContext;
 use Shopware\Core\Framework\Plugin\Context\DeactivateContext;
@@ -32,6 +34,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\DirectoryLoader;
 use Symfony\Component\DependencyInjection\Loader\GlobFileLoader;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 
@@ -50,6 +53,7 @@ class NetsNexiCheckout extends Plugin
         parent::build($container);
 
         $this->registerPackagesConfigFile($container);
+        $this->registerMcpServices($container);
         $this->registerApiUrlParameters($container);
         $this->registerProvisionSubscriber($container);
     }
@@ -145,6 +149,21 @@ class NetsNexiCheckout extends Plugin
         $confDir = rtrim($this->getPath(), '/') . '/Resources/config';
 
         $configLoader->load($confDir . '/{packages}/*.yaml', 'glob');
+    }
+
+    private function registerMcpServices(ContainerBuilder $container): void
+    {
+        if (!class_exists(McpTool::class)
+            || !class_exists(McpToolResponse::class)
+        ) {
+            return;
+        }
+
+        $loader = new XmlFileLoader(
+            $container,
+            new FileLocator($this->getPath() . '/Resources/config')
+        );
+        $loader->load('mcp.xml');
     }
 
     private function registerApiUrlParameters(ContainerBuilder $container): void
