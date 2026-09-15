@@ -10,6 +10,10 @@
 
 ## CHANGELOG
 
+### Version 2.3.0 - Released 2026-09-15
+
+- feat(mcp): support admin actions
+
 ### Version 2.2.4 - Released 2026-09-14
 
 - fix: bump nexi-checkout/php-payment-sdk to 0.16 
