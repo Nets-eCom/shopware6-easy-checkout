@@ -6,9 +6,10 @@ namespace Nexi\Checkout\Mcp\Tool;
 
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Schema\ToolAnnotations;
-use Nexi\Checkout\Mcp\NexiTransactionResolver;
+use Nexi\Checkout\Mcp\NexiOrderResolver;
 use Nexi\Checkout\Mcp\PaymentActionService;
 use Nexi\Checkout\Order\Exception\OrderCancelException;
+use Shopware\Core\Framework\Mcp\Attribute\McpToolGroup;
 use Shopware\Core\Framework\Mcp\Attribute\McpToolRequires;
 use Shopware\Core\Framework\Mcp\Context\McpContextProvider;
 use Shopware\Core\Framework\Mcp\Tool\McpToolResponse;
@@ -19,12 +20,13 @@ use Shopware\Core\Framework\Mcp\Tool\McpToolResponse;
     annotations: new ToolAnnotations(readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true),
 )]
 #[McpToolRequires('order:read')]
+#[McpToolGroup('nexi-checkout')]
 #[McpToolRequires('order:update')]
 final class CancelPaymentTool extends McpToolResponse
 {
     public function __construct(
         private readonly McpContextProvider $contextProvider,
-        private readonly NexiTransactionResolver $transactionResolver,
+        private readonly NexiOrderResolver $orderResolver,
         private readonly PaymentActionService $paymentActions,
     ) {
     }
@@ -42,8 +44,8 @@ final class CancelPaymentTool extends McpToolResponse
         }
 
         try {
-            $transaction = $this->transactionResolver->resolve($orderId, $orderNumber, $paymentId);
-            $result = $this->paymentActions->cancel($transaction, $confirmation);
+            $order = $this->orderResolver->resolve($orderId, $orderNumber, $paymentId);
+            $result = $this->paymentActions->cancel($order, $confirmation);
         } catch (OrderCancelException $exception) {
             return $this->error('Nexi rejected the cancellation request.');
         } catch (\InvalidArgumentException $exception) {

@@ -6,9 +6,10 @@ namespace Nexi\Checkout\Mcp\Tool;
 
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Schema\ToolAnnotations;
-use Nexi\Checkout\Mcp\NexiTransactionResolver;
+use Nexi\Checkout\Mcp\NexiOrderResolver;
 use Nexi\Checkout\Mcp\PaymentActionService;
 use Nexi\Checkout\Order\Exception\OrderRefundException;
+use Shopware\Core\Framework\Mcp\Attribute\McpToolGroup;
 use Shopware\Core\Framework\Mcp\Attribute\McpToolRequires;
 use Shopware\Core\Framework\Mcp\Context\McpContextProvider;
 use Shopware\Core\Framework\Mcp\Tool\McpToolResponse;
@@ -19,12 +20,13 @@ use Shopware\Core\Framework\Mcp\Tool\McpToolResponse;
     annotations: new ToolAnnotations(readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true),
 )]
 #[McpToolRequires('order:read')]
+#[McpToolGroup('nexi-checkout')]
 #[McpToolRequires('order:update')]
 final class RefundPaymentTool extends McpToolResponse
 {
     public function __construct(
         private readonly McpContextProvider $contextProvider,
-        private readonly NexiTransactionResolver $transactionResolver,
+        private readonly NexiOrderResolver $orderResolver,
         private readonly PaymentActionService $paymentActions,
     ) {
     }
@@ -43,8 +45,8 @@ final class RefundPaymentTool extends McpToolResponse
         }
 
         try {
-            $transaction = $this->transactionResolver->resolve($orderId, $orderNumber, $paymentId);
-            $result = $this->paymentActions->refund($transaction, $context, $amount, $confirmation);
+            $order = $this->orderResolver->resolve($orderId, $orderNumber, $paymentId);
+            $result = $this->paymentActions->refund($order, $context, $amount, $confirmation);
         } catch (OrderRefundException $exception) {
             return $this->error('Nexi rejected the refund request. Fetch fresh payment details before retrying.');
         } catch (\InvalidArgumentException $exception) {

@@ -13,9 +13,10 @@ use Nexi\Checkout\Mcp\PaymentActionService;
 use Nexi\Checkout\Order\OrderCancel;
 use Nexi\Checkout\Order\OrderCharge;
 use Nexi\Checkout\Order\OrderRefund;
-use Nexi\Checkout\Tests\Fixture\RetrievePaymentResultFixture;
+use NexiCheckout\Model\Result\RetrievePayment\OrderDetails;
 use NexiCheckout\Model\Result\RetrievePayment\Payment;
-use PHPUnit\Framework\Attributes\DataProvider;
+use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
+use NexiCheckout\Model\Result\RetrievePayment\Summary;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -24,199 +25,180 @@ use Shopware\Core\Framework\Context;
 
 final class PaymentActionServiceTest extends TestCase
 {
-    #[DataProvider('validAmounts')]
-    public function testAmountIsConvertedToExactCents(string $amount, string $expected): void
+    public function testAmountIsConvertedToExactCents(): void
     {
-        $service = $this->createService(RetrievePaymentResultFixture::reserved()->getPayment());
-
-        $result = $service->charge($this->createTransaction(), $amount, '');
-
-        $this->assertSame($expected, $result['amount']);
+        $service = $this->createService();
+        foreach ([['1', '1.00'], ['0.5', '0.50'], ['0.29', '0.29'], [' 000.01 ', '0.01'], ['', '1.00']] as [$amount, $expected]) {
+            $result = $service->charge($this->createOrder(), $amount, '');
+            $this->assertSame($expected, $result['amount']);
+        }
     }
 
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function validAmounts(): iterable
+    public function testInvalidAmountsAreRejected(): void
     {
-        yield 'whole amount' => ['1', '1.00'];
-        yield 'single decimal' => ['0.5', '0.50'];
-        yield 'exact cents' => ['0.29', '0.29'];
-        yield 'leading zeros and whitespace' => [' 000.01 ', '0.01'];
-        yield 'remaining balance' => ['', '1.00'];
-    }
-
-    #[DataProvider('invalidAmounts')]
-    public function testInvalidAmountIsRejected(string $amount): void
-    {
-        $service = $this->createService(RetrievePaymentResultFixture::reserved()->getPayment());
-
-        $this->expectException(\InvalidArgumentException::class);
-
-        $service->charge($this->createTransaction(), $amount, '');
-    }
-
-    /**
-     * @return iterable<string, array{string}>
-     */
-    public static function invalidAmounts(): iterable
-    {
-        yield 'zero' => ['0.00'];
-        yield 'negative' => ['-0.01'];
-        yield 'too many decimals' => ['0.001'];
-        yield 'scientific notation' => ['1e-2'];
-        yield 'overflow' => ['999999999999999999999999999999'];
+        $service = $this->createService();
+        foreach (['0.00', '-0.01', '0.001', '1e-2', '999999999999999999999999999999'] as $amount) {
+            try {
+                $service->charge($this->createOrder(), $amount, '');
+                $this->fail('Expected invalid amount to be rejected: ' . $amount);
+            } catch (\InvalidArgumentException $exception) {
+                $this->assertNotEmpty($exception->getMessage());
+            }
+        }
     }
 
     public function testChargeReturnsBoundConfirmationPreview(): void
     {
-        $payment = RetrievePaymentResultFixture::reserved()->getPayment();
-        $service = $this->createService($payment);
-
-        $result = $service->charge($this->createTransaction(), '0.50', '');
-
+        $charge = $this->createMock(OrderCharge::class);
+        $charge->expects($this->never())->method('partialCharge');
+        $charge->expects($this->never())->method('fullCharge');
+        $result = $this->createService(orderCharge: $charge)->charge($this->createOrder(), '0.50', '');
         $this->assertFalse($result['executed']);
         $this->assertSame('0.50', $result['amount']);
-        $this->assertSame(
-            \sprintf('CONFIRM CHARGE payment-id 0.50 EUR AVAILABLE 1.00 STATUS %s', $payment->getStatus()->value),
-            $result['requiredConfirmation']
-        );
+        $this->assertSame('CONFIRM CHARGE payment-id 0.50 EUR AVAILABLE 1.00 STATUS reserved', $result['requiredConfirmation']);
     }
 
-    public function testPartialChargeDelegatesAfterExactConfirmation(): void
+    public function testPartialChargeDelegatesTheResolvedOrder(): void
     {
-        $payment = RetrievePaymentResultFixture::reserved()->getPayment();
-        $orderCharge = $this->createMock(OrderCharge::class);
-        $orderCharge->expects($this->once())
-            ->method('partialCharge')
-            ->with(
-                $this->isInstanceOf(OrderEntity::class),
-                $this->callback(static fn (ChargeData $data): bool => $data->getAmount() === 0.5)
-            );
-        $service = $this->createService($payment, orderCharge: $orderCharge);
-
-        $result = $service->charge(
-            $this->createTransaction(),
-            '0.50',
-            \sprintf('CONFIRM CHARGE payment-id 0.50 EUR AVAILABLE 1.00 STATUS %s', $payment->getStatus()->value)
+        $order = $this->createOrder();
+        $charge = $this->createMock(OrderCharge::class);
+        $charge->expects($this->once())->method('partialCharge')->with(
+            $this->identicalTo($order),
+            $this->callback(fn (ChargeData $data): bool => $data->getAmount() === 0.5)
         );
-
+        $result = $this->createService(orderCharge: $charge)->charge(
+            $order,
+            '0.50',
+            'CONFIRM CHARGE payment-id 0.50 EUR AVAILABLE 1.00 STATUS reserved'
+        );
         $this->assertSame('service_call_completed', $result['status']);
         $this->assertSame('charge', $result['action']);
     }
 
-    public function testFullChargeDelegatesAfterExactConfirmation(): void
+    public function testFullChargeDelegatesTheResolvedOrder(): void
     {
-        $payment = RetrievePaymentResultFixture::reserved()->getPayment();
-        $orderCharge = $this->createMock(OrderCharge::class);
-        $orderCharge->expects($this->once())->method('fullCharge');
-        $service = $this->createService($payment, orderCharge: $orderCharge);
-
-        $result = $service->charge(
-            $this->createTransaction(),
+        $order = $this->createOrder();
+        $charge = $this->createMock(OrderCharge::class);
+        $charge->expects($this->once())->method('fullCharge')->with($this->identicalTo($order));
+        $result = $this->createService(orderCharge: $charge)->charge(
+            $order,
             '',
-            \sprintf('CONFIRM CHARGE payment-id 1.00 EUR AVAILABLE 1.00 STATUS %s', $payment->getStatus()->value)
+            'CONFIRM CHARGE payment-id 1.00 EUR AVAILABLE 1.00 STATUS reserved'
         );
-
         $this->assertSame('service_call_completed', $result['status']);
         $this->assertSame('1.00', $result['amount']);
     }
 
     public function testChargeRejectsAmountAboveAvailableBalance(): void
     {
-        $service = $this->createService(RetrievePaymentResultFixture::reserved()->getPayment());
-
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('exceeds the available amount');
-
-        $service->charge($this->createTransaction(), '1.01', '');
+        $this->createService()->charge($this->createOrder(), '1.01', '');
     }
 
-    public function testRefundDelegatesAfterExactConfirmation(): void
+    public function testRefundDelegatesTheResolvedOrder(): void
     {
-        $payment = RetrievePaymentResultFixture::fullyChargedWithMultipleCharges()->getPayment();
-        $context = Context::createDefaultContext();
-        $orderRefund = $this->createMock(OrderRefund::class);
-        $orderRefund->expects($this->once())
-            ->method('partialRefund')
-            ->with(
-                $this->isInstanceOf(OrderEntity::class),
-                $this->callback(static fn (RefundData $data): bool => $data->getAmount() === 10.0
-                    && $data->getContext() === $context)
-            );
-        $service = $this->createService($payment, orderRefund: $orderRefund);
-
-        $result = $service->refund(
-            $this->createTransaction(),
+        $order = $this->createOrder();
+        $context = $this->createStub(Context::class);
+        $refund = $this->createMock(OrderRefund::class);
+        $refund->expects($this->once())->method('partialRefund')->with(
+            $this->identicalTo($order),
+            $this->callback(fn (RefundData $data): bool => $data->getAmount() === 10.0 && $data->getContext() === $context)
+        );
+        $result = $this->createService(orderRefund: $refund, charged: true)->refund(
+            $order,
             $context,
             '',
-            \sprintf('CONFIRM REFUND payment-id 10.00 EUR AVAILABLE 10.00 STATUS %s', $payment->getStatus()->value)
+            'CONFIRM REFUND payment-id 10.00 EUR AVAILABLE 10.00 STATUS charged'
         );
-
         $this->assertSame('service_call_completed', $result['status']);
         $this->assertSame('refund', $result['action']);
     }
 
     public function testCancelReturnsConfirmationPreview(): void
     {
-        $payment = RetrievePaymentResultFixture::reserved()->getPayment();
-        $service = $this->createService($payment);
-
-        $result = $service->cancel($this->createTransaction(), '');
-
+        $cancel = $this->createMock(OrderCancel::class);
+        $cancel->expects($this->never())->method('cancel');
+        $result = $this->createService(orderCancel: $cancel)->cancel($this->createOrder(), '');
         $this->assertFalse($result['executed']);
-        $this->assertSame(
-            \sprintf('CONFIRM CANCEL payment-id 1.00 EUR STATUS %s', $payment->getStatus()->value),
-            $result['requiredConfirmation']
-        );
+        $this->assertSame('CONFIRM CANCEL payment-id 1.00 EUR STATUS reserved', $result['requiredConfirmation']);
     }
 
-    public function testCancelDelegatesAfterExactConfirmation(): void
+    public function testCancelDelegatesTheResolvedOrder(): void
     {
-        $payment = RetrievePaymentResultFixture::reserved()->getPayment();
-        $orderCancel = $this->createMock(OrderCancel::class);
-        $orderCancel->expects($this->once())->method('cancel');
-        $service = $this->createService($payment, orderCancel: $orderCancel);
-
-        $result = $service->cancel(
-            $this->createTransaction(),
-            \sprintf('CONFIRM CANCEL payment-id 1.00 EUR STATUS %s', $payment->getStatus()->value)
+        $order = $this->createOrder();
+        $cancel = $this->createMock(OrderCancel::class);
+        $cancel->expects($this->once())->method('cancel')->with($this->identicalTo($order));
+        $result = $this->createService(orderCancel: $cancel)->cancel(
+            $order,
+            'CONFIRM CANCEL payment-id 1.00 EUR STATUS reserved'
         );
-
         $this->assertSame('service_call_completed', $result['status']);
         $this->assertSame('cancel', $result['action']);
     }
 
     public function testManualChargeIsRejectedWhenAutoChargeIsEnabled(): void
     {
-        $payment = RetrievePaymentResultFixture::reserved()->getPayment();
-        $orderCharge = $this->createMock(OrderCharge::class);
-        $orderCharge->expects($this->never())->method('fullCharge');
-        $orderCharge->expects($this->never())->method('partialCharge');
-        $service = $this->createService($payment, orderCharge: $orderCharge, isAutoCharge: true);
-
+        $charge = $this->createMock(OrderCharge::class);
+        $charge->expects($this->never())->method('fullCharge');
+        $charge->expects($this->never())->method('partialCharge');
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Manual charge is disabled because auto-charge is enabled');
-
-        $service->charge(
-            $this->createTransaction(),
+        $this->createService(orderCharge: $charge, isAutoCharge: true)->charge(
+            $this->createOrder(),
             '',
-            \sprintf('CONFIRM CHARGE payment-id 1.00 EUR AVAILABLE 1.00 STATUS %s', $payment->getStatus()->value)
+            'CONFIRM CHARGE payment-id 1.00 EUR AVAILABLE 1.00 STATUS reserved'
         );
     }
 
+    public function testActionsRejectMissingEmptyAndMultipleTransactions(): void
+    {
+        foreach (['charge', 'refund', 'cancel'] as $action) {
+            foreach ([null, 0, 2] as $count) {
+                $order = $this->createOrder();
+                if ($count === null) {
+                    $order = new OrderEntity();
+                } elseif ($count === 0) {
+                    $order->setTransactions(new OrderTransactionCollection());
+                } else {
+                    $other = new OrderTransactionEntity();
+                    $other->setId('other-transaction');
+                    $order->getTransactions()->add($other);
+                }
+
+                $service = $this->createService();
+                try {
+                    match ($action) {
+                        'charge' => $service->charge($order, '', ''),
+                        'refund' => $service->refund($order, $this->createStub(Context::class), '', ''),
+                        'cancel' => $service->cancel($order, ''),
+                    };
+                    $this->fail('Expected invalid transaction scope to be rejected');
+                } catch (\InvalidArgumentException $exception) {
+                    $this->assertStringContainsString('exactly one', $exception->getMessage());
+                }
+            }
+        }
+    }
+
     private function createService(
-        Payment $payment,
         ?OrderCharge $orderCharge = null,
         ?OrderRefund $orderRefund = null,
         ?OrderCancel $orderCancel = null,
         bool $isAutoCharge = false,
+        bool $charged = false,
     ): PaymentActionService {
+        $payment = $this->createStub(Payment::class);
+        $payment->method('getStatus')->willReturn($charged ? PaymentStatusEnum::CHARGED : PaymentStatusEnum::RESERVED);
+        $payment->method('getOrderDetails')->willReturn(new OrderDetails($charged ? 1000 : 100, 'EUR'));
+        $summary = $this->createStub(Summary::class);
+        $summary->method('getChargedAmount')->willReturn($charged ? 1000 : 0);
+        $summary->method('getRefundedAmount')->willReturn(0);
+        $payment->method('getSummary')->willReturn($summary);
         $fetcher = $this->createStub(PaymentFetcherInterface::class);
         $fetcher->method('fetchPayment')->willReturn($payment);
-        $configuration = $this->createConfiguredMock(ConfigurationProvider::class, [
-            'isAutoCharge' => $isAutoCharge,
-        ]);
+        $configuration = $this->createStub(ConfigurationProvider::class);
+        $configuration->method('isAutoCharge')->willReturn($isAutoCharge);
 
         return new PaymentActionService(
             $fetcher,
@@ -227,22 +209,25 @@ final class PaymentActionServiceTest extends TestCase
         );
     }
 
-    private function createTransaction(): OrderTransactionEntity
+    private function createOrder(): OrderEntity
     {
         $transaction = new OrderTransactionEntity();
         $transaction->setId('transaction-id');
         $transaction->setCustomFields([
             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => 'payment-id',
         ]);
-
         $order = new OrderEntity();
         $order->setId('order-id');
         $order->setOrderNumber('10001');
         $order->setSalesChannelId('sales-channel-id');
         $order->setTransactions(new OrderTransactionCollection([$transaction]));
 
-        $transaction->setOrder($order);
+        $nestedOrder = new OrderEntity();
+        $nestedOrder->setId('order-id');
+        $nestedOrder->setOrderNumber('10001');
 
-        return $transaction;
+        $transaction->setOrder($nestedOrder);
+
+        return $order;
     }
 }

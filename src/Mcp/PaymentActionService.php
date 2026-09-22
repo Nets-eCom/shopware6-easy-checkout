@@ -17,6 +17,7 @@ use Nexi\Checkout\Order\OrderCharge;
 use Nexi\Checkout\Order\OrderRefund;
 use NexiCheckout\Model\Result\RetrievePayment\Payment;
 use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Framework\Context;
@@ -37,14 +38,14 @@ final class PaymentActionService
      *
      * @return array<string, mixed>
      */
-    public function charge(OrderTransactionEntity $transaction, string $amount, string $confirmation): array
+    public function charge(OrderEntity $order, string $amount, string $confirmation): array
     {
-        $order = $this->order($transaction);
+        $transaction = $this->transaction($order);
         if ($this->configurationProvider->isAutoCharge($order->getSalesChannelId())) {
             throw new \InvalidArgumentException('Manual charge is disabled because auto-charge is enabled for this sales channel.');
         }
 
-        $payment = $this->fetchPayment($transaction);
+        $payment = $this->fetchPayment($order);
         $status = $payment->getStatus();
         $this->assertPaymentStatus($status, [
             PaymentStatusEnum::RESERVED,
@@ -66,18 +67,18 @@ final class PaymentActionService
         );
 
         if (!hash_equals($expectedConfirmation, $confirmation)) {
-            return $this->preview($transaction, 'charge', $amountInCents, $currency, $status, $expectedConfirmation);
+            return $this->preview($order, 'charge', $amountInCents, $currency, $status, $expectedConfirmation);
         }
 
         if ($status === PaymentStatusEnum::RESERVED && $amountInCents === $orderDetails->getAmount()) {
             $this->orderCharge->fullCharge($order);
 
-            return $this->executionResponse($transaction, 'charge', $amountInCents, $currency);
+            return $this->executionResponse($order, 'charge', $amountInCents, $currency);
         }
 
         $this->orderCharge->partialCharge($order, new ChargeData($amountInCents / 100));
 
-        return $this->executionResponse($transaction, 'charge', $amountInCents, $currency);
+        return $this->executionResponse($order, 'charge', $amountInCents, $currency);
     }
 
     /**
@@ -86,12 +87,13 @@ final class PaymentActionService
      * @return array<string, mixed>
      */
     public function refund(
-        OrderTransactionEntity $transaction,
+        OrderEntity $order,
         Context $context,
         string $amount,
         string $confirmation,
     ): array {
-        $payment = $this->fetchPayment($transaction);
+        $transaction = $this->transaction($order);
+        $payment = $this->fetchPayment($order);
         $status = $payment->getStatus();
         $this->assertPaymentStatus($status, [
             PaymentStatusEnum::CHARGED,
@@ -112,15 +114,15 @@ final class PaymentActionService
         );
 
         if (!hash_equals($expectedConfirmation, $confirmation)) {
-            return $this->preview($transaction, 'refund', $amountInCents, $currency, $status, $expectedConfirmation);
+            return $this->preview($order, 'refund', $amountInCents, $currency, $status, $expectedConfirmation);
         }
 
         $refundData = new RefundData($amountInCents / 100);
         $refundData->setContext($context);
 
-        $this->orderRefund->partialRefund($this->order($transaction), $refundData);
+        $this->orderRefund->partialRefund($order, $refundData);
 
-        return $this->executionResponse($transaction, 'refund', $amountInCents, $currency);
+        return $this->executionResponse($order, 'refund', $amountInCents, $currency);
     }
 
     /**
@@ -128,9 +130,10 @@ final class PaymentActionService
      *
      * @return array<string, mixed>
      */
-    public function cancel(OrderTransactionEntity $transaction, string $confirmation): array
+    public function cancel(OrderEntity $order, string $confirmation): array
     {
-        $payment = $this->fetchPayment($transaction);
+        $transaction = $this->transaction($order);
+        $payment = $this->fetchPayment($order);
         $status = $payment->getStatus();
         $this->assertPaymentStatus($status, [PaymentStatusEnum::RESERVED], 'cancelled');
 
@@ -145,19 +148,19 @@ final class PaymentActionService
         );
 
         if (!hash_equals($expectedConfirmation, $confirmation)) {
-            return $this->preview($transaction, 'cancel', $amountInCents, $currency, $status, $expectedConfirmation);
+            return $this->preview($order, 'cancel', $amountInCents, $currency, $status, $expectedConfirmation);
         }
 
-        $this->orderCancel->cancel($this->order($transaction));
+        $this->orderCancel->cancel($order);
 
-        return $this->executionResponse($transaction, 'cancel', $amountInCents, $currency);
+        return $this->executionResponse($order, 'cancel', $amountInCents, $currency);
     }
 
-    private function fetchPayment(OrderTransactionEntity $transaction): Payment
+    private function fetchPayment(OrderEntity $order): Payment
     {
         return $this->paymentFetcher->fetchPayment(
-            $this->order($transaction)->getSalesChannelId(),
-            $this->paymentId($transaction)
+            $order->getSalesChannelId(),
+            $this->paymentId($this->transaction($order))
         );
     }
 
@@ -241,18 +244,20 @@ final class PaymentActionService
      * @return array<string, mixed>
      */
     private function preview(
-        OrderTransactionEntity $transaction,
+        OrderEntity $order,
         string $action,
         int $amount,
         string $currency,
         PaymentStatusEnum $status,
         string $confirmation,
     ): array {
+        $transaction = $this->transaction($order);
+
         return [
             'action' => $action,
             'executed' => false,
-            'orderId' => $this->order($transaction)->getId(),
-            'orderNumber' => $this->order($transaction)->getOrderNumber(),
+            'orderId' => $order->getId(),
+            'orderNumber' => $order->getOrderNumber(),
             'transactionId' => $transaction->getId(),
             'paymentId' => $this->paymentId($transaction),
             'amount' => $this->formatAmount($amount),
@@ -267,15 +272,17 @@ final class PaymentActionService
      * @return array<string, mixed>
      */
     private function executionResponse(
-        OrderTransactionEntity $transaction,
+        OrderEntity $order,
         string $action,
         int $amount,
         string $currency,
     ): array {
+        $transaction = $this->transaction($order);
+
         return [
             'action' => $action,
-            'orderId' => $this->order($transaction)->getId(),
-            'orderNumber' => $this->order($transaction)->getOrderNumber(),
+            'orderId' => $order->getId(),
+            'orderNumber' => $order->getOrderNumber(),
             'transactionId' => $transaction->getId(),
             'paymentId' => $this->paymentId($transaction),
             'amount' => $this->formatAmount($amount),
@@ -298,13 +305,13 @@ final class PaymentActionService
         );
     }
 
-    private function order(OrderTransactionEntity $transaction): OrderEntity
+    private function transaction(OrderEntity $order): OrderTransactionEntity
     {
-        $order = $transaction->getOrder();
-        if (!$order instanceof OrderEntity) {
-            throw new \LogicException('Order association is not loaded.');
+        $transactions = $order->getTransactions();
+        if (!$transactions instanceof OrderTransactionCollection || $transactions->count() !== 1) {
+            throw new \InvalidArgumentException('Expected exactly one resolved Nexi Checkout transaction.');
         }
 
-        return $order;
+        return $transactions->first();
     }
 }

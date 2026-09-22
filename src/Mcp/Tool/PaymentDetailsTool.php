@@ -6,8 +6,9 @@ namespace Nexi\Checkout\Mcp\Tool;
 
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Schema\ToolAnnotations;
-use Nexi\Checkout\Mcp\NexiTransactionResolver;
+use Nexi\Checkout\Mcp\NexiOrderResolver;
 use Nexi\Checkout\Mcp\PaymentDetailsService;
+use Shopware\Core\Framework\Mcp\Attribute\McpToolGroup;
 use Shopware\Core\Framework\Mcp\Attribute\McpToolRequires;
 use Shopware\Core\Framework\Mcp\Context\McpContextProvider;
 use Shopware\Core\Framework\Mcp\Tool\McpToolResponse;
@@ -18,11 +19,12 @@ use Shopware\Core\Framework\Mcp\Tool\McpToolResponse;
     annotations: new ToolAnnotations(readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true),
 )]
 #[McpToolRequires('order:read')]
+#[McpToolGroup('nexi-checkout')]
 final class PaymentDetailsTool extends McpToolResponse
 {
     public function __construct(
         private readonly McpContextProvider $contextProvider,
-        private readonly NexiTransactionResolver $transactionResolver,
+        private readonly NexiOrderResolver $orderResolver,
         private readonly PaymentDetailsService $paymentDetails,
     ) {
     }
@@ -36,9 +38,9 @@ final class PaymentDetailsTool extends McpToolResponse
         }
 
         try {
-            $transaction = $this->transactionResolver->resolve($orderId, $orderNumber, $paymentId);
+            $order = $this->orderResolver->resolve($orderId, $orderNumber, $paymentId);
 
-            return $this->success($this->paymentDetails->getDetails($transaction));
+            return $this->success($this->paymentDetails->getDetails($order));
         } catch (\InvalidArgumentException $invalidArgumentException) {
             return $this->error($invalidArgumentException->getMessage());
         }

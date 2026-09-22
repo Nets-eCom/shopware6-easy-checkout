@@ -21,12 +21,13 @@ final class PaymentDetailsService
     /**
      * @return array<string, mixed>
      */
-    public function getDetails(OrderTransactionEntity $transaction): array
+    public function getDetails(OrderEntity $order): array
     {
-        $order = $transaction->getOrder();
-        if (!$order instanceof OrderEntity) {
-            throw new \LogicException('Order association is not loaded.');
+        if ($order->getTransactions()?->count() !== 1) {
+            throw new \InvalidArgumentException('Expected exactly one resolved Nexi Checkout transaction.');
         }
+
+        $transaction = $order->getTransactions()->first();
 
         $paymentId = (string) $transaction->getCustomFieldsValue(
             OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID

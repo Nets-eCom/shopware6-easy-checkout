@@ -5,7 +5,7 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="Nexi\Checkout\Mcp\NexiTransactionResolver">
+        <service id="Nexi\Checkout\Mcp\NexiOrderResolver">
             <argument type="service" id="order.repository"/>
             <argument type="service" id="Shopware\Core\Framework\Mcp\Context\McpContextProvider"/>
         </service>
@@ -24,28 +24,28 @@
 
         <service id="Nexi\Checkout\Mcp\Tool\PaymentDetailsTool">
             <argument type="service" id="Shopware\Core\Framework\Mcp\Context\McpContextProvider"/>
-            <argument type="service" id="Nexi\Checkout\Mcp\NexiTransactionResolver"/>
+            <argument type="service" id="Nexi\Checkout\Mcp\NexiOrderResolver"/>
             <argument type="service" id="Nexi\Checkout\Mcp\PaymentDetailsService"/>
             <tag name="shopware.mcp.tool"/>
         </service>
 
         <service id="Nexi\Checkout\Mcp\Tool\ChargePaymentTool">
             <argument type="service" id="Shopware\Core\Framework\Mcp\Context\McpContextProvider"/>
-            <argument type="service" id="Nexi\Checkout\Mcp\NexiTransactionResolver"/>
+            <argument type="service" id="Nexi\Checkout\Mcp\NexiOrderResolver"/>
             <argument type="service" id="Nexi\Checkout\Mcp\PaymentActionService"/>
             <tag name="shopware.mcp.tool"/>
         </service>
 
         <service id="Nexi\Checkout\Mcp\Tool\RefundPaymentTool">
             <argument type="service" id="Shopware\Core\Framework\Mcp\Context\McpContextProvider"/>
-            <argument type="service" id="Nexi\Checkout\Mcp\NexiTransactionResolver"/>
+            <argument type="service" id="Nexi\Checkout\Mcp\NexiOrderResolver"/>
             <argument type="service" id="Nexi\Checkout\Mcp\PaymentActionService"/>
             <tag name="shopware.mcp.tool"/>
         </service>
 
         <service id="Nexi\Checkout\Mcp\Tool\CancelPaymentTool">
             <argument type="service" id="Shopware\Core\Framework\Mcp\Context\McpContextProvider"/>
-            <argument type="service" id="Nexi\Checkout\Mcp\NexiTransactionResolver"/>
+            <argument type="service" id="Nexi\Checkout\Mcp\NexiOrderResolver"/>
             <argument type="service" id="Nexi\Checkout\Mcp\PaymentActionService"/>
             <tag name="shopware.mcp.tool"/>
         </service>

@@ -6,6 +6,7 @@ namespace Nexi\Checkout;
 
 use Doctrine\DBAL\Connection;
 use Mcp\Capability\Attribute\McpTool;
+use Nexi\Checkout\DependencyInjection\McpToolRegistrationPass;
 use Nexi\Checkout\Lifecycle\PaymentMethodInstallerInterface;
 use Nexi\Checkout\Lifecycle\PaymentMethodsActivator;
 use Nexi\Checkout\Lifecycle\PaymentMethodsInstaller;
@@ -30,6 +31,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\DirectoryLoader;
@@ -164,6 +166,13 @@ class NetsNexiCheckout extends Plugin
             new FileLocator($this->getPath() . '/Resources/config')
         );
         $loader->load('mcp.xml');
+
+        // @TODO remove after Shopware upstream fix
+        $container->addCompilerPass(
+            new McpToolRegistrationPass(),
+            PassConfig::TYPE_BEFORE_OPTIMIZATION,
+            20
+        );
     }
 
     private function registerApiUrlParameters(ContainerBuilder $container): void

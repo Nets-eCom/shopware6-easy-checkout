@@ -126,6 +126,7 @@
             <div class="nexi-checkout-details__action-buttons" v-if="shouldDisplayButtonsSection">
                 <mt-button
                   size="default"
+                  v-if="shouldDisplayCancelBtn"
                   :isLoading="isLoading"
                   @click="toggleCancelModal"
                   variant="secondary"
