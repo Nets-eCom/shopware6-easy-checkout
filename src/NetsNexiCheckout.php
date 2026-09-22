@@ -44,7 +44,7 @@ class NetsNexiCheckout extends Plugin
 {
     public const COMMERCE_PLATFORM_TAG = 'Shopware6';
 
-    public const PLUGIN_VERSION = '2.3.0';
+    public const PLUGIN_VERSION = '2.4.0';
 
     public const LIVE_URL = 'https://api.dibspayment.eu';
 

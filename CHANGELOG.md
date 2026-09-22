@@ -4,11 +4,17 @@
 |------|----------
 |Author | `Nets eCom`
 |Shop Version | `6.6+ 6.7+`
-|Version | `2.2.3`
+|Version | `2.4.0`
 |Guide | https://developer.nexigroup.com/nexi-checkout/en-EU/docs/shopware/checkout-for-shopware-2x-shopware-plugin-2x/
 |Github | https://github.com/Nets-eCom/shopware6-easy-checkout
 
 ## CHANGELOG
+
+### Version 2.4.0 - Released 2026-09-22
+
+- fix: use compiler pass to register tag mcp tools
+- fix: conditionally display cancel btn
+- fix: resolve order instead transaction
 
 ### Version 2.3.0 - Released 2026-09-15
 
