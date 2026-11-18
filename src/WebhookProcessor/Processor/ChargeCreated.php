@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Nexi\Checkout\WebhookProcessor\Processor;
 
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
-use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
+use Nexi\Checkout\Fetcher\PaymentFetcherInterface;
 use Nexi\Checkout\WebhookProcessor\WebhookProcessorException;
 use Nexi\Checkout\WebhookProcessor\WebhookProcessorInterface;
-use NexiCheckout\Model\Result\RetrievePayment\Payment;
 use NexiCheckout\Model\Result\RetrievePayment\PaymentStatusEnum;
 use NexiCheckout\Model\Webhook\EventNameEnum;
 use NexiCheckout\Model\Webhook\WebhookInterface;
@@ -32,7 +31,7 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
     public function __construct(
         private EntityRepository $orderTransactionEntityRepository,
         private OrderTransactionStateHandler $orderTransactionStateHandler,
-        private CachablePaymentFetcherInterface $paymentFetcher,
+        private PaymentFetcherInterface $paymentFetcher,
         private LoggerInterface $logger,
     ) {
     }
@@ -71,13 +70,15 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
         $transactionId = $transaction->getId();
         $transactionState = $transaction->getStateMachineState()->getTechnicalName();
 
-        if ($transactionState === OrderTransactionStates::STATE_CANCELLED) {
+        $isFullyCharged = $this->isPaymentFullyCharged($paymentId, $salesChannelContext->getSalesChannelId());
+
+        if ($transactionState === OrderTransactionStates::STATE_CANCELLED && !$isFullyCharged) {
             $this->logProcessMessage($event, 'cancelled', $paymentId);
 
             return;
         }
 
-        if (!$this->isPaymentFullyCharged($paymentId, $salesChannelContext->getSalesChannelId())) {
+        if (!$isFullyCharged) {
             try {
                 $this->orderTransactionStateHandler->payPartially($transactionId, $context);
             } catch (StateMachineException $stateMachineException) {
@@ -91,8 +92,8 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
             return;
         }
 
-        // Transaction marked as paid_partially has to be reopened before transition to paid
-        if ($transactionState === OrderTransactionStates::STATE_PARTIALLY_PAID) {
+        // cancelled or paid_partially must be reopened before transition to paid
+        if (\in_array($transactionState, [OrderTransactionStates::STATE_CANCELLED, OrderTransactionStates::STATE_PARTIALLY_PAID], true)) {
             try {
                 $this->orderTransactionStateHandler->reopen($transactionId, $context);
             } catch (StateMachineException $stateMachineException) {
@@ -120,11 +121,6 @@ final readonly class ChargeCreated implements WebhookProcessorInterface
 
     private function isPaymentFullyCharged(string $paymentId, string $salesChannelId): bool
     {
-        return $this->getPayment($salesChannelId, $paymentId)->getStatus() === PaymentStatusEnum::CHARGED;
-    }
-
-    private function getPayment(string $salesChannelId, string $paymentId): Payment
-    {
-        return $this->paymentFetcher->getCachedPayment($salesChannelId, $paymentId);
+        return $this->paymentFetcher->fetchPayment($salesChannelId, $paymentId)->getStatus() === PaymentStatusEnum::CHARGED;
     }
 }

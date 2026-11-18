@@ -102,6 +102,47 @@ The biggest change from the currently used component is that partial charge and 
 
 All transactions performed by Nexi Group are accessible in Checkout Portal.
 
+## MCP capabilities
+
+The plugin provides Model Context Protocol (MCP) tools so an MCP-compatible assistant can retrieve payment details and manage Nexi Checkout payments through Shopware.
+
+### Requirements
+
+- A Shopware installation with MCP support enabled and an MCP client connected to it.
+- The Nexi Checkout plugin installed and configured.
+- `order:read` permission to retrieve payment details; both `order:read` and `order:update` permissions to charge, refund, or cancel payments.
+- If `shopware.mcp.allowed_tools` is configured with a non-empty list, include the required tool names below.
+
+### Available tools
+
+| Tool | Capability |
+| --- | --- |
+| `nexi-checkout-payment-details` | Retrieve current Nexi payment details. |
+| `nexi-checkout-charge-payment` | Charge all remaining funds or a specified partial amount. |
+| `nexi-checkout-refund-payment` | Refund all remaining charged funds or a specified partial amount. |
+| `nexi-checkout-cancel-payment` | Cancel a reserved payment. |
+
+Each tool accepts exactly one identifier: the Shopware order ID (`orderId`), order number (`orderNumber`), or Nexi payment ID (`paymentId`).
+
+For charges and refunds, the optional `amount` is a decimal string in the payment currency, such as `"10.00"`. Omit it to use the full amount available for the action.
+
+### Preview and confirmation
+
+Charge, refund, and cancel actions use a preview and confirmation flow:
+
+1. Call the tool without `confirmation` to preview the action.
+2. Review the payment, amount, and currency in the preview.
+3. Call the same tool with the same action parameters and pass the exact `requiredConfirmation` value from the preview as `confirmation` to execute it.
+
+### Example prompts
+
+```text
+Show payment details for order number 10000
+Charge 10 EUR for order number 10000
+Refund all available funds for payment ID <payment-id>
+Cancel the payment for order number 10000
+```
+
 ## Flow Builder
 
 With Shopware 6.6, our Nexi flow can be aligned with Shopware flow to automate various processes within the payment system.

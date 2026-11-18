@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Nexi\Checkout\Tests\WebhookProcessor;
 
-use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
+use Nexi\Checkout\Fetcher\PaymentFetcherInterface;
 use Nexi\Checkout\WebhookProcessor\Processor\ChargeCreated;
 use Nexi\Checkout\WebhookProcessor\WebhookProcessorException;
 use NexiCheckout\Model\Result\RetrievePayment\Payment;
@@ -148,6 +148,69 @@ final class ChargeCreatedTest extends TestCase
         $sut->process($webhook, $salesChannelContext);
     }
 
+    public function testItPaysWhenFullyChargedFromCancelledState(): void
+    {
+        $transactionId = '123';
+        $transactionRepository = $this->createTransactionRepository(OrderTransactionStates::STATE_CANCELLED, $transactionId);
+        $logger = $this->createMock(LoggerInterface::class);
+        $salesChannelContext = Generator::generateSalesChannelContext();
+
+        $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
+        $orderTransactionStateHandler
+            ->expects($this->once())
+            ->method('reopen')
+            ->with($transactionId, $salesChannelContext->getContext());
+        $orderTransactionStateHandler
+            ->expects($this->once())
+            ->method('paid')
+            ->with($transactionId, $salesChannelContext->getContext());
+
+        $sut = new ChargeCreated(
+            $transactionRepository,
+            $orderTransactionStateHandler,
+            $this->createPaymentFetcher($this->createPayment(true)),
+            $logger
+        );
+
+        $sut->process(
+            $this->createChargeCreatedWebhookEvent($this->createChargeCreatedData($transactionId)),
+            $salesChannelContext
+        );
+    }
+
+    public function testItPaysWhenFullyChargedFromPartiallyPaidState(): void
+    {
+        $transactionId = '123';
+        $transactionRepository = $this->createTransactionRepository(OrderTransactionStates::STATE_PARTIALLY_PAID, $transactionId);
+        $logger = $this->createMock(LoggerInterface::class);
+        $salesChannelContext = Generator::generateSalesChannelContext();
+
+        $orderTransactionStateHandler = $this->createMock(OrderTransactionStateHandler::class);
+        $orderTransactionStateHandler
+            ->expects($this->once())
+            ->method('reopen')
+            ->with($transactionId, $salesChannelContext->getContext());
+        $orderTransactionStateHandler
+            ->expects($this->once())
+            ->method('paid')
+            ->with($transactionId, $salesChannelContext->getContext());
+        $orderTransactionStateHandler
+            ->expects($this->never())
+            ->method('payPartially');
+
+        $sut = new ChargeCreated(
+            $transactionRepository,
+            $orderTransactionStateHandler,
+            $this->createPaymentFetcher($this->createPayment(true)),
+            $logger
+        );
+
+        $sut->process(
+            $this->createChargeCreatedWebhookEvent($this->createChargeCreatedData($transactionId)),
+            $salesChannelContext
+        );
+    }
+
     public function testItThrowsExceptionWhenNoTransactionsFound(): void
     {
         $this->expectException(WebhookProcessorException::class);
@@ -168,7 +231,7 @@ final class ChargeCreatedTest extends TestCase
         $sut = new ChargeCreated(
             $transactionRepository,
             $this->createMock(OrderTransactionStateHandler::class),
-            $this->createStub(CachablePaymentFetcherInterface::class),
+            $this->createStub(PaymentFetcherInterface::class),
             $this->createMock(LoggerInterface::class)
         );
 
@@ -180,7 +243,7 @@ final class ChargeCreatedTest extends TestCase
         $sut = new ChargeCreated(
             $this->createStub(EntityRepository::class),
             $this->createStub(OrderTransactionStateHandler::class),
-            $this->createStub(CachablePaymentFetcherInterface::class),
+            $this->createStub(PaymentFetcherInterface::class),
             $this->createStub(LoggerInterface::class)
         );
 
@@ -260,12 +323,11 @@ final class ChargeCreatedTest extends TestCase
         return $payment;
     }
 
-    private function createPaymentFetcher(Payment $payment): CachablePaymentFetcherInterface
+    private function createPaymentFetcher(Payment $payment): PaymentFetcherInterface
     {
-        $paymentFetcher = $this->createMock(CachablePaymentFetcherInterface::class);
-        \assert($paymentFetcher instanceof CachablePaymentFetcherInterface);
+        $paymentFetcher = $this->createMock(PaymentFetcherInterface::class);
         $paymentFetcher
-            ->method('getCachedPayment')
+            ->method('fetchPayment')
             ->willReturn($payment);
 
         return $paymentFetcher;

@@ -127,6 +127,14 @@ final class McpToolRegistrationPassTest extends TestCase
         $container = new ContainerBuilder();
         $container->register('mcp.server.builder', \stdClass::class);
         $container->register(EntitySearchTool::class)->addTag('mcp.tool');
+        // Newer Symfony MCP bundles require a named server and explicit element selection.
+        // Share the builder so both bundle versions exercise the same locator assertions.
+        $container->setDefinition('mcp.server.admin.builder', $container->getDefinition('mcp.server.builder'));
+        $container->setParameter('mcp.servers.elements', [
+            'admin' => [
+                'tools' => ['*'],
+            ],
+        ]);
         $container->setParameter('shopware.mcp.allowed_tools', $allowedTools);
         // Reproduce Symfony being registered before Shopware's discovery pass.
         $container->addCompilerPass(new McpPass());
