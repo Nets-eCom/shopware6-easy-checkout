@@ -1,4 +1,7 @@
-import { ACTION, GROUP } from '../../constant/nexi-checkout-charge-action.constant';
+import {
+    ACTION,
+    GROUP,
+} from '../../constant/nexi-checkout-charge-action.constant';
 
 const { Component } = Shopware;
 
@@ -6,10 +9,10 @@ Component.override('sw-flow-sequence-action', {
     methods: {
         getActionDescriptions(sequence) {
             if (sequence.actionName === ACTION.NEXI_CHECKOUT_CHARGE) {
-                return this.$tc('nexi-checkout-charge-action.description')
+                return this.$tc('nexi-checkout-charge-action.description');
             }
 
-            return this.$super('getActionDescriptions', sequence)
+            return this.$super('getActionDescriptions', sequence);
         },
 
         getActionTitle(actionName) {
@@ -19,7 +22,7 @@ Component.override('sw-flow-sequence-action', {
                     icon: 'regular-shopping-bag-alt',
                     label: this.$tc('nexi-checkout-charge-action.title'),
                     group: GROUP,
-                }
+                };
             }
 
             return this.$super('getActionTitle', actionName);

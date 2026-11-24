@@ -15,6 +15,7 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionColl
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
+use Shopware\Core\Checkout\Order\OrderCollection;
 use Shopware\Core\Checkout\Order\OrderDefinition;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Order\OrderStates;
@@ -34,8 +35,10 @@ final class PaymentCancelSubscriberTest extends TestCase
         $transactionId = 'transactionId';
         $order = $this->createOrder($transactionId, OrderTransactionStates::STATE_AUTHORIZED, $paymentId);
 
+        $orderCollection = $this->createStub(OrderCollection::class);
+        $orderCollection->method('first')->willReturn($order);
         $entitySearchResult = $this->createStub(EntitySearchResult::class);
-        $entitySearchResult->method('first')->willReturn($order);
+        $entitySearchResult->method('getEntities')->willReturn($orderCollection);
         $entityRepository = $this->createStub(EntityRepository::class);
         $entityRepository->method('search')->willReturn($entitySearchResult);
 

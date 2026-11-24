@@ -6,7 +6,10 @@ const { Mixin } = Shopware;
 
 Shopware.Component.override('sw-order-detail-details', {
     template,
-    inject: ['nexiCheckoutPaymentDetailService', 'nexiCheckoutPaymentActionsService'],
+    inject: [
+        'nexiCheckoutPaymentDetailService',
+        'nexiCheckoutPaymentActionsService',
+    ],
     mixins: [Mixin.getByName('notification')],
     data() {
         return {
@@ -18,8 +21,8 @@ Shopware.Component.override('sw-order-detail-details', {
             hasFetchError: false,
             isItemsListVisible: false,
             paymentDetails: {},
-            charge: { amount: 0.00, items: [] },
-            refund: { amount: 0.00 },
+            charge: { amount: 0.0, items: [] },
+            refund: { amount: 0.0 },
             reloadKey: 0,
         };
     },
@@ -30,7 +33,10 @@ Shopware.Component.override('sw-order-detail-details', {
     },
     computed: {
         isNexiCheckoutPayment() {
-            return !!this.transaction?.customFields?.hasOwnProperty(CUSTOM_FIELDS_PAYMENT_ID);
+            return Object.prototype.hasOwnProperty.call(
+                this.transaction?.customFields ?? {},
+                CUSTOM_FIELDS_PAYMENT_ID
+            );
         },
 
         // @todo use PaymentStatusEnum
@@ -55,11 +61,16 @@ Shopware.Component.override('sw-order-detail-details', {
         },
 
         shouldDisplayButtonsSection() {
-            if (this.isNewPayment || this.paymentDetails.status === 'pending_refund') {
+            if (
+                this.isNewPayment ||
+                this.paymentDetails.status === 'pending_refund'
+            ) {
                 return;
             }
             return (
-                this.shouldDisplayCancelBtn || this.shouldDisplayRefundBtn || this.shouldDisplayChargeBtn
+                this.shouldDisplayCancelBtn ||
+                this.shouldDisplayRefundBtn ||
+                this.shouldDisplayChargeBtn
             );
         },
 
@@ -92,13 +103,17 @@ Shopware.Component.override('sw-order-detail-details', {
         },
 
         chargeAmountError() {
-            if (this.charge.amount > this.paymentDetails.remainingChargeAmount) {
+            if (
+                this.charge.amount > this.paymentDetails.remainingChargeAmount
+            ) {
                 return { code: 'error-charge-max-amount' };
             }
         },
 
         refundAmountError() {
-            if (this.refund.amount > this.paymentDetails.remainingRefundAmount) {
+            if (
+                this.refund.amount > this.paymentDetails.remainingRefundAmount
+            ) {
                 return { code: 'error-refund-max-amount' };
             }
         },
@@ -113,24 +128,30 @@ Shopware.Component.override('sw-order-detail-details', {
     methods: {
         async fetchPaymentDetails(orderId) {
             this.isLoading = true;
-            this.paymentDetails = await this.nexiCheckoutPaymentDetailService.getPaymentDetails(orderId)
+            this.paymentDetails = await this.nexiCheckoutPaymentDetailService
+                .getPaymentDetails(orderId)
                 .catch(({ response }) => {
                     const errors = response.data.errors;
                     this.hasFetchError = true;
                     this.handleErrors({ errors });
                 })
                 .finally(() => {
-                    this.isLoading = false
+                    this.isLoading = false;
                 });
         },
 
         async handleCharge() {
             this.isLoading = true;
-            await this.nexiCheckoutPaymentActionsService.charge(this.order.id, this.charge)
+            await this.nexiCheckoutPaymentActionsService
+                .charge(this.order.id, this.charge)
                 .then(() => {
                     this.createNotificationSuccess({
-                        title: this.$tc('nexi-checkout-payment-component.notification.charge-title'),
-                        message: this.$tc('nexi-checkout-payment-component.notification.charge-message'),
+                        title: this.$tc(
+                            'nexi-checkout-payment-component.notification.charge-title'
+                        ),
+                        message: this.$tc(
+                            'nexi-checkout-payment-component.notification.charge-message'
+                        ),
                     });
 
                     this.closeChargeModal();
@@ -138,16 +159,22 @@ Shopware.Component.override('sw-order-detail-details', {
                 })
                 .catch(({ response }) => {
                     this.handleErrors(response.data);
-                }).finally(() => this.isLoading = false)
+                })
+                .finally(() => (this.isLoading = false));
         },
 
         async handleRefund() {
             this.isLoading = true;
-            await this.nexiCheckoutPaymentActionsService.refund(this.order.id, this.refund)
+            await this.nexiCheckoutPaymentActionsService
+                .refund(this.order.id, this.refund)
                 .then(() => {
                     this.createNotificationSuccess({
-                        title: this.$tc('nexi-checkout-payment-component.notification.refund-title'),
-                        message: this.$tc('nexi-checkout-payment-component.notification.refund-message'),
+                        title: this.$tc(
+                            'nexi-checkout-payment-component.notification.refund-title'
+                        ),
+                        message: this.$tc(
+                            'nexi-checkout-payment-component.notification.refund-message'
+                        ),
                     });
                     this.closeRefundModal();
                     this.reloadComponent();
@@ -155,12 +182,13 @@ Shopware.Component.override('sw-order-detail-details', {
                 .catch(({ response }) => {
                     this.handleErrors(response.data);
                 })
-                .finally(() => this.isLoading = false);
+                .finally(() => (this.isLoading = false));
         },
 
         async handleCancel() {
             this.isLoading = true;
-            await this.nexiCheckoutPaymentActionsService.cancel(this.order.id)
+            await this.nexiCheckoutPaymentActionsService
+                .cancel(this.order.id)
                 .then(() => {
                     this.closeCancelModal();
                     this.reloadComponent();
@@ -168,7 +196,7 @@ Shopware.Component.override('sw-order-detail-details', {
                 .catch(({ response }) => {
                     this.handleErrors(response);
                 })
-                .finally(() => this.isLoading = false);
+                .finally(() => (this.isLoading = false));
         },
 
         async reloadComponent() {
@@ -179,8 +207,12 @@ Shopware.Component.override('sw-order-detail-details', {
         handleErrors({ errors }) {
             if (!errors) {
                 this.createNotificationError({
-                    title: this.$t('nexi-checkout-payment-component.notification.action-error-title'),
-                    message: this.$t('nexi-checkout-payment-component.notification.action-error-message'),
+                    title: this.$t(
+                        'nexi-checkout-payment-component.notification.action-error-title'
+                    ),
+                    message: this.$t(
+                        'nexi-checkout-payment-component.notification.action-error-message'
+                    ),
                 });
 
                 return;
@@ -192,7 +224,9 @@ Shopware.Component.override('sw-order-detail-details', {
             if (error.code === '0') {
                 error.detail.split('\n').forEach((message) =>
                     this.createNotificationError({
-                        title: this.$t(`nexi-checkout-payment-component.notification.action-error-title`),
+                        title: this.$t(
+                            `nexi-checkout-payment-component.notification.action-error-title`
+                        ),
                         message: this.$t(message),
                     })
                 );
@@ -201,17 +235,32 @@ Shopware.Component.override('sw-order-detail-details', {
             }
 
             this.createNotificationError({
-                title: this.$t(`nexi-checkout-payment-component.notification.${error.code}`),
-                message: this.$t(`nexi-checkout-payment-component.api.errors.${error.code}`, error.meta.parameters),
+                title: this.$t(
+                    `nexi-checkout-payment-component.notification.${error.code}`
+                ),
+                message: this.$t(
+                    `nexi-checkout-payment-component.api.errors.${error.code}`,
+                    error.meta.parameters
+                ),
             });
         },
 
-        updateRefundItem({ chargeId, reference, grossTotalAmount, quantity, ...rest }, quantityToRefund) {
+        updateRefundItem(
+            { chargeId, reference, grossTotalAmount, quantity, ...rest },
+            quantityToRefund
+        ) {
             const amount = (grossTotalAmount / quantity) * quantityToRefund;
-            const index = !this.refund[chargeId] ? -1 : this.refund[chargeId].items.findIndex(existing => existing.reference === reference);
+            const index = !this.refund[chargeId]
+                ? -1
+                : this.refund[chargeId].items.findIndex(
+                      (existing) => existing.reference === reference
+                  );
 
             // dont add item with value 0
-            if ((quantityToRefund === null || quantityToRefund === 0) && index === -1) {
+            if (
+                (quantityToRefund === null || quantityToRefund === 0) &&
+                index === -1
+            ) {
                 return;
             }
 
@@ -220,7 +269,12 @@ Shopware.Component.override('sw-order-detail-details', {
             }
 
             if (index === -1) {
-                this.refund[chargeId].items.push({ reference, quantity: quantityToRefund, amount, ...rest });
+                this.refund[chargeId].items.push({
+                    reference,
+                    quantity: quantityToRefund,
+                    amount,
+                    ...rest,
+                });
                 this.calculateRefundAmount();
 
                 return;
@@ -237,7 +291,12 @@ Shopware.Component.override('sw-order-detail-details', {
                 return;
             }
 
-            this.refund[chargeId].items[index] = { reference, quantity: quantityToRefund, amount, ...rest };
+            this.refund[chargeId].items[index] = {
+                reference,
+                quantity: quantityToRefund,
+                amount,
+                ...rest,
+            };
             this.calculateRefundAmount();
         },
 
@@ -270,8 +329,13 @@ Shopware.Component.override('sw-order-detail-details', {
             this.charge.amount = amount;
         },
 
-        updateChargeItem({ reference, grossTotalAmount, quantity }, quantityToCharge) {
-            const index = this.charge.items.findIndex(existing => existing.reference === reference);
+        updateChargeItem(
+            { reference, grossTotalAmount, quantity },
+            quantityToCharge
+        ) {
+            const index = this.charge.items.findIndex(
+                (existing) => existing.reference === reference
+            );
             const amount = (grossTotalAmount / quantity) * quantityToCharge;
 
             // dont add item with value 0
@@ -281,7 +345,11 @@ Shopware.Component.override('sw-order-detail-details', {
             }
 
             if (index === -1) {
-                this.charge.items.push({ reference, quantity: quantityToCharge, amount });
+                this.charge.items.push({
+                    reference,
+                    quantity: quantityToCharge,
+                    amount,
+                });
                 this.calculateChargeAmount();
 
                 return;
@@ -294,7 +362,11 @@ Shopware.Component.override('sw-order-detail-details', {
                 return;
             }
 
-            this.charge.items[index] = { reference, quantity: quantityToCharge, amount };
+            this.charge.items[index] = {
+                reference,
+                quantity: quantityToCharge,
+                amount,
+            };
             this.calculateChargeAmount();
         },
 
@@ -326,12 +398,19 @@ Shopware.Component.override('sw-order-detail-details', {
             const maxQty = Number(item.quantity) - Number(item.qtyCharged);
 
             if (maxQty == 0) {
-                return [{label: this.$t('nexi-checkout-payment-component.itemsTable.0-items'), value: 0}];
+                return [
+                    {
+                        label: this.$t(
+                            'nexi-checkout-payment-component.itemsTable.0-items'
+                        ),
+                        value: 0,
+                    },
+                ];
             }
 
             return Array.from({ length: maxQty }, (_, i) => ({
                 label: String(i + 1),
-                value: i + 1
+                value: i + 1,
             }));
         },
 
@@ -342,12 +421,19 @@ Shopware.Component.override('sw-order-detail-details', {
             const maxQty = Number(item.quantity) - Number(item.qtyRefunded);
 
             if (maxQty == 0) {
-                return [{label: this.$t('nexi-checkout-payment-component.itemsTable.0-items'), value: 0}];
+                return [
+                    {
+                        label: this.$t(
+                            'nexi-checkout-payment-component.itemsTable.0-items'
+                        ),
+                        value: 0,
+                    },
+                ];
             }
 
             return Array.from({ length: maxQty }, (_, i) => ({
                 label: String(i + 1),
-                value: i + 1
+                value: i + 1,
             }));
         },
 
@@ -371,19 +457,23 @@ Shopware.Component.override('sw-order-detail-details', {
 
         onClickMaxCharge() {
             if (!this.isItemsListVisible) {
-                this.setChargeAmount(parseFloat(this.paymentDetails.remainingChargeAmount));
+                this.setChargeAmount(
+                    parseFloat(this.paymentDetails.remainingChargeAmount)
+                );
             }
         },
 
         onClickMaxRefund() {
             if (!this.isItemsListVisible) {
-                this.setRefundAmount(parseFloat(this.paymentDetails.remainingRefundAmount));
+                this.setRefundAmount(
+                    parseFloat(this.paymentDetails.remainingRefundAmount)
+                );
             }
         },
 
         resetAmount() {
-            this.charge = { amount: 0.00, items: [] };
-            this.refund = { amount: 0.00 };
+            this.charge = { amount: 0.0, items: [] };
+            this.refund = { amount: 0.0 };
         },
     },
 });

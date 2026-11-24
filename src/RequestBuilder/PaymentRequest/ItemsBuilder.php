@@ -25,7 +25,7 @@ class ItemsBuilder
     /**
      * @return list<Item>
      */
-    public function createFromOrder(OrderEntity $order): array
+    public function createFromOrder(OrderEntity $order, bool $useCartIdentifier = false): array
     {
         $items = [];
 
@@ -34,7 +34,8 @@ class ItemsBuilder
         foreach ($order->getNestedLineItems() as $lineItem) {
             $items[] = $this->createFromOrderLineItem(
                 $lineItem,
-                $taxStatus
+                $taxStatus,
+                $useCartIdentifier
             );
         }
 
@@ -81,7 +82,8 @@ class ItemsBuilder
 
     private function createFromOrderLineItem(
         OrderLineItemEntity $lineItem,
-        string $taxStatus
+        string $taxStatus,
+        bool $useCartIdentifier
     ): Item {
         $itemPrice = $lineItem->getPrice();
         $unitPrice = $this->getUnitPrice($itemPrice, $lineItem->getQuantity(), $taxStatus);
@@ -98,7 +100,7 @@ class ItemsBuilder
                 : $itemPrice->getTotalPrice() - $taxAmount
         );
 
-        $reference = $this->getReference($lineItem);
+        $reference = $this->getReference($lineItem, $useCartIdentifier);
 
         return new Item(
             $this->sanitize($lineItem->getLabel()),
@@ -180,16 +182,18 @@ class ItemsBuilder
         );
     }
 
-    private function getReference(OrderLineItemEntity|LineItem $lineItem): string
+    private function getReference(OrderLineItemEntity|LineItem $lineItem, bool $useCartIdentifier = false): string
     {
         $productId = $lineItem instanceof OrderLineItemEntity
-            ? $lineItem->getProductId()
+            ? ($lineItem->getProductId() ?? $lineItem->getReferencedId())
             : $lineItem->getReferencedId();
 
         $payload = $lineItem->getPayload() ?? [];
         $reference = empty($payload['productNumber']) ? $productId : $payload['productNumber'];
         if (empty($reference)) {
-            $reference = $lineItem->getId();
+            $reference = $useCartIdentifier && $lineItem instanceof OrderLineItemEntity
+                ? $lineItem->getIdentifier()
+                : $lineItem->getId();
         }
 
         return $reference;

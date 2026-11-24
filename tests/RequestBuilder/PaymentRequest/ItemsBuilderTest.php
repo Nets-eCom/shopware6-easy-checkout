@@ -28,6 +28,21 @@ final class ItemsBuilderTest extends TestCase
 {
     private const CART_TOKEN = 'token';
 
+    public function testEmbeddedOrderKeepsCartReferenceForCustomItem(): void
+    {
+        $item = self::createOrderItemEntity('order-item', 10.0, 1, 0.0);
+        $item->setIdentifier('cart-item');
+
+        $order = new OrderEntity();
+        $order->setTaxStatus(CartPrice::TAX_STATE_GROSS);
+        $order->setShippingCosts(self::createCalculatedPrice(0.0, 1, 0.0));
+        $order->setLineItems(new OrderLineItemCollection([$item]));
+
+        $builder = new ItemsBuilder(new FormatHelper());
+        self::assertSame('cart-item', $builder->createFromOrder($order, useCartIdentifier: true)[0]->getReference());
+        self::assertSame('order-item', $builder->createFromOrder($order)[0]->getReference());
+    }
+
     /**
      * @param list<OrderLineItemEntity> $orderItems
      * @param list<array<string, int|string>> $expected

@@ -29,10 +29,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\Struct\Struct;
 use Shopware\Core\System\StateMachine\Exception\IllegalTransitionException;
-use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 
 final class HostedPayment extends AbstractPaymentHandler
 {
@@ -71,10 +69,6 @@ final class HostedPayment extends AbstractPaymentHandler
                 'transactionId' => $transactionId,
                 'exception' => $wrongConfigurationException,
             ]);
-            if ($request->hasSession() && $request->getSession() instanceof FlashBagAwareSessionInterface) {
-                $request->getSession()->getFlashBag()->add(StorefrontController::DANGER, 'Wrong payment configuration - contact with shop administrator!');
-            }
-
             throw PaymentException::asyncProcessInterrupted(
                 $transactionId,
                 $wrongConfigurationException->getMessage(),
@@ -233,7 +227,7 @@ final class HostedPayment extends AbstractPaymentHandler
             ->addAssociation('order.billingAddress.country');
 
         /** @var OrderTransactionEntity|null $orderTransaction */
-        $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->first();
+        $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->getEntities()->first();
 
         if ($orderTransaction === null) {
             throw PaymentException::invalidTransaction($orderTransactionId);
@@ -269,7 +263,7 @@ final class HostedPayment extends AbstractPaymentHandler
                 ->addAssociation('stateMachineState');
 
         /** @var OrderTransactionEntity|null $orderTransaction */
-        $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->first();
+        $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->getEntities()->first();
 
         if ($orderTransaction === null) {
             throw PaymentException::invalidTransaction($orderTransactionId);

@@ -9,7 +9,7 @@ use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Handler\EmbeddedPayment;
 use Nexi\Checkout\Helper\FormatHelper;
 use Nexi\Checkout\Order\OrderReferenceUpdate;
-use Nexi\Checkout\Subscriber\EmbeddedCreatePaymentOnCheckoutSubscriber;
+use Nexi\Checkout\RequestBuilder\PaymentRequest as PaymentRequestBuilder;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
 use NexiCheckout\Model\Request\Shared\Order;
@@ -22,11 +22,11 @@ use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
@@ -34,8 +34,6 @@ use Shopware\Core\Framework\Struct\ArrayStruct;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\Test\Generator;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\Session;
-use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 
 final class EmbeddedPaymentTest extends TestCase
 {
@@ -72,8 +70,8 @@ final class EmbeddedPaymentTest extends TestCase
             $this->createStub(OrderTransactionStateHandler::class),
             $this->createStub(OrderReferenceUpdate::class),
             $this->createStub(LoggerInterface::class),
+            $this->createStub(PaymentRequestBuilder::class),
         );
-
 
         $validateStruct = $sut->validate(
             $cart,
@@ -93,6 +91,9 @@ final class EmbeddedPaymentTest extends TestCase
         $context = $salesChannelContext->getContext();
 
         $nexiOrderRequest = new Order([], '', 1);
+
+        $paymentRequestBuilder = $this->createStub(PaymentRequestBuilder::class);
+        $paymentRequestBuilder->method('buildOrderFromTransaction')->willReturn($nexiOrderRequest);
 
         $orderTransactionRepository = $this->createMock(EntityRepository::class);
         $orderTransactionRepository
@@ -125,7 +126,7 @@ final class EmbeddedPaymentTest extends TestCase
         $orderTransaction->setOrder($order);
         $orderTransaction->setId(self::ORDER_TRANSACTION_ID);
         $orderTransaction->setCustomFields([
-            'nexi_checkout_payment_id' => self::PAYMENT_ID,
+            'existing_field' => 'existing value',
         ]);
 
         $orderTransactionRepository
@@ -133,9 +134,9 @@ final class EmbeddedPaymentTest extends TestCase
             ->method('search')
             ->willReturn(
                 new EntitySearchResult(
-                    OrderTransactionEntity::class,
+                    'order_transaction',
                     1,
-                    new EntityCollection([$orderTransaction]),
+                    new OrderTransactionCollection([$orderTransaction]),
                     null,
                     new Criteria([self::ORDER_TRANSACTION_ID]),
                     $context
@@ -146,7 +147,11 @@ final class EmbeddedPaymentTest extends TestCase
         $orderReferenceUpdate
             ->expects($this->once())
             ->method('updateReferenceForTransaction')
-            ->with($orderTransaction);
+            ->with($orderTransaction, self::PAYMENT_ID)
+            ->willReturnCallback(static function (OrderTransactionEntity $transaction): void {
+                self::assertSame(self::PAYMENT_ID, $transaction->getCustomFieldsValue(OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID));
+                self::assertSame('existing value', $transaction->getCustomFieldsValue('existing_field'));
+            });
 
         $sut = new EmbeddedPayment(
             $this->createStub(PaymentApiFactory::class),
@@ -156,23 +161,16 @@ final class EmbeddedPaymentTest extends TestCase
             $orderTransactionStateHandler,
             $orderReferenceUpdate,
             $this->createStub(LoggerInterface::class),
+            $paymentRequestBuilder,
         );
 
-        $session = new Session(new MockArraySessionStorage());
-        $session->set(EmbeddedCreatePaymentOnCheckoutSubscriber::SESSION_NEXI_PAYMENT_ORDER, $nexiOrderRequest);
-
-        $request = new Request();
-        $request->setSession($session);
-
         $sut->pay(
-            $request,
+            new Request(),
             new PaymentTransactionStruct(self::ORDER_TRANSACTION_ID, null),
             $context,
             new ArrayStruct([
                 'paymentId' => self::PAYMENT_ID,
             ])
         );
-
-        $this->assertNotInstanceOf(Order::class, $session->get(EmbeddedCreatePaymentOnCheckoutSubscriber::SESSION_NEXI_PAYMENT_ORDER));
     }
 }

@@ -3,7 +3,6 @@ import HttpClient from 'src/service/http-client.service.js';
 import DomAccess from 'src/helper/dom-access.helper';
 
 export default class EmbeddedPlugin extends PluginBaseClass {
-
     static options = {
         /** @type {string} */
         checkoutKey: '',
@@ -34,7 +33,7 @@ export default class EmbeddedPlugin extends PluginBaseClass {
 
         /** @type {Array<{value: string, label: string}>} */
         subselections: [],
-    }
+    };
 
     init() {
         this._client = new HttpClient();
@@ -44,8 +43,14 @@ export default class EmbeddedPlugin extends PluginBaseClass {
             return;
         }
 
-        this._confirmForm = DomAccess.querySelector(document, this.options.confirmOrderFormSelector);
-        this._confirmOrderFromSubmit = DomAccess.querySelector(this._confirmForm, this.options.confirmOrderButtonSelector);
+        this._confirmForm = DomAccess.querySelector(
+            document,
+            this.options.confirmOrderFormSelector
+        );
+        this._confirmOrderFromSubmit = DomAccess.querySelector(
+            this._confirmForm,
+            this.options.confirmOrderButtonSelector
+        );
         this._tosCheckbox = DomAccess.querySelector(document, '.confirm-tos');
 
         this._registerCheckout();
@@ -60,26 +65,41 @@ export default class EmbeddedPlugin extends PluginBaseClass {
         this._activeCheckout = null;
         this._loadingSubselection = null;
 
-        const radios = document.querySelectorAll('input[name="nexi_subselection"]');
-        radios.forEach(radio => {
+        const radios = document.querySelectorAll(
+            'input[name="nexi_subselection"]'
+        );
+        radios.forEach((radio) => {
             radio.addEventListener('change', () => {
-                document.querySelectorAll('input[name="paymentMethodId"]').forEach(r => { r.checked = false; });
+                document
+                    .querySelectorAll('input[name="paymentMethodId"]')
+                    .forEach((r) => {
+                        r.checked = false;
+                    });
                 this._onSubselectionChange(radio.value);
             });
         });
 
-        document.querySelectorAll('input[name="paymentMethodId"]').forEach(r => {
-            r.addEventListener('change', () => {
-                document.querySelectorAll('input[name="nexi_subselection"]').forEach(sub => { sub.checked = false; });
-                this._collapseActiveMethod();
-                this._activeSubselection = null;
-                this._loadingSubselection = null;
+        document
+            .querySelectorAll('input[name="paymentMethodId"]')
+            .forEach((r) => {
+                r.addEventListener('change', () => {
+                    document
+                        .querySelectorAll('input[name="nexi_subselection"]')
+                        .forEach((sub) => {
+                            sub.checked = false;
+                        });
+                    this._collapseActiveMethod();
+                    this._activeSubselection = null;
+                    this._loadingSubselection = null;
+                });
             });
-        });
     }
 
     async _onSubselectionChange(subselection) {
-        if (subselection === this._activeSubselection || subselection === this._loadingSubselection) {
+        if (
+            subselection === this._activeSubselection ||
+            subselection === this._loadingSubselection
+        ) {
             return;
         }
 
@@ -87,7 +107,9 @@ export default class EmbeddedPlugin extends PluginBaseClass {
         this._activeSubselection = null;
         this._loadingSubselection = subselection;
 
-        const container = document.getElementById(`nexi-checkout-${subselection}`);
+        const container = document.getElementById(
+            `nexi-checkout-${subselection}`
+        );
         if (!container) return;
 
         container.style.display = 'block';
@@ -99,7 +121,8 @@ export default class EmbeddedPlugin extends PluginBaseClass {
         if (error) error.style.display = 'none';
 
         try {
-            const paymentId = await this._createPaymentForSubselection(subselection);
+            const paymentId =
+                await this._createPaymentForSubselection(subselection);
 
             if (this._loadingSubselection !== subselection) {
                 return;
@@ -119,7 +142,8 @@ export default class EmbeddedPlugin extends PluginBaseClass {
     }
 
     _collapseActiveMethod() {
-        const subselection = this._activeSubselection ?? this._loadingSubselection;
+        const subselection =
+            this._activeSubselection ?? this._loadingSubselection;
         if (subselection === null) return;
 
         const prev = document.getElementById(`nexi-checkout-${subselection}`);
@@ -142,8 +166,11 @@ export default class EmbeddedPlugin extends PluginBaseClass {
     }
 
     _clearCheckoutContent(container) {
-        Array.from(container.children).forEach(child => {
-            if (!child.classList.contains('nexi-split-loading') && !child.classList.contains('alert-danger')) {
+        Array.from(container.children).forEach((child) => {
+            if (
+                !child.classList.contains('nexi-split-loading') &&
+                !child.classList.contains('alert-danger')
+            ) {
                 container.removeChild(child);
             }
         });
@@ -173,8 +200,14 @@ export default class EmbeddedPlugin extends PluginBaseClass {
             containerId: containerId,
             language: this.options.language,
         });
-        this._checkout.on('pay-initialized', this.onPaymentInitialized.bind(this));
-        this._checkout.on('payment-completed', this.onPaymentCompleted.bind(this));
+        this._checkout.on(
+            'pay-initialized',
+            this.onPaymentInitialized.bind(this)
+        );
+        this._checkout.on(
+            'payment-completed',
+            this.onPaymentCompleted.bind(this)
+        );
         this._activeCheckout = this._checkout;
     }
 
@@ -185,10 +218,16 @@ export default class EmbeddedPlugin extends PluginBaseClass {
             checkoutKey: this.options.checkoutKey,
             paymentId: this.options.paymentId,
             containerId: this.options.containerId,
-            language: this.options.language
+            language: this.options.language,
         });
-        this._checkout.on('pay-initialized', this.onPaymentInitialized.bind(this));
-        this._checkout.on('payment-completed', this.onPaymentCompleted.bind(this));
+        this._checkout.on(
+            'pay-initialized',
+            this.onPaymentInitialized.bind(this)
+        );
+        this._checkout.on(
+            'payment-completed',
+            this.onPaymentCompleted.bind(this)
+        );
     }
 
     _hideConfirmOrderFormSubmit() {
@@ -197,7 +236,7 @@ export default class EmbeddedPlugin extends PluginBaseClass {
     }
 
     _hideTosCheckbox() {
-        this._tosCheckbox.style.display = 'none'
+        this._tosCheckbox.style.display = 'none';
     }
 
     // Shared event handlers
@@ -242,7 +281,7 @@ export default class EmbeddedPlugin extends PluginBaseClass {
 
     _redirectToTargetPath() {
         if (this.options.targetPath === null) {
-            throw new Error("Cannot redirect to target path");
+            throw new Error('Cannot redirect to target path');
         }
         window.location.href = this.options.targetPath;
     }

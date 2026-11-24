@@ -17,7 +17,6 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Mcp\Context\McpContextProvider;
 
 final class NexiOrderResolverTest extends TestCase
@@ -92,8 +91,8 @@ final class NexiOrderResolverTest extends TestCase
         $repository = $this->createMock(EntityRepository::class);
         $repository->method('search')->willReturnCallback(function (Criteria $criteria) use ($disappeared) {
             $result = $this->createStub(EntitySearchResult::class);
-            $filters = $criteria->getAssociation('transactions')->getFilters();
-            if ($filters === []) {
+            $ids = $criteria->getAssociation('transactions')->getIds();
+            if ($ids === []) {
                 $result->method('getEntities')->willReturn(new OrderCollection([
                     $this->createOrder(['payment-1', 'payment-2']),
                 ]));
@@ -101,18 +100,16 @@ final class NexiOrderResolverTest extends TestCase
                 return $result;
             }
 
-            $this->assertCount(1, $filters);
-            $filter = $filters[0];
-            $this->assertInstanceOf(EqualsFilter::class, $filter);
-            $this->assertSame('id', $filter->getField());
+            $this->assertCount(1, $ids);
+            $transactionId = $ids[0];
             $this->assertTrue($criteria->hasAssociation('currency'));
             $this->assertTrue($criteria->getAssociation('transactions')->hasAssociation('order'));
             $this->assertFalse($criteria->getAssociation('transactions.order')->hasAssociation('transactions'));
-            $index = $filter->getValue() === 'transaction-0' ? 0 : 1;
+            $index = $transactionId === 'transaction-0' ? 0 : 1;
             $order = $this->createOrder([
                 $index => 'payment-' . ($index + 1),
             ]);
-            $result->method('first')->willReturn($disappeared ? null : $order);
+            $result->method('getEntities')->willReturn(new OrderCollection($disappeared ? [] : [$order]));
 
             return $result;
         });

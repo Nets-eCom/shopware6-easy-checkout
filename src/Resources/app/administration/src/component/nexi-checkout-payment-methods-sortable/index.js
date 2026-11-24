@@ -38,17 +38,30 @@ Component.register('nexi-checkout-payment-methods-sortable', {
 
         payTypeSplitting: {
             get() {
-                const config = this.configParent?.actualConfigData?.[this.currentSalesChannelId];
-                return config ? !!config['NetsNexiCheckout.config.payTypeSplitting'] : false;
+                const config =
+                    this.configParent?.actualConfigData?.[
+                        this.currentSalesChannelId
+                    ];
+                return config
+                    ? !!config['NetsNexiCheckout.config.payTypeSplitting']
+                    : false;
             },
             set(value) {
                 if (!this.configParent?.actualConfigData) {
                     return;
                 }
-                if (!this.configParent.actualConfigData[this.currentSalesChannelId]) {
-                    this.configParent.actualConfigData[this.currentSalesChannelId] = {};
+                if (
+                    !this.configParent.actualConfigData[
+                        this.currentSalesChannelId
+                    ]
+                ) {
+                    this.configParent.actualConfigData[
+                        this.currentSalesChannelId
+                    ] = {};
                 }
-                this.configParent.actualConfigData[this.currentSalesChannelId]['NetsNexiCheckout.config.payTypeSplitting'] = value;
+                this.configParent.actualConfigData[this.currentSalesChannelId][
+                    'NetsNexiCheckout.config.payTypeSplitting'
+                ] = value;
                 this.$forceUpdate();
             },
         },
@@ -58,7 +71,10 @@ Component.register('nexi-checkout-payment-methods-sortable', {
         findConfigParent() {
             let parent = this.$parent;
             while (parent) {
-                if (parent.$options.name === 'sw-system-config' || parent.$options.name === 'SwSystemConfig') {
+                if (
+                    parent.$options.name === 'sw-system-config' ||
+                    parent.$options.name === 'SwSystemConfig'
+                ) {
                     this.configParent = parent;
                     break;
                 }
@@ -67,7 +83,10 @@ Component.register('nexi-checkout-payment-methods-sortable', {
         },
 
         getSavedMethods() {
-            const config = this.configParent?.actualConfigData?.[this.currentSalesChannelId];
+            const config =
+                this.configParent?.actualConfigData?.[
+                    this.currentSalesChannelId
+                ];
             const raw = config?.['NetsNexiCheckout.config.payTypeOptions'];
             if (!raw) {
                 return [];
@@ -83,11 +102,16 @@ Component.register('nexi-checkout-payment-methods-sortable', {
             if (!this.configParent?.actualConfigData) {
                 return;
             }
-            if (!this.configParent.actualConfigData[this.currentSalesChannelId]) {
-                this.configParent.actualConfigData[this.currentSalesChannelId] = {};
+            if (
+                !this.configParent.actualConfigData[this.currentSalesChannelId]
+            ) {
+                this.configParent.actualConfigData[this.currentSalesChannelId] =
+                    {};
             }
-            this.configParent.actualConfigData[this.currentSalesChannelId]['NetsNexiCheckout.config.payTypeOptions'] = JSON.stringify(
-                this.sortedMethods.map(m => ({
+            this.configParent.actualConfigData[this.currentSalesChannelId][
+                'NetsNexiCheckout.config.payTypeOptions'
+            ] = JSON.stringify(
+                this.sortedMethods.map((m) => ({
                     name: m.name,
                     paymentType: m.paymentType,
                     enabled: m.enabled,
@@ -98,7 +122,10 @@ Component.register('nexi-checkout-payment-methods-sortable', {
         async loadPaymentMethods() {
             this.isLoading = true;
             try {
-                const result = await this.nexiCheckoutPaymentMethodsService.getPaymentMethods(this.currentSalesChannelId);
+                const result =
+                    await this.nexiCheckoutPaymentMethodsService.getPaymentMethods(
+                        this.currentSalesChannelId
+                    );
                 this.availableMethods = result.paymentMethods || [];
                 this.mergeWithSaved();
             } catch {
@@ -111,22 +138,24 @@ Component.register('nexi-checkout-payment-methods-sortable', {
         mergeWithSaved() {
             const saved = this.getSavedMethods();
             const savedMap = {};
-            saved.forEach(m => {
+            saved.forEach((m) => {
                 savedMap[m.name] = m;
             });
 
             const merged = [];
 
             // Preserve saved order first
-            saved.forEach(s => {
-                const available = this.availableMethods.find(a => a.name === s.name);
+            saved.forEach((s) => {
+                const available = this.availableMethods.find(
+                    (a) => a.name === s.name
+                );
                 if (available) {
                     merged.push({ ...available, enabled: s.enabled });
                 }
             });
 
             // Append newly available methods not yet in saved list
-            this.availableMethods.forEach(a => {
+            this.availableMethods.forEach((a) => {
                 if (!savedMap[a.name]) {
                     merged.push({ ...a, enabled: true });
                 }
@@ -152,7 +181,10 @@ Component.register('nexi-checkout-payment-methods-sortable', {
 
         onDrop(event, targetIndex) {
             event.preventDefault();
-            if (this.dragSrcIndex === null || this.dragSrcIndex === targetIndex) {
+            if (
+                this.dragSrcIndex === null ||
+                this.dragSrcIndex === targetIndex
+            ) {
                 return;
             }
             const moved = this.sortedMethods.splice(this.dragSrcIndex, 1)[0];

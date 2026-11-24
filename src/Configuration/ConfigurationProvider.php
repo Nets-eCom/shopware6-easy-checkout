@@ -8,8 +8,6 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ConfigurationProvider
 {
-    private const CONFIG_DOMAIN = 'NetsNexiCheckout.config.';
-
     public const LIVE_SECRET_KEY = self::CONFIG_DOMAIN . 'liveSecretKey';
 
     public const LIVE_CHECKOUT_KEY = self::CONFIG_DOMAIN . 'liveCheckoutKey';
@@ -31,6 +29,8 @@ class ConfigurationProvider
     public const PAY_TYPE_SPLITTING = self::CONFIG_DOMAIN . 'payTypeSplitting';
 
     public const PAY_TYPE_OPTIONS = self::CONFIG_DOMAIN . 'payTypeOptions';
+
+    private const CONFIG_DOMAIN = 'NetsNexiCheckout.config.';
 
     public function __construct(private readonly SystemConfigService $systemConfigService)
     {

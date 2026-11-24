@@ -9,11 +9,10 @@ use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Helper\FormatHelper;
 use Nexi\Checkout\Order\Exception\OrderReferenceUpdateException;
 use Nexi\Checkout\Order\OrderReferenceUpdate;
-use Nexi\Checkout\Subscriber\EmbeddedCreatePaymentOnCheckoutSubscriber;
+use Nexi\Checkout\RequestBuilder\PaymentRequest;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Api\PaymentApi;
 use NexiCheckout\Factory\PaymentApiFactory;
-use NexiCheckout\Model\Request\Shared\Order;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection;
@@ -44,7 +43,8 @@ final class EmbeddedPayment extends AbstractPaymentHandler
         private readonly EntityRepository $orderTransactionRepository,
         private readonly OrderTransactionStateHandler $orderTransactionStateHandler,
         private readonly OrderReferenceUpdate $orderReferenceUpdate,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly PaymentRequest $paymentRequest,
     ) {
     }
 
@@ -57,7 +57,7 @@ final class EmbeddedPayment extends AbstractPaymentHandler
         Cart $cart,
         RequestDataBag $dataBag,
         SalesChannelContext $context
-    ): ?Struct {
+    ): Struct {
         $paymentId = $dataBag->getString('nexiPaymentId');
         if ($paymentId === '') {
             $this->logger->error('Embedded payment nexiPaymentId missing', [
@@ -114,7 +114,6 @@ final class EmbeddedPayment extends AbstractPaymentHandler
             'paymentId' => $paymentId,
         ]);
 
-        // return the payment details: these will be given as $validateStruct to the pay method
         return new ArrayStruct([
             'paymentId' => $payment->getPaymentId(),
         ]);
@@ -137,16 +136,16 @@ final class EmbeddedPayment extends AbstractPaymentHandler
 
         $paymentId = $validateStruct->get('paymentId');
 
-        $session = $request->getSession();
+        $transactionEntity = $this->fetchOrderTransaction($transactionId, $context);
 
-        $order = $session->get(EmbeddedCreatePaymentOnCheckoutSubscriber::SESSION_NEXI_PAYMENT_ORDER);
-
-        if (!$order instanceof Order) {
+        if (!$transactionEntity instanceof OrderTransactionEntity) {
             throw PaymentException::capturePreparedException(
-                $paymentId,
-                'missing nexi payment order'
+                $transactionId,
+                'order transaction not found'
             );
         }
+
+        $order = $this->paymentRequest->buildOrderFromTransaction($transactionEntity);
 
         $data = [
             'id' => $transactionId,
@@ -158,8 +157,7 @@ final class EmbeddedPayment extends AbstractPaymentHandler
         ];
 
         $this->orderTransactionRepository->update([$data], $context);
-
-        $session->remove(EmbeddedCreatePaymentOnCheckoutSubscriber::SESSION_NEXI_PAYMENT_ORDER);
+        $transactionEntity->setCustomFields(array_replace($transactionEntity->getCustomFields() ?? [], $data['customFields']));
 
         $this->orderTransactionStateHandler->process(
             $transactionId,
@@ -170,10 +168,8 @@ final class EmbeddedPayment extends AbstractPaymentHandler
             'paymentId' => $paymentId,
         ]);
 
-        $transactionEntity = $this->fetchOrderTransaction($transactionId, $context);
-
         try {
-            $this->orderReferenceUpdate->updateReferenceForTransaction($transactionEntity);
+            $this->orderReferenceUpdate->updateReferenceForTransaction($transactionEntity, $paymentId);
         } catch (OrderReferenceUpdateException) {
             $this->logger->info('Update reference information failed', [
                 'paymentId' => $paymentId,
@@ -198,12 +194,11 @@ final class EmbeddedPayment extends AbstractPaymentHandler
         return $this->orderTransactionRepository
             ->search(
                 (new Criteria([$transactionId]))
-                    ->addAssociations(
-                        [
-                            'order',
-                        ]
-                    ),
+                    ->addAssociation('order')
+                    ->addAssociation('order.currency')
+                    ->addAssociation('order.lineItems')
+                    ->addAssociation('order.deliveries.shippingMethod'),
                 $context
-            )->first();
+            )->getEntities()->first();
     }
 }

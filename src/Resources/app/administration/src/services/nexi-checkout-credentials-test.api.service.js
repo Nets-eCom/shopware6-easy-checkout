@@ -8,10 +8,9 @@ class NexiCheckoutCredentialsTestService extends ApiService {
 
     showCheckoutUrlInfo() {
         return this.httpClient
-            .get(
-                `nexicheckout/configuration/checkout-url-info`,
-                { headers: this.getBasicHeaders() },
-            )
+            .get(`nexicheckout/configuration/checkout-url-info`, {
+                headers: this.getBasicHeaders(),
+            })
             .then(ApiService.handleResponse.bind(this));
     }
 
@@ -20,17 +19,21 @@ class NexiCheckoutCredentialsTestService extends ApiService {
             .post(
                 `nexicheckout/test-api-credentials`,
                 { secretKey, liveMode, salesChannelId },
-                { headers: this.getBasicHeaders() },
+                { headers: this.getBasicHeaders() }
             )
             .then(ApiService.handleResponse.bind(this));
     }
 }
 
-Shopware.Service().register('nexiCheckoutCredentialsTestService', (container) => {
-    const initContainer = Shopware.Application.getContainer('init');
-    return new NexiCheckoutCredentialsTestService(initContainer.httpClient, container.loginService);
-});
+Shopware.Service().register(
+    'nexiCheckoutCredentialsTestService',
+    (container) => {
+        const initContainer = Shopware.Application.getContainer('init');
+        return new NexiCheckoutCredentialsTestService(
+            initContainer.httpClient,
+            container.loginService
+        );
+    }
+);
 
-// eslint-disable-next-line sw-deprecation-rules/private-feature-declarations
 export default NexiCheckoutCredentialsTestService;
-

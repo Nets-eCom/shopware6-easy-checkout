@@ -9,18 +9,23 @@ class NexiCheckoutPaymentMethodsService extends ApiService {
     getPaymentMethods(salesChannelId) {
         const params = salesChannelId ? { salesChannelId } : {};
         return this.httpClient
-            .get(
-                `nexicheckout/payment-methods`,
-                { params, headers: this.getBasicHeaders() },
-            )
+            .get(`nexicheckout/payment-methods`, {
+                params,
+                headers: this.getBasicHeaders(),
+            })
             .then(ApiService.handleResponse.bind(this));
     }
 }
 
-Shopware.Service().register('nexiCheckoutPaymentMethodsService', (container) => {
-    const initContainer = Shopware.Application.getContainer('init');
-    return new NexiCheckoutPaymentMethodsService(initContainer.httpClient, container.loginService);
-});
+Shopware.Service().register(
+    'nexiCheckoutPaymentMethodsService',
+    (container) => {
+        const initContainer = Shopware.Application.getContainer('init');
+        return new NexiCheckoutPaymentMethodsService(
+            initContainer.httpClient,
+            container.loginService
+        );
+    }
+);
 
-// eslint-disable-next-line sw-deprecation-rules/private-feature-declarations
 export default NexiCheckoutPaymentMethodsService;

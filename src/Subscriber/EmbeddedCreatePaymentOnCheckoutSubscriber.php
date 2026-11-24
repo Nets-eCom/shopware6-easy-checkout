@@ -28,8 +28,6 @@ use Symfony\Component\Routing\RouterInterface;
 
 class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterface
 {
-    public const SESSION_NEXI_PAYMENT_ORDER = 'nexi_payment_order';
-
     public function __construct(
         private readonly PaymentRequest $paymentRequest,
         private readonly PaymentApiFactory $paymentApiFactory,
@@ -135,9 +133,6 @@ class EmbeddedCreatePaymentOnCheckoutSubscriber implements EventSubscriberInterf
             );
 
             $payment = $paymentApi->createEmbeddedPayment($paymentRequest);
-
-            $session = $this->requestStack->getCurrentRequest()->getSession();
-            $session->set(self::SESSION_NEXI_PAYMENT_ORDER, $paymentRequest->getOrder());
 
             $this->logger->info('Embedded payment created successfully', [
                 'paymentId' => $payment->getPaymentId(),

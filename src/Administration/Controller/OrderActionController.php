@@ -42,19 +42,17 @@ class OrderActionController extends AbstractController
     ) {
     }
 
-    #[
-        Route(
-            path: '/api/order/{orderId}/nexi-payment-charge',
-            name: 'api.nexi.payment.charge',
-            defaults: [
-                '_acl' => [
-                    'order:read',
-                    'order:write',
-                ],
+    #[Route(
+        path: '/api/order/{orderId}/nexi-payment-charge',
+        name: 'api.nexi.payment.charge',
+        defaults: [
+            '_acl' => [
+                'order:read',
+                'order:write',
             ],
-            methods: ['PUT']
-        )
-    ]
+        ],
+        methods: ['PUT']
+    )]
     public function charge(
         Context $context,
         string $orderId,
@@ -66,7 +64,7 @@ class OrderActionController extends AbstractController
                 ->addAssociation('transactions.order')
                 ->addAssociation('stateMachineState'),
             $context
-        )->get($orderId);
+        )->getEntities()->get($orderId);
 
         if (!$order instanceof OrderEntity) {
             throw OrderException::orderNotFound($orderId);
@@ -81,19 +79,17 @@ class OrderActionController extends AbstractController
         return $this->json([]);
     }
 
-    #[
-        Route(
-            path: '/api/order/{orderId}/nexi-payment-refund',
-            name: 'api.nexi.payment.refund',
-            defaults: [
-                '_acl' => [
-                    'order:read',
-                    'order:write',
-                ],
+    #[Route(
+        path: '/api/order/{orderId}/nexi-payment-refund',
+        name: 'api.nexi.payment.refund',
+        defaults: [
+            '_acl' => [
+                'order:read',
+                'order:write',
             ],
-            methods: ['PUT']
-        )
-    ]
+        ],
+        methods: ['PUT']
+    )]
     public function refund(
         Context $context,
         string $orderId,
@@ -105,7 +101,7 @@ class OrderActionController extends AbstractController
                 ->addAssociation('transactions')
                 ->addAssociation('stateMachineState'),
             $context
-        )->get($orderId);
+        )->getEntities()->get($orderId);
 
         if (!$order instanceof OrderEntity) {
             throw OrderException::orderNotFound($orderId);
@@ -122,19 +118,17 @@ class OrderActionController extends AbstractController
         return $this->json([]);
     }
 
-    #[
-        Route(
-            path: '/api/order/{orderId}/nexi-payment-cancel',
-            name: 'api.nexi.payment.cancel',
-            defaults: [
-                '_acl' => [
-                    'order:read',
-                    'order:write',
-                ],
+    #[Route(
+        path: '/api/order/{orderId}/nexi-payment-cancel',
+        name: 'api.nexi.payment.cancel',
+        defaults: [
+            '_acl' => [
+                'order:read',
+                'order:write',
             ],
-            methods: ['PUT']
-        )
-    ]
+        ],
+        methods: ['PUT']
+    )]
     public function cancel(Context $context, string $orderId): Response
     {
         $order = $this->orderRepository->search(
@@ -142,7 +136,7 @@ class OrderActionController extends AbstractController
                 ->addAssociation('transactions')
                 ->addAssociation('stateMachineState'),
             $context
-        )->get($orderId);
+        )->getEntities()->get($orderId);
 
         if (!$order instanceof OrderEntity) {
             throw OrderException::orderNotFound($orderId);

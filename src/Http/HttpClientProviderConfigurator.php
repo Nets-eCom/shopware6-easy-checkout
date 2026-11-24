@@ -22,6 +22,11 @@ readonly class HttpClientProviderConfigurator
         $this->provider->setCommercePlatformTag($this->buildCommerceTag());
     }
 
+    public function isMcpContext(): bool
+    {
+        return $this->requestStack->getMainRequest()?->attributes->get('_route') === 'api.mcp.endpoint';
+    }
+
     private function buildCommerceTag(): string
     {
         $tag = \sprintf(
@@ -37,10 +42,5 @@ readonly class HttpClientProviderConfigurator
         }
 
         return \sprintf('%s, origin=mcp', $tag);
-    }
-
-    public function isMcpContext(): bool
-    {
-        return $this->requestStack->getMainRequest()?->attributes->get('_route') === 'api.mcp.endpoint';
     }
 }

@@ -11,27 +11,27 @@ class NexiPaymentEntity extends Entity
 {
     use EntityIdTrait;
 
-    protected ?string $order_id = null;
+    protected ?string $orderId = null;
 
-    protected ?string $charge_id = null;
+    protected ?string $chargeId = null;
 
     public function getOrderId(): ?string
     {
-        return $this->order_id;
+        return $this->orderId;
     }
 
     public function setOrderId(?string $orderId): void
     {
-        $this->order_id = $orderId;
+        $this->orderId = $orderId;
     }
 
     public function getChargeId(): ?string
     {
-        return $this->charge_id;
+        return $this->chargeId;
     }
 
     public function setChargeId(?string $chargeId): void
     {
-        $this->charge_id = $chargeId;
+        $this->chargeId = $chargeId;
     }
 }

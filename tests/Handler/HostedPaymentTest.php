@@ -30,7 +30,6 @@ use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\PaymentException;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
@@ -332,9 +331,9 @@ final class HostedPaymentTest extends TestCase
         $repository = $this->createMock(EntityRepository::class);
         $repository->method('search')->willReturn(
             new EntitySearchResult(
-                OrderTransactionEntity::class,
+                'order_transaction',
                 1,
-                new EntityCollection([$orderTransactionEntity]),
+                new OrderTransactionCollection([$orderTransactionEntity]),
                 null,
                 new Criteria(),
                 $context

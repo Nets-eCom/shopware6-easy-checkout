@@ -291,7 +291,7 @@ class OrderRefund
 
         return match ($exception->getInternalCode()) {
             ErrorCodeEnum::InvalidRefundAmount => new OrderChargeRefundExceeded($chargeId, previous: $exception),
-            default => new OrderRefundException($chargeId, previous: $exception)
+            default => new OrderRefundException($chargeId, previous: $exception),
         };
     }
 

@@ -147,7 +147,7 @@ final class ApiCredentialsTestController extends AbstractController
     private function resolveDefaultCurrencyIsoCode(Context $context): string
     {
         $criteria = new Criteria([Defaults::CURRENCY]);
-        $currency = $this->currencyRepository->search($criteria, $context)->first();
+        $currency = $this->currencyRepository->search($criteria, $context)->getEntities()->first();
 
         return $currency?->getIsoCode() ?? self::DEF_CURRENCY;
     }

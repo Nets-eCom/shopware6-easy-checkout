@@ -2,7 +2,7 @@
     "name": "nexi-checkout/shopware6-checkout",
     "description": "Nexi Checkout integration for Shopware 6",
     "type": "shopware-platform-plugin",
-    "version": "2.4.1",
+    "version": "2.4.2",
     "license": "MIT",
     "authors": [
         {
@@ -14,7 +14,7 @@
         "shopware/core": "~6.6.0 || ~6.7.0",
         "shopware/storefront": "~6.6.0 || ~6.7.0",
         "giggsey/libphonenumber-for-php-lite": "^8.12",
-        "nexi-checkout/php-payment-sdk": "~0.16"
+        "nexi-checkout/php-payment-sdk": "~0.19"
     },
     "extra": {
         "shopware-plugin-class": "Nexi\\Checkout\\NetsNexiCheckout",

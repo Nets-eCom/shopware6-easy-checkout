@@ -4,7 +4,6 @@ namespace Nexi\Checkout\Order;
 
 use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Core\Content\NexiCheckout\Event\UpdateReferenceSend;
-use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
 use Nexi\Checkout\Order\Exception\OrderReferenceUpdateException;
 use Nexi\Checkout\RequestBuilder\ReferenceInformationRequest;
@@ -30,18 +29,10 @@ class OrderReferenceUpdate
     /**
      * @throws OrderReferenceUpdateException
      */
-    public function updateReferenceForTransaction(OrderTransactionEntity $transaction): void
+    public function updateReferenceForTransaction(OrderTransactionEntity $transaction, string $paymentId): void
     {
         $order = $transaction->getOrder();
         $paymentApi = $this->createPaymentApi($order->getSalesChannelId());
-
-        $paymentId = $transaction->getCustomFieldsValue(
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID
-        );
-
-        if ($paymentId === null) {
-            return;
-        }
 
         $payment = $this->paymentFetcher->getCachedPayment($order->getSalesChannelId(), $paymentId);
 

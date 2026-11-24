@@ -58,7 +58,7 @@ final readonly class PaymentCancelSubscriber implements EventSubscriberInterface
                     ),
                 $context
             )
-            ->first();
+            ->getEntities()->first();
 
         $transaction = $order->getTransactions()->first();
 

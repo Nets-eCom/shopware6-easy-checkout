@@ -53,7 +53,7 @@ class PaymentDetailController extends AbstractController
             ->addAssociation('stateMachineState');
 
         /** @var ?OrderEntity $order */
-        $order = $this->orderRepository->search($criteria, $context)->get($orderId);
+        $order = $this->orderRepository->search($criteria, $context)->getEntities()->get($orderId);
 
         if (!$order) {
             throw OrderException::orderNotFound($orderId);

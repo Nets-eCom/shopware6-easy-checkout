@@ -1,0 +1,49 @@
+services:
+    Nexi\Checkout\Mcp\NexiOrderResolver:
+        arguments:
+            - '@order.repository'
+            - '@Shopware\Core\Framework\Mcp\Context\McpContextProvider'
+
+    Nexi\Checkout\Mcp\PaymentDetailsService:
+        arguments:
+            - '@Nexi\Checkout\Fetcher\PaymentFetcher'
+
+    Nexi\Checkout\Mcp\PaymentActionService:
+        arguments:
+            - '@Nexi\Checkout\Fetcher\PaymentFetcher'
+            - '@Nexi\Checkout\Configuration\ConfigurationProvider'
+            - '@Nexi\Checkout\Order\OrderCharge'
+            - '@Nexi\Checkout\Order\OrderRefund'
+            - '@Nexi\Checkout\Order\OrderCancel'
+
+    Nexi\Checkout\Mcp\Tool\PaymentDetailsTool:
+        arguments:
+            - '@Shopware\Core\Framework\Mcp\Context\McpContextProvider'
+            - '@Nexi\Checkout\Mcp\NexiOrderResolver'
+            - '@Nexi\Checkout\Mcp\PaymentDetailsService'
+        tags:
+            - { name: 'shopware.mcp.tool' }
+
+    Nexi\Checkout\Mcp\Tool\ChargePaymentTool:
+        arguments:
+            - '@Shopware\Core\Framework\Mcp\Context\McpContextProvider'
+            - '@Nexi\Checkout\Mcp\NexiOrderResolver'
+            - '@Nexi\Checkout\Mcp\PaymentActionService'
+        tags:
+            - { name: 'shopware.mcp.tool' }
+
+    Nexi\Checkout\Mcp\Tool\RefundPaymentTool:
+        arguments:
+            - '@Shopware\Core\Framework\Mcp\Context\McpContextProvider'
+            - '@Nexi\Checkout\Mcp\NexiOrderResolver'
+            - '@Nexi\Checkout\Mcp\PaymentActionService'
+        tags:
+            - { name: 'shopware.mcp.tool' }
+
+    Nexi\Checkout\Mcp\Tool\CancelPaymentTool:
+        arguments:
+            - '@Shopware\Core\Framework\Mcp\Context\McpContextProvider'
+            - '@Nexi\Checkout\Mcp\NexiOrderResolver'
+            - '@Nexi\Checkout\Mcp\PaymentActionService'
+        tags:
+            - { name: 'shopware.mcp.tool' }

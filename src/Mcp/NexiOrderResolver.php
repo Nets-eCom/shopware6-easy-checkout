@@ -80,9 +80,9 @@ final class NexiOrderResolver
         $criteria = new Criteria([$orderId]);
         $criteria->addAssociation('currency');
         $criteria->addAssociation('transactions.order');
-        $criteria->getAssociation('transactions')->addFilter(new EqualsFilter('id', $transactionId));
+        $criteria->getAssociation('transactions')->setIds([$transactionId]);
 
-        $order = $this->orderRepository->search($criteria, $this->contextProvider->getContext())->first();
+        $order = $this->orderRepository->search($criteria, $this->contextProvider->getContext())->getEntities()->first();
         if (!$order instanceof OrderEntity || $order->getTransactions()?->count() !== 1
             || !$order->getTransactions()->get($transactionId) instanceof OrderTransactionEntity) {
             throw new \InvalidArgumentException('The resolved Nexi Checkout transaction is no longer available.');

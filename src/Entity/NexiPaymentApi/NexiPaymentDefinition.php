@@ -35,8 +35,7 @@ class NexiPaymentDefinition extends EntityDefinition
         return new FieldCollection([
             (new IdField('id', 'id'))->addFlags(new Required(), new PrimaryKey()),
             new StringField('order_id', 'orderId'),
-            new StringField('order_id', 'orderId'),
-            new StringField('charge_id', 'charge_id'),
+            new StringField('charge_id', 'chargeId'),
         ]);
     }
 }

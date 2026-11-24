@@ -3,7 +3,6 @@
 namespace Nexi\Checkout\Tests\Order;
 
 use Nexi\Checkout\Configuration\ConfigurationProvider;
-use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Fetcher\CachablePaymentFetcherInterface;
 use Nexi\Checkout\Order\OrderReferenceUpdate;
 use Nexi\Checkout\RequestBuilder\ReferenceInformationRequest;
@@ -50,7 +49,7 @@ final class OrderReferenceUpdateTest extends TestCase
             $this->createMock(EventDispatcherInterface::class)
         );
 
-        $sut->updateReferenceForTransaction($this->createOrderTransactionEntity());
+        $sut->updateReferenceForTransaction($this->createOrderTransactionEntity(), '025400006091b1ef6937598058c4e487');
     }
 
     private function createOrderTransactionEntity(): OrderTransactionEntity
@@ -66,9 +65,6 @@ final class OrderReferenceUpdateTest extends TestCase
         $transaction->setAmount(
             new CalculatedPrice(100, 100, new CalculatedTaxCollection(), new TaxRuleCollection([]), 1)
         );
-        $transaction->setCustomFields([
-            OrderTransactionDictionary::CUSTOM_FIELDS_NEXI_CHECKOUT_PAYMENT_ID => '025400006091b1ef6937598058c4e487',
-        ]);
 
         return $transaction;
     }

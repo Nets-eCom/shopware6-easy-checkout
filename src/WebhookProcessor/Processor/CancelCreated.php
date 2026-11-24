@@ -79,7 +79,6 @@ final readonly class CancelCreated implements WebhookProcessorInterface
             throw $stateMachineException;
         }
 
-
         $this->logProcessMessage($event, 'finished', $paymentId);
     }
 

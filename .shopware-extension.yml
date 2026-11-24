@@ -7,7 +7,6 @@ build:
           - Makefile
           - .gitignore
           - .prettierrc
-          - .shopware-extension.yml
           - azure-pipelines.yaml
           - rector.php
           - ecs.php
@@ -15,3 +14,9 @@ build:
           - phpunit.xml.dist
           - phpstan.neon.dist
           - README.md
+validation:
+  ignore:
+    # payPartially is deprecated in 6.7 (removed in 6.8), paidPartially does not exist in 6.6
+    # TODO: remove when minimum Shopware version is 6.7
+    - identifier: "phpstan/method.deprecated"
+      message: "payPartially"

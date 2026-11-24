@@ -36,7 +36,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\DirectoryLoader;
 use Symfony\Component\DependencyInjection\Loader\GlobFileLoader;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 
@@ -44,7 +43,7 @@ class NetsNexiCheckout extends Plugin
 {
     public const COMMERCE_PLATFORM_TAG = 'Shopware6';
 
-    public const PLUGIN_VERSION = '2.4.1';
+    public const PLUGIN_VERSION = '2.4.2';
 
     public const LIVE_URL = 'https://api.dibspayment.eu';
 
@@ -161,11 +160,11 @@ class NetsNexiCheckout extends Plugin
             return;
         }
 
-        $loader = new XmlFileLoader(
+        $loader = new YamlFileLoader(
             $container,
             new FileLocator($this->getPath() . '/Resources/config')
         );
-        $loader->load('mcp.xml');
+        $loader->load('mcp.yaml');
 
         // @TODO remove after Shopware upstream fix
         $container->addCompilerPass(

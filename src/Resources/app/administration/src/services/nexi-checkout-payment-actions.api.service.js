@@ -13,7 +13,7 @@ class NexiCheckoutApiPaymentService extends ApiService {
                 { amount: amount, items },
                 {
                     headers: this.getBasicHeaders(),
-                },
+                }
             )
             .then(ApiService.handleResponse.bind(this));
     }
@@ -25,27 +25,29 @@ class NexiCheckoutApiPaymentService extends ApiService {
                 { amount: amount, charges },
                 {
                     headers: this.getBasicHeaders(),
-                },
+                }
             )
             .then(ApiService.handleResponse.bind(this));
     }
 
     cancel(orderId) {
         return this.httpClient
-            .put(
-                `order/${orderId}/nexi-payment-cancel`,
-                {
-                    headers: this.getBasicHeaders(),
-                },
-            )
+            .put(`order/${orderId}/nexi-payment-cancel`, {
+                headers: this.getBasicHeaders(),
+            })
             .then(ApiService.handleResponse.bind(this));
     }
 }
 
-Shopware.Service().register('nexiCheckoutPaymentActionsService', (container) => {
-    const initContainer = Shopware.Application.getContainer('init');
-    return new NexiCheckoutApiPaymentService(initContainer.httpClient, container.loginService);
-});
+Shopware.Service().register(
+    'nexiCheckoutPaymentActionsService',
+    (container) => {
+        const initContainer = Shopware.Application.getContainer('init');
+        return new NexiCheckoutApiPaymentService(
+            initContainer.httpClient,
+            container.loginService
+        );
+    }
+);
 
-// eslint-disable-next-line sw-deprecation-rules/private-feature-declarations
 export default NexiCheckoutApiPaymentService;

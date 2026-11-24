@@ -131,7 +131,6 @@ class OrderCharge
 
             $payment = $this->fetcher->fetchPayment($salesChannelId, $paymentId);
 
-
             if (!$this->isChargeable($payment, $chargeData->getAmount())) {
                 $this->logger->info('Payment in incorrect status for partial charge', [
                     'paymentId' => $paymentId,

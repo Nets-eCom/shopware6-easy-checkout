@@ -6,10 +6,10 @@ use Nexi\Checkout\Locale\LanguageProvider;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
+use Shopware\Core\System\Language\LanguageCollection;
 use Shopware\Core\System\Language\LanguageEntity;
 use Shopware\Core\System\Locale\LocaleEntity;
 
@@ -23,9 +23,9 @@ class LanguageProviderTest extends TestCase
         $languageRepository = $this->createMock(EntityRepository::class);
         $languageRepository->method('search')->willReturn(
             new EntitySearchResult(
-                LanguageEntity::class,
+                'language',
                 1,
-                new EntityCollection([$languageEntity]),
+                new LanguageCollection([$languageEntity]),
                 null,
                 new Criteria(),
                 $context
@@ -43,9 +43,9 @@ class LanguageProviderTest extends TestCase
         $languageRepository = $this->createMock(EntityRepository::class);
         $languageRepository->method('search')->willReturn(
             new EntitySearchResult(
-                LanguageEntity::class,
+                'language',
                 0,
-                new EntityCollection([]),
+                new LanguageCollection([]),
                 null,
                 new Criteria(),
                 $context
@@ -64,9 +64,9 @@ class LanguageProviderTest extends TestCase
         $languageRepository = $this->createMock(EntityRepository::class);
         $languageRepository->method('search')->willReturn(
             new EntitySearchResult(
-                LanguageEntity::class,
+                'language',
                 1,
-                new EntityCollection([$languageEntity]),
+                new LanguageCollection([$languageEntity]),
                 null,
                 new Criteria(),
                 $context

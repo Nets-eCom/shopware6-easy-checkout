@@ -8,7 +8,6 @@ use Nexi\Checkout\Configuration\ConfigurationProvider;
 use Nexi\Checkout\Dictionary\OrderTransactionDictionary;
 use Nexi\Checkout\Lifecycle\PaymentMethodsInstaller;
 use Nexi\Checkout\RequestBuilder\PaymentRequest;
-use Nexi\Checkout\Subscriber\EmbeddedCreatePaymentOnCheckoutSubscriber;
 use NexiCheckout\Api\Exception\PaymentApiException;
 use NexiCheckout\Factory\PaymentApiFactory;
 use Psr\Log\LoggerInterface;
@@ -36,15 +35,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[
-    Route(
-        '/nexicheckout/embedded',
-        name: 'payment.nexicheckout.embedded.', // Route name has to start with "payment." to be recognized as Storefront payment route
-        defaults: [
-            '_routeScope' => ['storefront'],
-        ]
-    )
-]
+#[Route(
+    '/nexicheckout/embedded',
+    name: 'payment.nexicheckout.embedded.', // Route name has to start with "payment." to be recognized as Storefront payment route
+    defaults: [
+        '_routeScope' => ['storefront'],
+    ]
+)]
 class EmbeddedController extends StorefrontController
 {
     /**
@@ -108,11 +105,6 @@ class EmbeddedController extends StorefrontController
             );
             $paymentRequest = $this->paymentRequest->buildEmbedded($cart, $salesChannelContext, $subselection);
             $payment = $paymentApi->createEmbeddedPayment($paymentRequest);
-
-            $request->getSession()->set(
-                EmbeddedCreatePaymentOnCheckoutSubscriber::SESSION_NEXI_PAYMENT_ORDER,
-                $paymentRequest->getOrder()
-            );
 
             $this->logger->info('Split embedded payment created', [
                 'paymentId' => $payment->getPaymentId(),
@@ -224,7 +216,7 @@ class EmbeddedController extends StorefrontController
 
         $embeddedMethod = $this->paymentMethodRepository
             ->search($criteria, $salesChannelContext->getContext())
-            ->first();
+            ->getEntities()->first();
 
         if ($embeddedMethod === null) {
             return;

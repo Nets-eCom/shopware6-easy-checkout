@@ -47,6 +47,18 @@ class PaymentRequest
         );
     }
 
+    public function buildOrderFromTransaction(OrderTransactionEntity $transaction): Order
+    {
+        $orderEntity = $transaction->getOrder();
+
+        return new Order(
+            $this->itemsBuilder->createFromOrder($orderEntity, useCartIdentifier: true),
+            $orderEntity->getCurrency()->getIsoCode(),
+            $this->formatHelper->priceToInt($transaction->getAmount()->getTotalPrice()),
+            $orderEntity->getOrderNumber()
+        );
+    }
+
     public function buildEmbedded(
         Cart $cart,
         SalesChannelContext $salesChannelContext,

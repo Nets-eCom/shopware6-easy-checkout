@@ -25,6 +25,7 @@
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
             <argument type="service" id="Nexi\Checkout\Order\OrderReferenceUpdate"/>
             <argument type="service" id="monolog.logger.nexicheckout_channel"/>
+            <argument type="service" id="Nexi\Checkout\RequestBuilder\PaymentRequest"/>
             <tag name="shopware.payment.method"/> <!-- for Shopware 6.7 and above -->
             <tag name="shopware.payment.method.prepared" /> <!-- for Shopware 6.6 -->
         </service>

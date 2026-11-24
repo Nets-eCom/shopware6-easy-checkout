@@ -17,15 +17,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[
-    Route(
-        '/nexicheckout',
-        name: 'payment.nexicheckout.', // Route name has to start with "payment." to be recognized as Storefront payment route
-        defaults: [
-            '_routeScope' => ['storefront'],
-        ]
-    )
-]
+#[Route(
+    '/nexicheckout',
+    name: 'payment.nexicheckout.', // Route name has to start with "payment." to be recognized as Storefront payment route
+    defaults: [
+        '_routeScope' => ['storefront'],
+    ]
+)]
 class WebhookController extends AbstractController
 {
     public function __construct(

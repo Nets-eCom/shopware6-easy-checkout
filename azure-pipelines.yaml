@@ -10,9 +10,6 @@ parameters:
   - name: validateOnPhpVersion
     type: string
     default: 8.4
-  - name: ShouldBuildReleasePackage
-    type: boolean
-    default: false
   - name: ShouldDeployApplication
     type: boolean
     default: false
@@ -75,16 +72,34 @@ stages:
                 echo "##vso[build.addbuildtag]TranslationChanged"
               fi
             displayName: 'Check changed files'
+  - stage: Validate_Extension
+    displayName: 'Validate Shopware Extension'
+    dependsOn: Validate
+    condition: succeeded()
+    jobs:
+      - job: Validate_Package
+        displayName: 'Validate Shopware extension'
+        steps:
+          - checkout: self
+          - script: |
+              curl -1sLf 'https://dl.cloudsmith.io/public/friendsofshopware/stable/setup.deb.sh' | sudo -E bash
+              sudo apt-get -o DPkg::Lock::Timeout=60 install shopware-cli
+            displayName: 'Install shopware-cli'
+          - task: UseNode@1
+            inputs:
+              version: '22'
+            displayName: 'Install Node.js 22'
+          - script: |
+              shopware-cli extension zip --disable-git . --release
+              shopware-cli extension validate $(extensionName).zip
+            displayName: 'Validate extension'
   - stage: Build_Release_Package
     displayName: Build_Release_Package
-    dependsOn: Validate
+    dependsOn: Validate_Extension
     condition: |
       and(
         succeeded(),
-        or(
-          in(variables['Build.SourceBranch'], 'refs/heads/main'),
-          and(${{ parameters.ShouldBuildReleasePackage }}, eq(variables['Build.Reason'], 'Manual'))
-        )
+        in(variables['Build.SourceBranch'], 'refs/heads/main')
       )
     jobs:
       - job: Build_Release_Package
@@ -107,8 +122,8 @@ stages:
             displayName: 'Create publish dir'
           - task: UseNode@1
             inputs:
-              version: '20.11'
-            displayName: 'Install Node.js 20'
+              version: '22'
+            displayName: 'Install Node.js 22'
           - script: |
               sed -i "s|\$this->registerProvisionSubscriber(\$container)|\$this->registerProvisionSubscriber(\$container, '$(shopware-provision-identifier)')|" src/NetsNexiCheckout.php
               sed -i "s/COMMERCE_PLATFORM_TAG = 'Shopware6';/COMMERCE_PLATFORM_TAG = 'Shopware6_m';/g" src/NetsNexiCheckout.php
@@ -122,6 +137,7 @@ stages:
             artifact: $(extensionName)
   - stage: Deploy_Development # This stage success will trigger deployment of CD-Services-Shopware6
     displayName: Deploy_Development
+    dependsOn: Validate_Extension
     condition: |
       and(
         succeeded(),
